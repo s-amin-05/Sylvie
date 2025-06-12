@@ -49,9 +49,9 @@ void Board::setup_using_fen() {
 
     // fenParts[1] = active_color
     if (fen_parts[1] == "w") {
-        turn_ = true;
+        turn_ = chess::color::WHITE;
     }else if (fen_parts[1] == "b") {
-        turn_ = false;
+        turn_ = chess::color::BLACK;
     }
 
     // fenParts[2] = castling_rights
@@ -80,6 +80,7 @@ void Board::setup_using_fen() {
 
     // fenParts[5] = fullmove_number
     fullmove_number_ = stoi(fen_parts[5]);
+    ply_count_ = fullmove_number_ * 2 + (turn_ == chess::color::BLACK ? 1 : 0);
 }
 
 void Board::make_move(Move move) {
