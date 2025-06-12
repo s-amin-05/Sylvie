@@ -13,6 +13,7 @@ target_include_directories(${EngineName} PUBLIC
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include/${EngineName}/
     ${CMAKE_SOURCE_DIR}/include/${EngineName}/core/
+    ${CMAKE_SOURCE_DIR}/include/${EngineName}/core/board/
 )
 
 target_compile_options(${EngineName} PUBLIC 

@@ -1,0 +1,46 @@
+#pragma once
+#include<piece.h>
+#include<square.h>
+#include<move.h>
+#include<stack>
+#include<constants.h>
+using namespace std;
+
+
+// Board class handles the complete state of the game
+class Board{
+public:
+    string board_fen_;
+    bool turn_;
+    /*
+     xxx1 - king side for black
+     xx1x - queen side for black
+     x1xx - king side for white
+     1xxx - queen side for white
+     */
+    u8 castling_rights_;
+    stack<Move> move_stack_;
+    Square enpassant_target_;
+    Piece board_[64];
+    int ply_count_;
+    int fullmove_number_;
+    int repetition_count_;
+    int halfmove_count_;
+
+    Board(string position_fen);
+
+    Board();
+
+    void make_move(Move move);
+
+    void unmake_move();
+
+    void reset_board();
+
+    // helper functions
+    void setup_using_fen();
+
+    void print_board();
+
+};
+
