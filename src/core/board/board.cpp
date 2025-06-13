@@ -84,6 +84,10 @@ void Board::setup_using_fen() {
 }
 
 void Board::make_move(Move move) {
+    // assuming the move is correct
+    // this code can also add pieces on the board
+
+    move_stack_.push(move);
     Piece moving_piece = board_[move.starting_square_.square_];
     board_[move.starting_square_.square_] = Piece();
     board_[move.target_square_.square_] = moving_piece;

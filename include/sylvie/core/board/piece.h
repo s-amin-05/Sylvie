@@ -5,10 +5,10 @@
 // First 3 bits for piece type
 // Next bit for piece color
 class Piece {
+public:
     u8 piece_;
     u8 piece_type_;
     bool piece_color_;
-public:
     Piece();
 
     Piece(u8 piece);
