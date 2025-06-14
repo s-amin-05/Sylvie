@@ -6,12 +6,10 @@
 // Next bit for piece color
 class Piece {
 public:
-    u8 piece_;
     u8 piece_type_;
     bool piece_color_;
-    Piece();
 
-    Piece(u8 piece);
+    Piece();
 
     Piece(char piece_notation);
 

@@ -13,16 +13,17 @@
 class Move
 {
 public:
-    u16 move_;
     Square starting_square_;
     Square target_square_;
     Piece promotion_piece_;
-    u8 castling_type_;
+    bool is_castling_;
     bool is_capture_;
 
     Move();
 
-    Move(u16 move);
-
     Move(std::string move_notation);
+
+    void set_castling(bool castling);
+
+    void set_capture(bool capture);
 };

@@ -11,13 +11,9 @@ char Piece::get_piece_notation() const{
 
 }
 
-Piece::Piece() : piece_(0U), piece_type_(0U), piece_color_(0U) {}
+Piece::Piece() : piece_type_(0U), piece_color_(0U) {}
 
-Piece::Piece(u8 piece) {
-    piece_ = piece;
-    piece_type_ = piece & 7U;
-    piece_color_ = piece & (1U << 3U);
-};
+
 
 Piece::Piece(char piece_notation) {
 
@@ -46,6 +42,5 @@ Piece::Piece(char piece_notation) {
             piece_type_ = chess::piece::EMPTY;
             break;
     }
-    piece_  = piece_type_ | (piece_color_ << 3U);
 
 }

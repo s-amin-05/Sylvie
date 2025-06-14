@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION 3.15)
 project(${EngineName} VERSION 1.0)
 add_executable(${EngineName} src/main.cpp)
 
+# add executable for custom gui (maybe)
+
 
 target_include_directories(${EngineName} PUBLIC
     ${CMAKE_SOURCE_DIR}/include
