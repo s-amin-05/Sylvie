@@ -1,8 +1,8 @@
 #pragma once
-#include <string>
 #include <piece.h>
 #include <square.h>
-#include <constants.h>
+#include <string>
+
 
 // First 3 bits for starting square 0-63
 // Next 3 bits for target square 0-63
@@ -18,12 +18,11 @@ public:
     Piece promotion_piece_;
     bool is_castling_;
     bool is_capture_;
+    bool is_en_passant_;
 
     Move();
 
     Move(std::string move_notation);
 
-    void set_castling(bool castling);
 
-    void set_capture(bool capture);
 };

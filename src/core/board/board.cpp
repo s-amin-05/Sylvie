@@ -27,15 +27,15 @@ Board::Board(string position_fen):
 
 void Board::setup_using_fen() {
 
-    vector<string> fen_parts = split(board_fen_, ' ');
+    vector<string> fen_parts = Utils::split(board_fen_, ' ');
 
     // fenParts[0] = piece_placement
-    vector<string> piece_placement = split(fen_parts[0], '/');
+    vector<string> piece_placement = Utils::split(fen_parts[0], '/');
 
     for (int i = 0; i < 8; i++) {
         int j=0;
         for (char c : piece_placement[i]) {
-            if (is_digit(c)) {
+            if (Utils::is_digit(c)) {
                 j += c - '0';
             }
             else {
@@ -84,20 +84,58 @@ void Board::setup_using_fen() {
 }
 
 void Board::make_move(Move move) {
-    // assuming the move is correct
-    // this code can also add pieces on the board
+    // assuming the generated/uci-given move is correct
 
     move_stack_.push(move);
     Piece moving_piece = board_[move.starting_square_.square_];
-    board_[move.starting_square_.square_] = Piece();
-    board_[move.target_square_.square_] = moving_piece;
     turn_ = !turn_;
     ply_count_++;
     halfmove_count_++;
     if (turn_ == chess::color::WHITE) {
         fullmove_number_++;
     }
-    // can add move validation later
+
+    board_[move.starting_square_.square_] = Piece();
+    board_[move.target_square_.square_] = moving_piece;
+
+    // special cases for captures, enpassants & castling
+
+    // check if move is capturing move
+    // note that is_capture_ will be set in utils by user
+    // and in movgen by engine
+    if (move.is_en_passant_) {
+        if (moving_piece.piece_color_ == chess::color::WHITE) {
+            board_[move.target_square_.square_ - 8] = Piece();
+        }else {
+            board_[move.target_square_.square_ + 8] = Piece();
+        }
+    }
+
+    if (move.is_castling_) {
+        if (move.target_square_.square_ == chess::square::G1) {
+            board_[chess::square::F1] = Piece('R');
+            board_[chess::square::H1] = Piece();
+            // castling_rights_ &= ;
+        }
+        switch (move.target_square_.square_) {
+            case chess::square::G1:
+                board_[chess::square::F1] = Piece('R');
+                board_[chess::square::H1] = Piece();
+                break;
+            case chess::square::C1:
+                board_[chess::square::D1] = Piece('R');
+                board_[chess::square::A1] = Piece();
+                break;
+            case chess::square::G8:
+                board_[chess::square::F8] = Piece('R');
+                board_[chess::square::H8] = Piece();
+                break;
+            case chess::square::C8:
+                board_[chess::square::D8] = Piece('R');
+                board_[chess::square::A8] = Piece();
+                break;
+        }
+    }
 }
 
 void Board::reset_board() {
