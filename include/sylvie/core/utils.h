@@ -12,7 +12,9 @@ namespace Utils {
 }
 
 namespace MoveUtils {
-    Move move_from_string(std::string move_string, Board board);
+    Move move_from_string(std::string move_string, Board &board);
+
+    bool is_double_pawn_push(Move &move, Board &board);
 }
 
 // To be used later in the projet

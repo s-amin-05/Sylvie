@@ -1,5 +1,6 @@
-#include<utils.h>
+#include <iostream>
 #include <sstream>
+#include <utils.h>
 
 namespace Utils {
     std::vector<std::string> split(const std::string &s, char delim) {
@@ -20,13 +21,13 @@ namespace Utils {
 
 namespace MoveUtils {
     // we will only change the state of Move and not the Board
-    Move move_from_string(std::string move_string, Board board) {
+    Move move_from_string(std::string move_string, Board &board) {
         // This line sets
         // starting & target square and promotion piece if any
         Move move = Move(move_string);
 
-        Square starting_square = move.starting_square_;
-        Square target_square = move.target_square_;
+        Square starting_square = Square(move.starting_square_.square_);
+        Square target_square = Square(move.target_square_.square_);
         Piece moving_piece = board.board_[starting_square.square_];
         Piece target_piece = board.board_[target_square.square_];
 
@@ -68,4 +69,20 @@ namespace MoveUtils {
 
         return move;
     }
+
+    bool is_double_pawn_push(Move &move, Board &board) {
+        u8 moving_piece_type = board.board_[move.starting_square_.square_].piece_type_;
+        bool moving_piece_color = board.board_[move.starting_square_.square_].piece_color_;
+
+        Piece moving_piece = Piece(moving_piece_type, moving_piece_color);
+
+        if (moving_piece.piece_type_ != chess::piece::PAWN) {
+            return false;
+        }
+        if (abs(move.target_square_.rank_ - move.starting_square_.rank_) == 2) {
+            return true;
+        }
+        return false;
+    }
+
 }

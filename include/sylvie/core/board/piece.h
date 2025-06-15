@@ -11,6 +11,8 @@ public:
 
     Piece();
 
+    Piece(u8 piece_type, bool piece_color);
+
     Piece(char piece_notation);
 
     char get_piece_notation() const;

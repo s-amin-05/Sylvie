@@ -80,7 +80,7 @@ void Board::setup_using_fen() {
 
     // fenParts[5] = fullmove_number
     fullmove_number_ = stoi(fen_parts[5]);
-    ply_count_ = fullmove_number_ * 2 + (turn_ == chess::color::BLACK ? 1 : 0);
+    ply_count_ = (fullmove_number_ - 1) * 2 + (turn_ == chess::color::BLACK ? 1 : 0);
 }
 
 void Board::make_move(Move move) {
@@ -94,22 +94,35 @@ void Board::make_move(Move move) {
     if (turn_ == chess::color::WHITE) {
         fullmove_number_++;
     }
+    enpassant_target_ = chess::square::EMPTY;
 
-    board_[move.starting_square_.square_] = Piece();
-    board_[move.target_square_.square_] = moving_piece;
 
-    // special cases for captures, enpassants & castling
 
-    // check if move is capturing move
-    // note that is_capture_ will be set in utils by user
-    // and in movgen by engine
-    if (move.is_en_passant_) {
-        if (moving_piece.piece_color_ == chess::color::WHITE) {
-            board_[move.target_square_.square_ - 8] = Piece();
-        }else {
-            board_[move.target_square_.square_ + 8] = Piece();
+    // pawn moves
+    if (moving_piece.piece_type_ == chess::piece::PAWN) {
+        if (move.is_en_passant_) {
+            // remove the captured pawn
+            if (moving_piece.piece_color_ == chess::color::WHITE) {
+                board_[move.target_square_.square_ - 8] = Piece();
+            }else {
+                board_[move.target_square_.square_ + 8] = Piece();
+            }
+
+        }else if (MoveUtils::is_double_pawn_push(move, *this)){
+            if (moving_piece.piece_color_ == chess::color::WHITE) {
+                enpassant_target_ = Square(move.target_square_.square_ - 8);
+            }else {
+                enpassant_target_ = Square(move.target_square_.square_ + 8);
+            }
         }
     }
+
+
+
+    // special cases for captures, enpassants & castling
+    // note that is_capture_ will be set in utils by user
+    // and in movgen by engine
+
 
     if (move.is_castling_) {
         if (move.target_square_.square_ == chess::square::G1) {
@@ -136,12 +149,19 @@ void Board::make_move(Move move) {
                 break;
         }
     }
+
+    // make the move on the board finally
+    board_[move.starting_square_.square_] = Piece();
+    board_[move.target_square_.square_] = moving_piece;
 }
 
+void Board::unmake_move() {
+
+}
+
+
 void Board::reset_board() {
-    for (int i = 0; i < 64; i++) {
-        board_[i] = Piece();
-    }
+    setup_using_fen();
 }
 
 void Board::print_board() {

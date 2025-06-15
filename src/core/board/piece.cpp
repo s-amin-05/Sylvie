@@ -13,7 +13,10 @@ char Piece::get_piece_notation() const{
 
 Piece::Piece() : piece_type_(0U), piece_color_(0U) {}
 
-
+Piece::Piece(u8 piece_type, bool piece_color) {
+    piece_type_ = piece_type;
+    piece_color_ = piece_color;
+}
 
 Piece::Piece(char piece_notation) {
 
