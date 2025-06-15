@@ -132,32 +132,47 @@ void Board::make_move(Move move) {
         enpassant_target_ = Square(chess::square::EMPTY);
     }
 
+    // king moves
+    if (moving_piece.piece_type_ == chess::piece::KING) {
+        // castling rights
+        // if the king moves, castling rights will be lost for him
+        castling_rights_ &= moving_piece.piece_color_ == chess::color::WHITE ? ~12U : ~3U;
 
-    if (move.is_castling_) {
-        if (move.target_square_.square_ == chess::square::G1) {
-            board_[chess::square::F1] = Piece('R');
-            board_[chess::square::H1] = Piece();
-            // castling_rights_ &= ;
+        if (move.is_castling_) {
+            switch (move.target_square_.square_) {
+                case chess::square::G1:
+                    board_[chess::square::F1] = Piece('R');
+                    board_[chess::square::H1] = Piece();
+                    break;
+                case chess::square::C1:
+                    board_[chess::square::D1] = Piece('R');
+                    board_[chess::square::A1] = Piece();
+                    break;
+                case chess::square::G8:
+                    board_[chess::square::F8] = Piece('R');
+                    board_[chess::square::H8] = Piece();
+                    break;
+                case chess::square::C8:
+                    board_[chess::square::D8] = Piece('R');
+                    board_[chess::square::A8] = Piece();
+                    break;
+            }
         }
-        switch (move.target_square_.square_) {
-            case chess::square::G1:
-                board_[chess::square::F1] = Piece('R');
-                board_[chess::square::H1] = Piece();
-                break;
-            case chess::square::C1:
-                board_[chess::square::D1] = Piece('R');
-                board_[chess::square::A1] = Piece();
-                break;
-            case chess::square::G8:
-                board_[chess::square::F8] = Piece('R');
-                board_[chess::square::H8] = Piece();
-                break;
-            case chess::square::C8:
-                board_[chess::square::D8] = Piece('R');
-                board_[chess::square::A8] = Piece();
-                break;
+    }else if (moving_piece.piece_type_ == chess::piece::ROOK) {
+
+        if (move.starting_square_.square_ == chess::square::A1 && moving_piece.piece_color_ == chess::color::WHITE) {
+            castling_rights_ &= ~8U;
+        }else if (move.starting_square_.square_ == chess::square::H1 && moving_piece.piece_color_ == chess::color::WHITE) {
+            castling_rights_ &= ~4U;
+        }else if (move.starting_square_.square_ == chess::square::A8 && moving_piece.piece_color_ == chess::color::BLACK) {
+            castling_rights_ &= ~2U;
+        }else if (move.starting_square_.square_ == chess::square::H8 && moving_piece.piece_color_ == chess::color::BLACK) {
+            castling_rights_ &= ~1U;
         }
     }
+
+
+
 
     // make the move on the board finally
     move_stack_.push(move);
