@@ -86,7 +86,7 @@ void Board::setup_using_fen() {
 void Board::make_move(Move move) {
     // assuming the generated/uci-given move is correct
 
-    move_stack_.push(move);
+
     Piece moving_piece = board_[move.starting_square_.square_];
     turn_ = !turn_;
     ply_count_++;
@@ -94,9 +94,14 @@ void Board::make_move(Move move) {
     if (turn_ == chess::color::WHITE) {
         fullmove_number_++;
     }
-    enpassant_target_ = chess::square::EMPTY;
 
 
+    // set move flags for special cases
+    MoveUtils::set_move_flags(move, *this);
+
+    // special cases for captures, enpassants & castling
+    // note that is_capture_, etc will be set in utils by user
+    // and in movgen by engine
 
     // pawn moves
     if (moving_piece.piece_type_ == chess::piece::PAWN) {
@@ -108,20 +113,24 @@ void Board::make_move(Move move) {
                 board_[move.target_square_.square_ + 8] = Piece();
             }
 
+            // reset enpassant target after enpassant
+            enpassant_target_ = Square(chess::square::EMPTY);
+
         }else if (MoveUtils::is_double_pawn_push(move, *this)){
+
             if (moving_piece.piece_color_ == chess::color::WHITE) {
                 enpassant_target_ = Square(move.target_square_.square_ - 8);
             }else {
                 enpassant_target_ = Square(move.target_square_.square_ + 8);
             }
+        }else {
+            // reset enpassant target for single pawn push
+            enpassant_target_ = Square(chess::square::EMPTY);
         }
+    }else {
+        // reset enpassant target for non pawn moves
+        enpassant_target_ = Square(chess::square::EMPTY);
     }
-
-
-
-    // special cases for captures, enpassants & castling
-    // note that is_capture_ will be set in utils by user
-    // and in movgen by engine
 
 
     if (move.is_castling_) {
@@ -151,6 +160,7 @@ void Board::make_move(Move move) {
     }
 
     // make the move on the board finally
+    move_stack_.push(move);
     board_[move.starting_square_.square_] = Piece();
     board_[move.target_square_.square_] = moving_piece;
 }
