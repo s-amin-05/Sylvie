@@ -82,17 +82,19 @@ namespace MoveUtils {
         Piece moving_piece = Piece(moving_piece_type, moving_piece_color);
         Piece target_piece = Piece(target_piece_type, target_piece_color);
 
+
+
+        // check for captures
+        if (target_piece.piece_type_ != chess::piece::EMPTY && target_piece.piece_color_ != moving_piece.piece_color_) {
+            move.is_capture_ = true;
+        }
+
         // check for enpassant
         if (moving_piece.piece_type_ == chess::piece::PAWN) {
             if (target_square.square_ == board.enpassant_target_.square_) {
                 move.is_en_passant_ = true;
                 move.is_capture_ = true;
             }
-        }
-
-        // check for captures
-        if (target_piece.piece_type_ != chess::piece::EMPTY && target_piece.piece_color_ != moving_piece.piece_color_) {
-            move.is_capture_ = true;
         }
 
         // check for castling

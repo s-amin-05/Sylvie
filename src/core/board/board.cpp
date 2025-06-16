@@ -96,10 +96,10 @@ void Board::make_move(Move move) {
     }
 
 
-    // set move flags for special cases
+    // SET Move flags for special cases
     MoveUtils::set_move_flags(move, *this);
 
-    // special cases for captures, enpassants & castling
+    // special cases for promotion, enpassants & castling
     // note that is_capture_, etc will be set in utils by user
     // and in movgen by engine
 
@@ -123,7 +123,12 @@ void Board::make_move(Move move) {
             }else {
                 enpassant_target_ = Square(move.target_square_.square_ + 8);
             }
-        }else {
+        }
+        // promotion white
+        else if (moving_piece.piece_color_ == chess::color::WHITE && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
+            moving_piece.piece_type_ = move.promotion_piece_.piece_type_;
+        }
+        else {
             // reset enpassant target for single pawn push
             enpassant_target_ = Square(chess::square::EMPTY);
         }
@@ -171,7 +176,7 @@ void Board::make_move(Move move) {
         }
     }
 
-
+    // update castling rights if rooks get captured
 
 
     // make the move on the board finally
