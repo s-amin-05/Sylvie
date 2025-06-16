@@ -177,7 +177,15 @@ void Board::make_move(Move move) {
     }
 
     // update castling rights if rooks get captured
-    // if (captured_piece.piece_type_ == chess::piece::ROOK && ) {}
+    if (captured_piece.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::A1) {
+        castling_rights_ &= ~8U;
+    }else if (captured_piece.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::H1) {
+        castling_rights_ &= ~4U;
+    }else if (captured_piece.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::A8) {
+        castling_rights_ &= ~2U;
+    }else if (captured_piece.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::H8) {
+        castling_rights_ &= ~1U;
+    }
 
     // make the move on the board finally
     move_stack_.push(move);
