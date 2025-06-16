@@ -86,8 +86,6 @@ void Board::setup_using_fen() {
 void Board::make_move(Move move) {
     // assuming the generated/uci-given move is correct
 
-
-    Piece moving_piece = board_[move.starting_square_.square_];
     turn_ = !turn_;
     ply_count_++;
     halfmove_count_++;
@@ -99,6 +97,15 @@ void Board::make_move(Move move) {
     // SET Move flags for special cases
     MoveUtils::set_move_flags(move, *this);
 
+    // note: Board::enpassant_target_ is kept empty ONLY after setting move flags
+    enpassant_target_ = Square(chess::square::EMPTY);
+    Square starting_square = Square(move.starting_square_.square_);
+    Square target_square = Square(move.target_square_.square_);
+    Piece moving_piece = board_[starting_square.square_];
+    Piece captured_piece;
+    if (!move.is_capture_) captured_piece = Piece();
+    else captured_piece = Piece(board_[target_square.square_]);
+
     // special cases for promotion, enpassants & castling
     // note that is_capture_, etc will be set in utils by user
     // and in movgen by engine
@@ -108,33 +115,26 @@ void Board::make_move(Move move) {
         if (move.is_en_passant_) {
             // remove the captured pawn
             if (moving_piece.piece_color_ == chess::color::WHITE) {
-                board_[move.target_square_.square_ - 8] = Piece();
+                captured_piece = Piece(board_[target_square.square_ - 8]);
+                board_[target_square.square_ - 8] = Piece();
             }else {
-                board_[move.target_square_.square_ + 8] = Piece();
+                captured_piece = Piece(board_[target_square.square_ + 8]);
+                board_[target_square.square_ + 8] = Piece();
             }
-
-            // reset enpassant target after enpassant
-            enpassant_target_ = Square(chess::square::EMPTY);
 
         }else if (MoveUtils::is_double_pawn_push(move, *this)){
 
             if (moving_piece.piece_color_ == chess::color::WHITE) {
-                enpassant_target_ = Square(move.target_square_.square_ - 8);
+                enpassant_target_ = Square(target_square.square_ - 8);
             }else {
-                enpassant_target_ = Square(move.target_square_.square_ + 8);
+                enpassant_target_ = Square(target_square.square_ + 8);
             }
         }
         // promotion white
         else if (moving_piece.piece_color_ == chess::color::WHITE && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
             moving_piece.piece_type_ = move.promotion_piece_.piece_type_;
         }
-        else {
-            // reset enpassant target for single pawn push
-            enpassant_target_ = Square(chess::square::EMPTY);
-        }
-    }else {
-        // reset enpassant target for non pawn moves
-        enpassant_target_ = Square(chess::square::EMPTY);
+
     }
 
     // king moves
@@ -144,7 +144,7 @@ void Board::make_move(Move move) {
         castling_rights_ &= moving_piece.piece_color_ == chess::color::WHITE ? ~12U : ~3U;
 
         if (move.is_castling_) {
-            switch (move.target_square_.square_) {
+            switch (target_square.square_) {
                 case chess::square::G1:
                     board_[chess::square::F1] = Piece('R');
                     board_[chess::square::H1] = Piece();
@@ -165,24 +165,24 @@ void Board::make_move(Move move) {
         }
     }else if (moving_piece.piece_type_ == chess::piece::ROOK) {
 
-        if (move.starting_square_.square_ == chess::square::A1 && moving_piece.piece_color_ == chess::color::WHITE) {
+        if (starting_square.square_ == chess::square::A1 && moving_piece.piece_color_ == chess::color::WHITE) {
             castling_rights_ &= ~8U;
-        }else if (move.starting_square_.square_ == chess::square::H1 && moving_piece.piece_color_ == chess::color::WHITE) {
+        }else if (starting_square.square_ == chess::square::H1 && moving_piece.piece_color_ == chess::color::WHITE) {
             castling_rights_ &= ~4U;
-        }else if (move.starting_square_.square_ == chess::square::A8 && moving_piece.piece_color_ == chess::color::BLACK) {
+        }else if (starting_square.square_ == chess::square::A8 && moving_piece.piece_color_ == chess::color::BLACK) {
             castling_rights_ &= ~2U;
-        }else if (move.starting_square_.square_ == chess::square::H8 && moving_piece.piece_color_ == chess::color::BLACK) {
+        }else if (starting_square.square_ == chess::square::H8 && moving_piece.piece_color_ == chess::color::BLACK) {
             castling_rights_ &= ~1U;
         }
     }
 
     // update castling rights if rooks get captured
-
+    // if (captured_piece.piece_type_ == chess::piece::ROOK && ) {}
 
     // make the move on the board finally
     move_stack_.push(move);
-    board_[move.starting_square_.square_] = Piece();
-    board_[move.target_square_.square_] = moving_piece;
+    board_[starting_square.square_] = Piece();
+    board_[target_square.square_] = moving_piece;
 }
 
 void Board::unmake_move() {
