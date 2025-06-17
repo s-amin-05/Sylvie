@@ -1,13 +1,11 @@
 #include <board.h>
-#include <bits/stdc++.h>
-#include <cctype>
-#include <utils.h>
+#include <string>
 #include <move.h>
-using namespace std;
+
 
 int main(){
 
-    string fen = "rnbqkbnr/pP4pp/8/4pp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 1";
+    std::string fen = "rnbqkbnr/pP4pp/8/4pp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 1";
     Board board = Board();
 
     Move move1 = Move("e2e4");

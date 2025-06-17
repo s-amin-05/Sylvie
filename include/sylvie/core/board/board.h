@@ -35,7 +35,7 @@ public:
     int repetition_count_;
     int halfmove_count_;
 
-    Board(string position_fen);
+    explicit Board(const string &position_fen);
 
     Board();
 

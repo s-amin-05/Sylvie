@@ -1,11 +1,10 @@
 #include <board.h>
 #include <bits/stdc++.h>
 #include <utils.h>
-using namespace std;
 
 Board::Board(): Board(chess::starting_pos_fen) {}
 
-Board::Board(string position_fen):
+Board::Board(const string &position_fen):
     turn_(chess::color::WHITE),
     castling_rights_(0xF),
     enpassant_target_(chess::square::EMPTY),
