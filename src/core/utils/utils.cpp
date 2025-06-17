@@ -1,6 +1,6 @@
+#include <../../../include/sylvie/core/utils/utils.h>
 #include <iostream>
 #include <sstream>
-#include <utils.h>
 
 namespace Utils {
     std::vector<std::string> split(const std::string &s, char delim) {

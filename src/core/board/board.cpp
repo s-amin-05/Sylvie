@@ -1,6 +1,6 @@
-#include <board.h>
+#include <../../../include/sylvie/core/utils/utils.h>
 #include <bits/stdc++.h>
-#include <utils.h>
+#include <board.h>
 
 Board::Board(): Board(chess::starting_pos_fen) {}
 
