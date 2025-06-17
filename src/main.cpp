@@ -25,6 +25,8 @@ int main(){
     board.make_move(move5);
     board.make_move(move6);
     board.make_move(move7);
+    board.unmake_move();
+    board.make_move(move7);
 
     board.print_board();
 

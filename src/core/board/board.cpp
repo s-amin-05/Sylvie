@@ -86,6 +86,7 @@ void Board::setup_using_fen() {
 void Board::make_move(Move move) {
     // assuming the generated/uci-given move is correct
 
+    // incremental updates
     turn_ = !turn_;
     ply_count_++;
     halfmove_count_++;
@@ -101,10 +102,18 @@ void Board::make_move(Move move) {
     enpassant_target_ = Square(chess::square::EMPTY);
     Square starting_square = Square(move.starting_square_.square_);
     Square target_square = Square(move.target_square_.square_);
-    Piece moving_piece = board_[starting_square.square_];
+    Piece moving_piece = Piece(board_[starting_square.square_]);
     Piece captured_piece;
     if (!move.is_capture_) captured_piece = Piece();
     else captured_piece = Piece(board_[target_square.square_]);
+
+    // set irreversible state
+    IrreversibleState state;
+    state.captured_piece = Piece(captured_piece.piece_type_, moving_piece.piece_color_);
+    state.castling_rights = castling_rights_;
+    state.enpassant_target = Square(enpassant_target_.square_);
+    state.halfmove_count = halfmove_count_;
+    state.repetition_count = repetition_count_;
 
     // special cases for promotion, enpassants & castling
     // note that is_capture_, etc will be set in utils by user
@@ -187,14 +196,75 @@ void Board::make_move(Move move) {
         castling_rights_ &= ~1U;
     }
 
+
     // make the move on the board finally
+    irreversible_state_stack_.push(state);
     move_stack_.push(move);
     board_[starting_square.square_] = Piece();
     board_[target_square.square_] = moving_piece;
 }
 
 void Board::unmake_move() {
+    // incremental updates
+    turn_ = !turn_;
+    ply_count_--;
+    halfmove_count_--;
+    if (turn_ == chess::color::BLACK) {
+        fullmove_number_--;
+    }
 
+    // irreversible state
+    IrreversibleState state = irreversible_state_stack_.top();
+    irreversible_state_stack_.pop();
+    Move move = move_stack_.top();
+    move_stack_.pop();
+
+    Square starting_square = Square(move.starting_square_.square_);
+    Square target_square = Square(move.target_square_.square_);
+    Piece moving_piece = Piece(board_[target_square.square_]);
+    Piece captured_piece = state.captured_piece;
+
+    // restore irreversible state
+    castling_rights_ = state.castling_rights;
+    enpassant_target_ = Square(state.enpassant_target.square_);
+    halfmove_count_ = state.halfmove_count;
+    repetition_count_ = state.repetition_count;
+
+
+    // handle enpassants & captures
+    if (move.is_capture_ && move.is_en_passant_) {
+        if (moving_piece.piece_color_ == chess::color::WHITE) {
+            board_[target_square.square_ - 8] = captured_piece;
+        }else {
+            board_[target_square.square_ + 8] = captured_piece;
+        }
+    }else if (move.is_capture_) {
+        board_[target_square.square_] = captured_piece;
+    }else {
+        // for regular moves just empty the target square;
+        board_[target_square.square_] = Piece();
+    }
+
+    // handle castling
+    if (move.is_castling_) {
+        if (move.target_square_.square_ == chess::square::C1) {
+            board_[chess::square::D1] = Piece();
+            board_[chess::square::A1] = Piece('R');
+        }else if (move.target_square_.square_ == chess::square::G1) {
+            board_[chess::square::F1] = Piece();
+            board_[chess::square::H1] = Piece('R');
+        }else if (move.target_square_.square_ == chess::square::C8) {
+            board_[chess::square::D8] = Piece();
+            board_[chess::square::A8] = Piece('r');
+        }else if (move.target_square_.square_ == chess::square::G8) {
+            board_[chess::square::F8] = Piece();
+            board_[chess::square::H8] = Piece('r');
+        }
+    }
+
+
+    // put moving piece back to its original place
+    board_[starting_square.square_] = moving_piece;
 }
 
 
