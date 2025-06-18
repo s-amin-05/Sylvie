@@ -1,10 +1,12 @@
 #pragma once
-#include<piece.h>
-#include<square.h>
-#include<move.h>
-#include<stack>
-#include<constants.h>
+#include <constants.h>
+#include <move.h>
+#include <piece.h>
+#include <square.h>
+#include <stack>
+#include <utils/logger.h>
 using namespace std;
+
 
 typedef struct IrreversibleState{
     u8 castling_rights;
@@ -34,6 +36,7 @@ public:
     int fullmove_number_;
     int repetition_count_;
     int halfmove_count_;
+    Logger logger_;
 
     explicit Board(const string &position_fen);
 

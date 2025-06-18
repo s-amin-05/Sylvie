@@ -1,6 +1,7 @@
-#include <../../../include/sylvie/core/utils/utils.h>
+#include <utils/utils.h>
 #include <bits/stdc++.h>
 #include <board.h>
+#include <logger.h>
 
 Board::Board(): Board(chess::starting_pos_fen) {}
 
@@ -11,7 +12,8 @@ Board::Board(const string &position_fen):
     ply_count_(0),
     fullmove_number_(1),
     repetition_count_(0),
-    halfmove_count_(0)
+    halfmove_count_(0),
+    logger_("board.log")
 {
     board_fen_ = position_fen;
 
@@ -22,6 +24,8 @@ Board::Board(const string &position_fen):
 
     setup_using_fen();
 
+
+    logger_.log_board_to_file(*this);
 }
 
 void Board::setup_using_fen() {
@@ -94,7 +98,7 @@ void Board::make_move(Move move) {
     }
 
 
-    // SET Move flags for special cases
+    // SET Move flags for special cases based on board state
     MoveUtils::set_move_flags(move, *this);
 
     // note: Board::enpassant_target_ is kept empty ONLY after setting move flags
@@ -201,6 +205,9 @@ void Board::make_move(Move move) {
     move_stack_.push(move);
     board_[starting_square.square_] = Piece();
     board_[target_square.square_] = moving_piece;
+
+    // log board state
+
 }
 
 void Board::unmake_move() {

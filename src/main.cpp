@@ -1,6 +1,8 @@
 #include <board.h>
-#include <string>
+#include <fstream>
 #include <move.h>
+#include <string>
+#include <logger.h>
 
 
 int main(){
@@ -27,6 +29,12 @@ int main(){
     board.make_move(move7);
 
     board.print_board();
+
+    // std::fstream fs("board.log", ios::app | ios::in);
+    // fs << "yayyy" << endl;
+    // fs.close();
+
+
 
 
 
