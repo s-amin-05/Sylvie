@@ -30,7 +30,14 @@ Move::Move(std::string move_notation): Move() {
             promotion_piece_ = Piece(move_notation[4]);
         }
     }
+}
 
+std::string Move::get_move_notation() const {
+    std::string move_notation = starting_square_.get_square_notation() + target_square_.get_square_notation();
+    if (promotion_piece_.piece_type_ != chess::piece::EMPTY) {
+        move_notation += std::tolower(promotion_piece_.get_piece_notation());
+    }
+    return move_notation;
 }
 
 

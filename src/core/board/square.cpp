@@ -19,3 +19,10 @@ Square::Square(string square_notation) {
 }
 
 Square::Square() : square_(0), file_(0), rank_(0) {}
+
+std::string Square::get_square_notation() const {
+    if (square_ == chess::square::EMPTY) {
+        return "-";
+    }
+    return std::string(1, 'a' + file_) + std::to_string(rank_ + 1);
+}

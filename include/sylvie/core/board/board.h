@@ -36,9 +36,10 @@ public:
     int fullmove_number_;
     int repetition_count_;
     int halfmove_count_;
+    Piece captured_piece_;
     Logger logger_;
 
-    explicit Board(const string &position_fen);
+    Board(const string &position_fen);
 
     Board();
 

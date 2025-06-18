@@ -109,3 +109,7 @@ namespace chess::color{
     const bool WHITE = true;
     const bool BLACK = false;
 };
+
+namespace chess::debug {
+    const std::string line_seperator = "--------********--------\n";
+}

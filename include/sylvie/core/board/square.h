@@ -10,9 +10,11 @@ public:
     u8 file_;
     u8 rank_;
 
+    Square();
+
     Square(u8 square);
 
     Square(std::string square_notation);
 
-    Square();
+    std::string get_square_notation() const;
 };

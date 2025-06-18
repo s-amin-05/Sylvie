@@ -1,16 +1,6 @@
 #include <cctype>
 #include <piece.h>
 
-char Piece::get_piece_notation() const{
-    if (piece_type_ == chess::piece::EMPTY) return '.';
-
-    char symbols[] = {'.', 'K', 'Q', 'R', 'B', 'N', 'P'};
-    char symbol = symbols[piece_type_];
-
-    return piece_color_ ? symbol : tolower(symbol);
-
-}
-
 Piece::Piece() : piece_type_(0U), piece_color_(0U) {}
 
 Piece::Piece(u8 piece_type, bool piece_color) {
@@ -45,5 +35,15 @@ Piece::Piece(char piece_notation) {
             piece_type_ = chess::piece::EMPTY;
             break;
     }
+
+}
+
+char Piece::get_piece_notation() const{
+    if (piece_type_ == chess::piece::EMPTY) return '.';
+
+    char symbols[] = {'.', 'K', 'Q', 'R', 'B', 'N', 'P'};
+    char symbol = symbols[piece_type_];
+
+    return piece_color_ ? symbol : tolower(symbol);
 
 }

@@ -24,5 +24,5 @@ public:
 
     Move(std::string move_notation);
 
-
+    std::string get_move_notation() const;
 };

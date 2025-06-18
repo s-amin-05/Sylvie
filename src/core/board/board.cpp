@@ -13,6 +13,7 @@ Board::Board(const string &position_fen):
     fullmove_number_(1),
     repetition_count_(0),
     halfmove_count_(0),
+    captured_piece_(chess::piece::EMPTY),
     logger_("board.log")
 {
     board_fen_ = position_fen;
@@ -24,7 +25,7 @@ Board::Board(const string &position_fen):
 
     setup_using_fen();
 
-
+    logger_.log_to_file("[BOARD INITIALIZED]");
     logger_.log_board_to_file(*this);
 }
 
@@ -92,7 +93,6 @@ void Board::make_move(Move move) {
     // incremental updates
     turn_ = !turn_;
     ply_count_++;
-    halfmove_count_++;
     if (turn_ == chess::color::WHITE) {
         fullmove_number_++;
     }
@@ -106,13 +106,12 @@ void Board::make_move(Move move) {
     Square starting_square = Square(move.starting_square_.square_);
     Square target_square = Square(move.target_square_.square_);
     Piece moving_piece = Piece(board_[starting_square.square_]);
-    Piece captured_piece;
-    if (!move.is_capture_) captured_piece = Piece();
-    else captured_piece = Piece(board_[target_square.square_]);
+
+    if (move.is_capture_) captured_piece_ = Piece(board_[target_square.square_]);
 
     // set irreversible state
     IrreversibleState state;
-    state.captured_piece = Piece(captured_piece.piece_type_, moving_piece.piece_color_);
+    state.captured_piece = Piece(captured_piece_.piece_type_, captured_piece_.piece_color_);
     state.castling_rights = castling_rights_;
     state.enpassant_target = Square(enpassant_target_.square_);
     state.halfmove_count = halfmove_count_;
@@ -127,10 +126,10 @@ void Board::make_move(Move move) {
         if (move.is_en_passant_) {
             // remove the captured pawn
             if (moving_piece.piece_color_ == chess::color::WHITE) {
-                captured_piece = Piece(board_[target_square.square_ - 8]);
+                captured_piece_ = Piece(board_[target_square.square_ - 8]);
                 board_[target_square.square_ - 8] = Piece();
             }else {
-                captured_piece = Piece(board_[target_square.square_ + 8]);
+                captured_piece_ = Piece(board_[target_square.square_ + 8]);
                 board_[target_square.square_ + 8] = Piece();
             }
 
@@ -189,13 +188,13 @@ void Board::make_move(Move move) {
     }
 
     // update castling rights if rooks get captured
-    if (captured_piece.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::A1) {
+    if (captured_piece_.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::A1) {
         castling_rights_ &= ~8U;
-    }else if (captured_piece.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::H1) {
+    }else if (captured_piece_.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::H1) {
         castling_rights_ &= ~4U;
-    }else if (captured_piece.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::A8) {
+    }else if (captured_piece_.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::A8) {
         castling_rights_ &= ~2U;
-    }else if (captured_piece.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::H8) {
+    }else if (captured_piece_.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::H8) {
         castling_rights_ &= ~1U;
     }
 
@@ -207,6 +206,8 @@ void Board::make_move(Move move) {
     board_[target_square.square_] = moving_piece;
 
     // log board state
+    logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");
+    logger_.log_board_to_file(*this);
 
 }
 
@@ -214,7 +215,6 @@ void Board::unmake_move() {
     // incremental updates
     turn_ = !turn_;
     ply_count_--;
-    halfmove_count_--;
     if (turn_ == chess::color::BLACK) {
         fullmove_number_--;
     }
@@ -228,7 +228,7 @@ void Board::unmake_move() {
     Square starting_square = Square(move.starting_square_.square_);
     Square target_square = Square(move.target_square_.square_);
     Piece moving_piece = Piece(board_[target_square.square_]);
-    Piece captured_piece = state.captured_piece;
+    captured_piece_ = state.captured_piece;
 
     // restore irreversible state
     castling_rights_ = state.castling_rights;
@@ -240,12 +240,12 @@ void Board::unmake_move() {
     // handle enpassants & captures
     if (move.is_capture_ && move.is_en_passant_) {
         if (moving_piece.piece_color_ == chess::color::WHITE) {
-            board_[target_square.square_ - 8] = captured_piece;
+            board_[target_square.square_ - 8] = captured_piece_;
         }else {
-            board_[target_square.square_ + 8] = captured_piece;
+            board_[target_square.square_ + 8] = captured_piece_;
         }
     }else if (move.is_capture_) {
-        board_[target_square.square_] = captured_piece;
+        board_[target_square.square_] = captured_piece_;
     }else {
         // for regular moves just empty the target square;
         board_[target_square.square_] = Piece();

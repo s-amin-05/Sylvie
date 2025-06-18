@@ -1,9 +1,14 @@
 #pragma once
 #include <fstream>
+#include <move.h>
+#include <stack>
 #include <string>
+
+
 
 // forward declaration of board
 class Board;
+struct IrreversibleState;
 
 class Logger {
     std::fstream file_;
@@ -16,6 +21,17 @@ public:
     void log_to_file(std::string msg);
 
     void log_board_to_file(Board &board);
+
+    // helper functions
+    void log_board_state_to_file(Board &board);
+
+    void log_irreversible_state_to_file(Board &board);
+
+    void log_pieces_to_file(Piece board[]);
+
+    void log_move_stack_to_file(std::stack<Move> &move_stack);
+
+    void log_irreversible_state_stack_to_file(std::stack<IrreversibleState> &irreversible_state_stack);
 
     ~Logger();
 };
