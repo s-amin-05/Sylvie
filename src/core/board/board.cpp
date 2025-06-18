@@ -26,7 +26,7 @@ Board::Board(const string &position_fen):
     setup_using_fen();
 
     logger_.log_to_file("[BOARD INITIALIZED]");
-    logger_.log_board_to_file(*this);
+    logger_.log_board_to_file(*this, Move("0000"), false);
 }
 
 void Board::setup_using_fen() {
@@ -207,7 +207,7 @@ void Board::make_move(Move move) {
 
     // log board state
     logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");
-    logger_.log_board_to_file(*this);
+    logger_.log_board_to_file(*this, move, false);
 
 }
 
@@ -271,6 +271,10 @@ void Board::unmake_move() {
 
     // put moving piece back to its original place
     board_[starting_square.square_] = moving_piece;
+
+    // log state after unmake move
+    logger_.log_to_file("[UNMAKE MOVE " + move.get_move_notation() + "]");
+    logger_.log_board_to_file(*this, move, false);
 }
 
 

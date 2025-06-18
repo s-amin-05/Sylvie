@@ -110,6 +110,10 @@ namespace chess::color{
     const bool BLACK = false;
 };
 
+namespace chess::move {
+    const std::string NO_MOVE = "0000";
+}
+
 namespace chess::debug {
     const std::string line_seperator = "--------********--------\n";
 }

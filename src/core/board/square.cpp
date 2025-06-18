@@ -2,11 +2,22 @@
 
 Square::Square(u8 square) {
     square_ = square;
+    if (square == chess::square::EMPTY) {
+        file_ = 8;
+        rank_ = 8;
+        return;
+    }
     file_ = square % 8;
     rank_ = square / 8;
 }
 
 Square::Square(string square_notation) {
+    if (square_notation == "00") {
+        square_ = chess::square::EMPTY;
+        file_ = 8;
+        rank_ = 8;
+        return;
+    }
     if (square_notation.length() == 2) {
         char file = square_notation[0];
         char rank = square_notation[1];

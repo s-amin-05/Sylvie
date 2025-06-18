@@ -28,7 +28,7 @@ Logger::~Logger() {
     close_file();
 }
 
-void Logger::log_board_to_file(Board &board) {
+void Logger::log_board_to_file(Board &board, Move move, bool detailed) {
     if (file_.is_open()) {
 
         // print board with pieces
@@ -43,11 +43,20 @@ void Logger::log_board_to_file(Board &board) {
         // irreversible board state
         log_irreversible_state_to_file(board);
 
-        // move stack (each move in detail)
-        log_move_stack_to_file(board.move_stack_);
+        // log move details if any
+        if (move.get_move_notation() != chess::move::NO_MOVE) {
+            log_to_file("Move Details:-");
+            log_move_to_file(move);
+            log_to_file("\n");
+        }
 
-        // board state (irreversible stack)
-        log_irreversible_state_stack_to_file(board.irreversible_state_stack_);
+        if (detailed) {
+            // move stack (each move in detail)
+            log_move_stack_to_file(board.move_stack_);
+
+            // board state (irreversible stack)
+            log_irreversible_state_stack_to_file(board.irreversible_state_stack_);
+        }
 
         log_to_file(chess::debug::line_seperator);
         
@@ -84,6 +93,15 @@ void Logger::log_irreversible_state_to_file(Board &board) {
     file_ << "Repetition Count: " << board.repetition_count_ << "\n\n";
 }
 
+void Logger::log_move_to_file(Move move) {
+    file_ << "Starting Square: " << move.starting_square_.get_square_notation() << "\n";
+    file_ << "Target Square: " << move.target_square_.get_square_notation() << "\n";
+    file_ << "Promotion Piece: " << move.promotion_piece_.get_piece_notation() << "\n";
+    file_ << "Is Capture: " << (move.is_capture_? "True": "False") << "\n";
+    file_ << "Is En Passant: " << (move.is_en_passant_? "True": "False") << "\n";
+    file_ << "Is Castling: " << (move.is_castling_? "True": "False") << "\n";
+}
+
 void Logger::log_move_stack_to_file(std::stack<Move> &move_stack) {
     file_ << "Move Stack:- \n";
     std::stack<Move> temp_stack;
@@ -105,12 +123,7 @@ void Logger::log_move_stack_to_file(std::stack<Move> &move_stack) {
     while (!temp_stack.empty()) {
         Move move = temp_stack.top();
         file_ << "Move " << i++ << ":\n";
-        file_ << "Starting Square: " << move.starting_square_.get_square_notation() << "\n";
-        file_ << "Target Square: " << move.target_square_.get_square_notation() << "\n";
-        file_ << "Promotion Piece: " << move.promotion_piece_.get_piece_notation() << "\n";
-        file_ << "Is Capture: " << (move.is_capture_? "True": "False") << "\n";
-        file_ << "Is En Passant: " << (move.is_en_passant_? "True": "False") << "\n";
-        file_ << "Is Castling: " << (move.is_castling_? "True": "False") << "\n";
+        log_move_to_file(move);
         move_stack.push(move);
         temp_stack.pop();
     }

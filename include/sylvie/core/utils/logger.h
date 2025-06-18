@@ -20,7 +20,7 @@ public:
 
     void log_to_file(std::string msg);
 
-    void log_board_to_file(Board &board);
+    void log_board_to_file(Board &board, Move move, bool detailed);
 
     // helper functions
     void log_board_state_to_file(Board &board);
@@ -30,6 +30,8 @@ public:
     void log_pieces_to_file(Piece board[]);
 
     void log_move_stack_to_file(std::stack<Move> &move_stack);
+
+    void log_move_to_file(Move move);
 
     void log_irreversible_state_stack_to_file(std::stack<IrreversibleState> &irreversible_state_stack);
 

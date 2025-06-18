@@ -33,6 +33,9 @@ Move::Move(std::string move_notation): Move() {
 }
 
 std::string Move::get_move_notation() const {
+    if (starting_square_.square_ == chess::square::EMPTY && target_square_.square_ == chess::square::EMPTY) {
+        return chess::move::NO_MOVE;
+    }
     std::string move_notation = starting_square_.get_square_notation() + target_square_.get_square_notation();
     if (promotion_piece_.piece_type_ != chess::piece::EMPTY) {
         move_notation += std::tolower(promotion_piece_.get_piece_notation());
