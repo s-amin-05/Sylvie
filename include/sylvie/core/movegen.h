@@ -2,14 +2,35 @@
 #include <board.h>
 #include <vector>
 
-// First 6 bits - starting square
-// Next 6 bits - target square
-// Next 2 bits - castling side
-// Next 1 bit - is the move a capture move
-// Last bit - redundant
-vector<Move> generate_moves(Board board);
+class MoveGenerator {
+    public:
+    MoveGenerator();
 
-vector<Move> generate_legal_moves(Board board);
+    // counterclockwise from North (first 4 - Rooks, next 4 - Bishops)
+    const int _direction_offsets_[8] = {8, -1, -8, 1, 7, -9, -7, 9};
 
-// helper functions
-Move get_move_from_string(string move_string, Board board);
+    // combination of all moves
+    vector<Move> pseudo_legal_moves_;
+    vector<Move> sliding_moves_;
+    vector<Move> pawn_moves_;
+    vector<Move> king_moves_;
+    vector<Move> knight_moves_;
+
+    // legal moves are moves after which our king is not in check
+    vector<Move> legal_moves_;
+
+    // generates all moves on the board
+    void generate_moves(Board &board);
+
+    void generate_sliding_piece_moves(Board &, Square &square);
+
+    void generate_pawn_moves(Board &board);
+
+    void generate_king_moves(Board &board);
+
+    void generate_knight_moves(Board &board);
+
+    void generate_legal_moves(Board &board);
+};
+
+

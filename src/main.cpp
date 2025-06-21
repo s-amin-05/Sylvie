@@ -1,8 +1,11 @@
 #include <board.h>
 #include <fstream>
+#include <iostream>
+#include <logger.h>
 #include <move.h>
 #include <string>
-#include <logger.h>
+
+#include "movegen.h"
 
 
 int main(){
@@ -24,11 +27,17 @@ int main(){
     board.make_move(move4);
     board.make_move(move5);
     board.make_move(move6);
-    board.make_move(move7);
+    // board.make_move(move7);
     // board.unmake_move();
     // board.make_move(move7);
 
-    board.print_board();
+    MoveGenerator generator = MoveGenerator();
+    Square square = Square("c4");
+    generator.generate_sliding_piece_moves(board, square);
+
+    for (auto move : generator.pseudo_legal_moves_) {
+        std::cout << move.get_move_notation() << std::endl;
+    }
 
     // std::fstream fs("board.log", ios::app | ios::in);
     // fs << "yayyy" << endl;

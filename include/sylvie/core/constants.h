@@ -114,6 +114,17 @@ namespace chess::move {
     const std::string NO_MOVE = "0000";
 }
 
+namespace movegen::sliding_directions {
+    const u8 NORTH = 0;
+    const u8 WEST = 1;
+    const u8 SOUTH = 2;
+    const u8 EAST = 3;
+    const u8 NORTH_WEST = 4;
+    const u8 SOUTH_WEST = 5;
+    const u8 SOUTH_EAST = 6;
+    const u8 NORTH_EAST = 7;
+}
+
 namespace chess::debug {
     const std::string line_seperator = "--------********--------\n";
 }

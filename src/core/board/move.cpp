@@ -12,6 +12,14 @@ Move::Move():
     is_en_passant_(false)
 {}
 
+Move::Move(Square starting_square, Square target_square, Piece promotion_piece, bool is_castling, bool is_capture, bool is_en_passant):
+    starting_square_(starting_square),
+    target_square_(target_square),
+    promotion_piece_(promotion_piece),
+    is_castling_(is_castling),
+    is_capture_(is_capture),
+    is_en_passant_(is_en_passant)
+{}
 
 Move::Move(std::string move_notation): Move() {
     if (move_notation.length() < 4 || move_notation.length() > 5) {
