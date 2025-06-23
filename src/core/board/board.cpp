@@ -207,7 +207,7 @@ void Board::make_move(Move move) {
             }
         }
         // promotion white
-        else if (moving_piece.piece_color_ == chess::color::WHITE && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
+        else if (move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
             moving_piece.piece_type_ = move.promotion_piece_.piece_type_;
         }
 
