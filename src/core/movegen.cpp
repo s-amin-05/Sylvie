@@ -10,17 +10,17 @@ void MoveGenerator::generate_sliding_piece_moves(Board &board, Square &square) {
     // if the piece is not of the current player, we can't move
     if (moving_piece.piece_color_ != board.turn_) return;
     // minimum distance to captures or edge
-    vector<int> min_distance_squares(8);
+    std::vector<int> min_distance_squares(8);
 
     // setting min_distance to board edge
     min_distance_squares[movegen::sliding_directions::NORTH] = 7 - square.rank_;
     min_distance_squares[movegen::sliding_directions::WEST] = square.file_;
     min_distance_squares[movegen::sliding_directions::SOUTH] = square.rank_;
     min_distance_squares[movegen::sliding_directions::EAST] = 7 - square.file_;
-    min_distance_squares[movegen::sliding_directions::NORTH_WEST] = min(7-square.rank_, (int)square.file_);
-    min_distance_squares[movegen::sliding_directions::SOUTH_WEST] = min((int)square.rank_, (int)square.file_);
-    min_distance_squares[movegen::sliding_directions::SOUTH_EAST] = min((int)square.rank_, 7-square.file_);
-    min_distance_squares[movegen::sliding_directions::NORTH_EAST] = min(7-square.rank_, 7-square.file_);
+    min_distance_squares[movegen::sliding_directions::NORTH_WEST] = std::min(7-square.rank_, (int)square.file_);
+    min_distance_squares[movegen::sliding_directions::SOUTH_WEST] = std::min((int)square.rank_, (int)square.file_);
+    min_distance_squares[movegen::sliding_directions::SOUTH_EAST] = std::min((int)square.rank_, 7-square.file_);
+    min_distance_squares[movegen::sliding_directions::NORTH_EAST] = std::min(7-square.rank_, 7-square.file_);
 
     int dir_index_start = 0;
     int dir_index_end = 8;

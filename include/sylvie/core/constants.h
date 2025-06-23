@@ -21,6 +21,33 @@ namespace chess::piece{
     const u8 PAWN = 6;
 };
 
+namespace chess::piecelists {
+    const int WHITE_KING = 0;
+    const int WHITE_QUEEN = 1;
+    const int WHITE_ROOK = 2;
+    const int WHITE_BISHOP = 3;
+    const int WHITE_KNIGHT = 4;
+    const int WHITE_PAWN = 5;
+    const int BLACK_KING = 6;
+    const int BLACK_QUEEN = 7;
+    const int BLACK_ROOK = 8;
+    const int BLACK_BISHOP = 9;
+    const int BLACK_KNIGHT = 10;
+    const int BLACK_PAWN = 11;
+}
+
+namespace chess::piecelists::max_count {
+    const int ALL_PIECES = 32;
+    const int KINGS = 1;
+    const int QUEENS = 9;
+    const int ROOKS = 10;
+    const int BISHOPS = 10;
+    const int KNIGHTS = 10;
+    const int PAWNS = 8;
+}
+
+
+
 namespace chess::square {
     const u8 EMPTY = 64;
 
@@ -128,3 +155,4 @@ namespace movegen::sliding_directions {
 namespace chess::debug {
     const std::string line_seperator = "--------********--------\n";
 }
+

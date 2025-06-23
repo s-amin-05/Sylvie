@@ -4,8 +4,9 @@
 #include <piece.h>
 #include <square.h>
 #include <stack>
+#include <vector>
+#include <string>
 #include <utils/logger.h>
-using namespace std;
 
 
 typedef struct IrreversibleState{
@@ -16,10 +17,13 @@ typedef struct IrreversibleState{
     Piece captured_piece;
 }IrreversibleState;
 
+// piece-lists are used for generating bitboards later
+// added count here for efficient removal of pieces
+
 // Board class handles the complete state of the game
 class Board{
 public:
-    string board_fen_;
+    std::string board_fen_;
     bool turn_;
     /*
      xxx1 - king side for black
@@ -28,18 +32,26 @@ public:
      1xxx - queen side for white
      */
     u8 castling_rights_;
-    stack<Move> move_stack_;
-    stack<IrreversibleState> irreversible_state_stack_;
+    std::stack<Move> move_stack_;
+    std::stack<IrreversibleState> irreversible_state_stack_;
     Square enpassant_target_;
     Piece board_[64];
     int ply_count_;
     int fullmove_number_;
     int repetition_count_;
     int halfmove_count_;
+
+    // adding piece-lists because looping over <=32 squares is better than looping over 64
+    // these will be used for generating bitboards later
+    std::vector<std::vector<Square>> piece_lists_;
+    std::vector<int> piece_counts_;
+
+
+    // for moves
     Piece captured_piece_;
     Logger logger_;
 
-    Board(const string &position_fen);
+    Board(const std::string &position_fen);
 
     Board();
 

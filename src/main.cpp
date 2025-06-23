@@ -32,7 +32,7 @@ int main(){
     // board.make_move(move7);
 
     MoveGenerator generator = MoveGenerator();
-    Square square = Square("c4");
+    Square square = Square("d1");
     generator.generate_sliding_piece_moves(board, square);
 
     for (auto move : generator.pseudo_legal_moves_) {

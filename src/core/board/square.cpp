@@ -11,7 +11,7 @@ Square::Square(u8 square) {
     rank_ = square / 8;
 }
 
-Square::Square(string square_notation) {
+Square::Square(std::string square_notation) {
     if (square_notation == "00") {
         square_ = chess::square::EMPTY;
         file_ = 8;

@@ -10,14 +10,14 @@ class MoveGenerator {
     const int _direction_offsets_[8] = {8, -1, -8, 1, 7, -9, -7, 9};
 
     // combination of all moves
-    vector<Move> pseudo_legal_moves_;
-    vector<Move> sliding_moves_;
-    vector<Move> pawn_moves_;
-    vector<Move> king_moves_;
-    vector<Move> knight_moves_;
+    std::vector<Move> pseudo_legal_moves_;
+    std::vector<Move> sliding_moves_;
+    std::vector<Move> pawn_moves_;
+    std::vector<Move> king_moves_;
+    std::vector<Move> knight_moves_;
 
     // legal moves are moves after which our king is not in check
-    vector<Move> legal_moves_;
+    std::vector<Move> legal_moves_;
 
     // generates all moves on the board
     void generate_moves(Board &board);

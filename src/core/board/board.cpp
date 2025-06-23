@@ -5,7 +5,7 @@
 
 Board::Board(): Board(chess::starting_pos_fen) {}
 
-Board::Board(const string &position_fen):
+Board::Board(const std::string &position_fen):
     turn_(chess::color::WHITE),
     castling_rights_(0xF),
     enpassant_target_(chess::square::EMPTY),
@@ -13,6 +13,8 @@ Board::Board(const string &position_fen):
     fullmove_number_(1),
     repetition_count_(0),
     halfmove_count_(0),
+    piece_lists_(12),
+    piece_counts_(12, 0),
     captured_piece_(chess::piece::EMPTY),
     logger_("board.log")
 {
@@ -23,6 +25,38 @@ Board::Board(const string &position_fen):
         board_[i] = Piece();
     }
 
+    // Initialize piece-lists to EMPTY Square()
+    for (int i = 0; i < 12; i++) {
+        switch (i) {
+            case chess::piecelists::WHITE_PAWN:
+            case chess::piecelists::BLACK_PAWN:
+                piece_lists_[i].resize(chess::piecelists::max_count::PAWNS, Square(chess::square::EMPTY));
+                break;
+            case chess::piecelists::WHITE_KNIGHT:
+            case chess::piecelists::BLACK_KNIGHT:
+                piece_lists_[i].resize(chess::piecelists::max_count::KNIGHTS, Square(chess::square::EMPTY));
+                break;
+            case chess::piecelists::WHITE_BISHOP:
+            case chess::piecelists::BLACK_BISHOP:
+                piece_lists_[i].resize(chess::piecelists::max_count::BISHOPS, Square(chess::square::EMPTY));
+                break;
+            case chess::piecelists::WHITE_ROOK:
+            case chess::piecelists::BLACK_ROOK:
+                piece_lists_[i].resize(chess::piecelists::max_count::ROOKS, Square(chess::square::EMPTY));
+                break;
+            case chess::piecelists::WHITE_QUEEN:
+            case chess::piecelists::BLACK_QUEEN:
+                piece_lists_[i].resize(chess::piecelists::max_count::QUEENS, Square(chess::square::EMPTY));
+                break;
+            case chess::piecelists::WHITE_KING:
+            case chess::piecelists::BLACK_KING:
+                piece_lists_[i].resize(chess::piecelists::max_count::KINGS, Square(chess::square::EMPTY));
+                break;
+            default:
+                break;
+        }
+    }
+
     setup_using_fen();
 
     logger_.log_to_file("[BOARD INITIALIZED]");
@@ -31,10 +65,10 @@ Board::Board(const string &position_fen):
 
 void Board::setup_using_fen() {
 
-    vector<string> fen_parts = Utils::split(board_fen_, ' ');
+    std::vector<std::string> fen_parts = Utils::split(board_fen_, ' ');
 
     // fenParts[0] = piece_placement
-    vector<string> piece_placement = Utils::split(fen_parts[0], '/');
+    std::vector<std::string> piece_placement = Utils::split(fen_parts[0], '/');
 
     for (int i = 0; i < 8; i++) {
         int j=0;
@@ -43,9 +77,39 @@ void Board::setup_using_fen() {
                 j += c - '0';
             }
             else {
+                // place the piece on board
                 Piece piece = Piece(c);
                 Square square = Square((7-i)*8 + j);
                 board_[square.square_] = piece;
+
+                // place pieces on respective piece_lists
+                int piece_list_type;
+                switch (piece.piece_type_) {
+                    case chess::piece::KING:
+                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_KING : chess::piecelists::BLACK_KING);
+                        break;
+                    case chess::piece::QUEEN:
+                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_QUEEN : chess::piecelists::BLACK_QUEEN);
+                        break;
+                    case chess::piece::ROOK:
+                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_ROOK : chess::piecelists::BLACK_ROOK);
+                        break;
+                    case chess::piece::BISHOP:
+                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_BISHOP : chess::piecelists::BLACK_BISHOP);
+                        break;
+                    case chess::piece::KNIGHT:
+                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_KNIGHT : chess::piecelists::BLACK_KNIGHT);
+                        break;
+                    case chess::piece::PAWN:
+                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_PAWN : chess::piecelists::BLACK_PAWN);
+                        break;
+                    default:
+                        // garbage value NOT TO BE USED EVER
+                        piece_list_type = chess::piecelists::WHITE_KING;
+                        break;   
+                }
+                piece_lists_[piece_list_type].emplace_back(square);
+                piece_counts_[piece_list_type]++;
                 j++;
             }
         }
@@ -60,16 +124,16 @@ void Board::setup_using_fen() {
 
     // fenParts[2] = castling_rights
     castling_rights_ = static_cast<u8>(0);
-    if (fen_parts[2].find('k') != string::npos) {
+    if (fen_parts[2].find('k') != std::string::npos) {
         castling_rights_ |= 1U;
     }
-    if (fen_parts[2].find('q') != string::npos) {
+    if (fen_parts[2].find('q') != std::string::npos) {
         castling_rights_ |= 2U;
     }
-    if (fen_parts[2].find('K') != string::npos) {
+    if (fen_parts[2].find('K') != std::string::npos) {
         castling_rights_ |= 4U;
     }
-    if (fen_parts[2].find('Q') != string::npos) {
+    if (fen_parts[2].find('Q') != std::string::npos) {
         castling_rights_ |= 8U;
     }
     // fenParts[3] = enpassant_targets
@@ -128,6 +192,7 @@ void Board::make_move(Move move) {
             if (moving_piece.piece_color_ == chess::color::WHITE) {
                 captured_piece_ = Piece(board_[target_square.square_ - 8]);
                 board_[target_square.square_ - 8] = Piece();
+
             }else {
                 captured_piece_ = Piece(board_[target_square.square_ + 8]);
                 board_[target_square.square_ + 8] = Piece();
@@ -285,9 +350,9 @@ void Board::reset_board() {
 void Board::print_board() {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            cout<<board_[(7-i)*8+j].get_piece_notation()<<" ";
+            std::cout<<board_[(7-i)*8+j].get_piece_notation()<<" ";
         }
-        cout<<endl;
+        std::cout<<std::endl;
     }
 }
 
