@@ -14,6 +14,7 @@ Board::Board(const std::string &position_fen):
     repetition_count_(0),
     halfmove_count_(0),
     piece_lists_(12),
+    piece_index_board_{-1},
     piece_counts_(12, 0),
     captured_piece_(chess::piece::EMPTY),
     logger_("board.log")
@@ -83,32 +84,11 @@ void Board::setup_using_fen() {
                 board_[square.square_] = piece;
 
                 // place pieces on respective piece_lists
-                int piece_list_type;
-                switch (piece.piece_type_) {
-                    case chess::piece::KING:
-                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_KING : chess::piecelists::BLACK_KING);
-                        break;
-                    case chess::piece::QUEEN:
-                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_QUEEN : chess::piecelists::BLACK_QUEEN);
-                        break;
-                    case chess::piece::ROOK:
-                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_ROOK : chess::piecelists::BLACK_ROOK);
-                        break;
-                    case chess::piece::BISHOP:
-                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_BISHOP : chess::piecelists::BLACK_BISHOP);
-                        break;
-                    case chess::piece::KNIGHT:
-                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_KNIGHT : chess::piecelists::BLACK_KNIGHT);
-                        break;
-                    case chess::piece::PAWN:
-                        piece_list_type = (piece.piece_color_ == chess::color::WHITE ? chess::piecelists::WHITE_PAWN : chess::piecelists::BLACK_PAWN);
-                        break;
-                    default:
-                        // garbage value NOT TO BE USED EVER
-                        piece_list_type = chess::piecelists::WHITE_KING;
-                        break;   
-                }
-                piece_lists_[piece_list_type].emplace_back(square);
+                int piece_list_type = (int)piece.piece_type_ - 1 + 6*(piece.piece_color_ == chess::color::WHITE ? 0 : 1);
+                int piece_count = piece_counts_[piece_list_type];
+                int index = piece_count;
+                piece_lists_[piece_list_type][index] = Square(square.square_);
+                piece_index_board_[square.square_] = index;
                 piece_counts_[piece_list_type]++;
                 j++;
             }
@@ -169,17 +149,16 @@ void Board::make_move(Move move) {
     enpassant_target_ = Square(chess::square::EMPTY);
     Square starting_square = Square(move.starting_square_.square_);
     Square target_square = Square(move.target_square_.square_);
+    Square captured_square = Square(chess::square::EMPTY);
     Piece moving_piece = Piece(board_[starting_square.square_]);
+    Square castling_rook_start_square = Square();
+    Square castling_rook_end_square = Square();
 
-    if (move.is_capture_) captured_piece_ = Piece(board_[target_square.square_]);
+    if (move.is_capture_) {
+        captured_piece_ = Piece(board_[target_square.square_]);
+        captured_square = Square(target_square.square_);
+    }
 
-    // set irreversible state
-    IrreversibleState state;
-    state.captured_piece = Piece(captured_piece_.piece_type_, captured_piece_.piece_color_);
-    state.castling_rights = castling_rights_;
-    state.enpassant_target = Square(enpassant_target_.square_);
-    state.halfmove_count = halfmove_count_;
-    state.repetition_count = repetition_count_;
 
     // special cases for promotion, enpassants & castling
     // note that is_capture_, etc will be set in utils by user
@@ -190,12 +169,14 @@ void Board::make_move(Move move) {
         if (move.is_en_passant_) {
             // remove the captured pawn
             if (moving_piece.piece_color_ == chess::color::WHITE) {
-                captured_piece_ = Piece(board_[target_square.square_ - 8]);
-                board_[target_square.square_ - 8] = Piece();
+                captured_square.square_ = target_square.square_ - 8;
+                captured_piece_ = Piece(board_[captured_square.square_]);
+                board_[captured_square.square_] = Piece();
 
             }else {
-                captured_piece_ = Piece(board_[target_square.square_ + 8]);
-                board_[target_square.square_ + 8] = Piece();
+                captured_square.square_ = target_square.square_ + 8;
+                captured_piece_ = Piece(board_[captured_square.square_]);
+                board_[captured_square.square_] = Piece();
             }
 
         }else if (MoveUtils::is_double_pawn_push(move, *this)){
@@ -206,7 +187,7 @@ void Board::make_move(Move move) {
                 enpassant_target_ = Square(target_square.square_ + 8);
             }
         }
-        // promotion white
+        // promotion for both :)
         else if (move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
             moving_piece.piece_type_ = move.promotion_piece_.piece_type_;
         }
@@ -222,22 +203,24 @@ void Board::make_move(Move move) {
         if (move.is_castling_) {
             switch (target_square.square_) {
                 case chess::square::G1:
-                    board_[chess::square::F1] = Piece('R');
-                    board_[chess::square::H1] = Piece();
+                    castling_rook_start_square = Square(chess::square::H1);
+                    castling_rook_end_square = Square(chess::square::F1);
                     break;
                 case chess::square::C1:
-                    board_[chess::square::D1] = Piece('R');
-                    board_[chess::square::A1] = Piece();
+                    castling_rook_start_square = Square(chess::square::A1);
+                    castling_rook_end_square = Square(chess::square::D1);
                     break;
                 case chess::square::G8:
-                    board_[chess::square::F8] = Piece('R');
-                    board_[chess::square::H8] = Piece();
+                    castling_rook_start_square = Square(chess::square::H8);
+                    castling_rook_end_square = Square(chess::square::F8);
                     break;
                 case chess::square::C8:
-                    board_[chess::square::D8] = Piece('R');
-                    board_[chess::square::A8] = Piece();
+                    castling_rook_start_square = Square(chess::square::A8);
+                    castling_rook_end_square = Square(chess::square::D8);
                     break;
             }
+            board_[castling_rook_start_square.square_] = Piece();
+            board_[castling_rook_end_square.square_] = Piece(chess::piece::ROOK, moving_piece.piece_color_);
         }
     }else if (moving_piece.piece_type_ == chess::piece::ROOK) {
 
@@ -263,6 +246,40 @@ void Board::make_move(Move move) {
         castling_rights_ &= ~1U;
     }
 
+    // update piece-list values
+    // capturing and not promotion (also works for enpassants)
+    if (move.is_capture_ && move.promotion_piece_.piece_type_ == chess::piece::EMPTY) {
+        PieceListUtils::remove_piece_from_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_counts_);
+        PieceListUtils::update_piece_list(moving_piece, starting_square, target_square, piece_lists_, piece_index_board_);
+    }
+    // capturing and promotion
+    else if (move.is_capture_ && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
+        PieceListUtils::remove_piece_from_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_counts_);
+        PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_counts_);
+        PieceListUtils::remove_piece_from_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_counts_);
+    }
+    // not capturing and promotion
+    else if (!move.is_capture_ && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
+        PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_counts_);
+        PieceListUtils::remove_piece_from_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_counts_);
+    }
+    // castling (not capturing and not promotion is implied)
+    else if (move.is_castling_) {
+        PieceListUtils::update_piece_list(moving_piece, starting_square, target_square, piece_lists_, piece_index_board_);
+        // move rook
+        PieceListUtils::update_piece_list(Piece(chess::piece::ROOK, moving_piece.piece_color_), target_square, target_square, piece_lists_, piece_index_board_);
+    }else {
+        PieceListUtils::update_piece_list(moving_piece, starting_square, target_square, piece_lists_, piece_index_board_);
+    }
+
+
+    // set irreversible state
+    IrreversibleState state;
+    state.captured_piece = Piece(captured_piece_.piece_type_, captured_piece_.piece_color_);
+    state.castling_rights = castling_rights_;
+    state.enpassant_target = Square(enpassant_target_.square_);
+    state.halfmove_count = halfmove_count_;
+    state.repetition_count = repetition_count_;
 
     // make the move on the board finally
     irreversible_state_stack_.push(state);
