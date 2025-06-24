@@ -109,13 +109,13 @@ namespace MoveUtils {
             if (target_square.square_ == chess::square::G8 && is_king_side_castle_black ) {
                 move.is_castling_ = true;
             }
-            if (target_square.square_ == chess::square::C8 && is_queen_side_castle_black) {
+            else if (target_square.square_ == chess::square::C8 && is_queen_side_castle_black) {
                 move.is_castling_ = true;
             }
-            if (target_square.square_ == chess::square::G1 && is_king_side_castle_white) {
+            else if (target_square.square_ == chess::square::G1 && is_king_side_castle_white) {
                 move.is_castling_ = true;
             }
-            if (target_square.square_ == chess::square::C1 && is_queen_side_castle_white) {
+            else if (target_square.square_ == chess::square::C1 && is_queen_side_castle_white) {
                 move.is_castling_ = true;
             }
         }

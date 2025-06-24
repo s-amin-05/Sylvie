@@ -102,11 +102,11 @@ void Logger::log_piece_list_to_file(std::vector<std::vector<Square>> &piece_list
         int piece_type = (i%6)+1;
         bool piece_color = (i/6 == 0? chess::color::WHITE: chess::color::BLACK);
         Piece piece = Piece(piece_type, piece_color);
-        file_ << piece.get_piece_notation() << " : { ";
+        file_ << piece.get_piece_notation() << " : " << piece_counts[i]<< " { ";
         for (int j=0; j < piece_counts[i]; j++) {
             file_ << piece_lists[i][j].get_square_notation() << " ";
         }
-        file_ << "} , count = " << piece_counts[i] << "\n";
+        file_ << "} \n";
     }
     file_ << "\n";
 }

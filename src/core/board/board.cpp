@@ -142,6 +142,14 @@ void Board::make_move(Move move) {
         fullmove_number_++;
     }
 
+    // set irreversible state here because we need the state of board BEFORE making the move
+    IrreversibleState state;
+    state.captured_piece = Piece(captured_piece_.piece_type_, captured_piece_.piece_color_);
+    state.castling_rights = castling_rights_;
+    state.enpassant_target = Square(enpassant_target_.square_);
+    state.halfmove_count = halfmove_count_;
+    state.repetition_count = repetition_count_;
+
 
     // SET Move flags for special cases based on board state
     MoveUtils::set_move_flags(move, *this);
@@ -268,15 +276,10 @@ void Board::make_move(Move move) {
     }
 
 
-    // set irreversible state
-    IrreversibleState state;
-    state.captured_piece = Piece(captured_piece_.piece_type_, captured_piece_.piece_color_);
-    state.castling_rights = castling_rights_;
-    state.enpassant_target = Square(enpassant_target_.square_);
-    state.halfmove_count = halfmove_count_;
-    state.repetition_count = repetition_count_;
-
     // make the move on the board finally
+
+    // captured piece is set down because we need it for unmaking move
+    state.captured_piece = Piece(captured_piece_.piece_type_, captured_piece_.piece_color_);
     irreversible_state_stack_.push(state);
     move_stack_.push(move);
     board_[starting_square.square_] = Piece();
@@ -307,6 +310,9 @@ void Board::unmake_move() {
     Square starting_square = Square(move.starting_square_.square_);
     Square target_square = Square(move.target_square_.square_);
     Piece moving_piece = Piece(board_[target_square.square_]);
+    Square captured_square = Square();
+    Square castling_rook_start_square = Square();
+    Square castling_rook_end_square = Square();
     captured_piece_ = state.captured_piece;
 
     // restore irreversible state
@@ -315,16 +321,22 @@ void Board::unmake_move() {
     halfmove_count_ = state.halfmove_count;
     repetition_count_ = state.repetition_count;
 
+    if (move.is_capture_) {
+        captured_piece_ = Piece(board_[target_square.square_]);
+        captured_square = Square(target_square.square_);
+    }
 
     // handle enpassants & captures
     if (move.is_capture_ && move.is_en_passant_) {
         if (moving_piece.piece_color_ == chess::color::WHITE) {
-            board_[target_square.square_ - 8] = captured_piece_;
+            captured_square = Square(target_square.square_ - 8);
+            board_[captured_square.square_] = captured_piece_;
         }else {
-            board_[target_square.square_ + 8] = captured_piece_;
+            captured_square = Square(target_square.square_ + 8);
+            board_[captured_square.square_] = captured_piece_;
         }
     }else if (move.is_capture_) {
-        board_[target_square.square_] = captured_piece_;
+        board_[captured_square.square_] = captured_piece_;
     }else {
         // for regular moves just empty the target square;
         board_[target_square.square_] = Piece();
@@ -333,23 +345,25 @@ void Board::unmake_move() {
     // handle castling
     if (move.is_castling_) {
         if (move.target_square_.square_ == chess::square::C1) {
-            board_[chess::square::D1] = Piece();
-            board_[chess::square::A1] = Piece('R');
+            castling_rook_start_square = Square(chess::square::D1);
+            castling_rook_end_square = Square(chess::square::A1);
         }else if (move.target_square_.square_ == chess::square::G1) {
-            board_[chess::square::F1] = Piece();
-            board_[chess::square::H1] = Piece('R');
+            castling_rook_start_square = Square(chess::square::F1);
+            castling_rook_end_square = Square(chess::square::H1);
         }else if (move.target_square_.square_ == chess::square::C8) {
-            board_[chess::square::D8] = Piece();
-            board_[chess::square::A8] = Piece('r');
+            castling_rook_start_square = Square(chess::square::D8);
+            castling_rook_end_square = Square(chess::square::A8);
         }else if (move.target_square_.square_ == chess::square::G8) {
-            board_[chess::square::F8] = Piece();
-            board_[chess::square::H8] = Piece('r');
+            castling_rook_start_square = Square(chess::square::F8);
+            castling_rook_end_square = Square(chess::square::H8);
         }
+        board_[castling_rook_start_square.square_] = Piece();
+        board_[castling_rook_end_square.square_] = Piece(chess::piece::ROOK, moving_piece.piece_color_);
     }
 
 
     // put moving piece back to its original place
-    board_[starting_square.square_] = moving_piece;
+    board_[starting_square.square_] = (move.promotion_piece_.piece_type_ == chess::piece::EMPTY) ? moving_piece : Piece(chess::piece::PAWN, moving_piece.piece_color_);
 
     // log state after unmake move
     logger_.log_to_file("[UNMAKE MOVE " + move.get_move_notation() + "]");
