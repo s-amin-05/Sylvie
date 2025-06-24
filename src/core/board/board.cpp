@@ -14,16 +14,17 @@ Board::Board(const std::string &position_fen):
     repetition_count_(0),
     halfmove_count_(0),
     piece_lists_(12),
-    piece_index_board_{-1},
+    // piece_index_board_{-1},
     piece_counts_(12, 0),
     captured_piece_(chess::piece::EMPTY),
     logger_("board.log")
 {
     board_fen_ = position_fen;
 
-    // Initialize board array to empty
+    // Initialize board array to empty & index board to -1
     for (int i = 0; i < 64; i++) {
         board_[i] = Piece();
+        piece_index_board_[i] = -1;
     }
 
     // Initialize piece-lists to EMPTY Square()

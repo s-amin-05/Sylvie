@@ -168,7 +168,7 @@ namespace PieceListUtils {
     }
 
     int get_piece_list_type(Piece piece) {
-        return (int)piece.piece_type_ - 1 + 6*(piece.piece_color_ == chess::color::WHITE ? 0 : 1);
+        return (int)piece.piece_type_ - 1 + (piece.piece_color_ == chess::color::WHITE ? 0 : 6);
     }
 
 }
