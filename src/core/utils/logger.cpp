@@ -3,14 +3,24 @@
 #include <board.h>
 #include <constants.h>
 
+#ifndef NDEBUG
+    bool debug_flag = true;
+#else
+    bool debug_flag = false;
+#endif
+
 Logger::Logger(std::string filename) {
-    file_.open(filename, std::ios::out | std::ios::trunc);
-    if (!file_.is_open()) {
-        std::cerr << "Failed to open log file: " << filename << std::endl;
+    if (debug_flag) {
+        file_.open(filename, std::ios::out | std::ios::trunc);
+        if (!file_.is_open()) {
+            std::cerr << "Failed to open log file: " << filename << std::endl;
+        }
     }
+
 }
 
 void Logger::log_to_file(std::string msg) {
+    if (!debug_flag) return;
     if (file_.is_open()) {
         file_ << msg << std::endl;
     } else {
@@ -19,6 +29,7 @@ void Logger::log_to_file(std::string msg) {
 }
 
 void Logger::close_file() {
+    if (!debug_flag) return;
     if (file_.is_open()) {
         file_.close();
     }
@@ -29,6 +40,7 @@ Logger::~Logger() {
 }
 
 void Logger::log_board_to_file(Board &board, Move move, bool detailed) {
+    if (!debug_flag) return;
     if (file_.is_open()) {
 
         // print board with pieces
@@ -72,6 +84,7 @@ void Logger::log_board_to_file(Board &board, Move move, bool detailed) {
 }
 
 void Logger::log_pieces_to_file(Piece board[]) {
+    if (!debug_flag) return;
     file_ << "Pieces on Board:- \n\n";
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -83,6 +96,7 @@ void Logger::log_pieces_to_file(Piece board[]) {
 }
 
 void Logger::log_piece_list_to_file(std::vector<std::vector<Square>> &piece_lists, std::vector<int> &piece_counts) {
+    if (!debug_flag) return;
     file_ << "Piece Lists:- \n\n";
     for (int i= 0; i < 12; i++) {
         int piece_type = (i%6)+1;
@@ -98,6 +112,7 @@ void Logger::log_piece_list_to_file(std::vector<std::vector<Square>> &piece_list
 }
 
 void Logger::log_piece_index_board_to_file(int *piece_index_board) {
+    if (!debug_flag) return;
     file_ << "Piece Index Board:- \n\n";
     for (int i=0; i < 8; i++) {
         for (int j=0; j < 8; j++) {
@@ -115,6 +130,7 @@ void Logger::log_piece_index_board_to_file(int *piece_index_board) {
 
 
 void Logger::log_board_state_to_file(Board &board) {
+    if (!debug_flag) return;
     file_ << "Incremental Board State:- \n";
     file_ << "Turn: " << (board.turn_ == chess::color::WHITE? "White" : "Black") << "\n";
     file_ << "Ply Count: " << board.ply_count_ << "\n";
@@ -122,7 +138,7 @@ void Logger::log_board_state_to_file(Board &board) {
 }
 
 void Logger::log_irreversible_state_to_file(Board &board) {
-
+    if (!debug_flag) return;
     file_ << "Irreversible Board State:- \n";
     file_ << "Captured Piece: " << board.captured_piece_.get_piece_notation() << "\n";
     file_ << "Castling Rights: " << (board.castling_rights_ & 0xF) << "\n";
@@ -132,6 +148,7 @@ void Logger::log_irreversible_state_to_file(Board &board) {
 }
 
 void Logger::log_move_to_file(Move move) {
+    if (!debug_flag) return;
     file_ << "Starting Square: " << move.starting_square_.get_square_notation() << "\n";
     file_ << "Target Square: " << move.target_square_.get_square_notation() << "\n";
     file_ << "Promotion Piece: " << move.promotion_piece_.get_piece_notation() << "\n";
@@ -141,6 +158,7 @@ void Logger::log_move_to_file(Move move) {
 }
 
 void Logger::log_move_stack_to_file(std::stack<Move> &move_stack) {
+    if (!debug_flag) return;
     file_ << "Move Stack:- \n";
     std::stack<Move> temp_stack;
 
@@ -170,6 +188,7 @@ void Logger::log_move_stack_to_file(std::stack<Move> &move_stack) {
 }
 
 void Logger::log_irreversible_state_stack_to_file(std::stack<IrreversibleState> &irreversible_state_stack) {
+    if (!debug_flag) return;
     file_ << "Irreversible State Stack:- \n";
     std::stack<IrreversibleState> temp_stack;
 
