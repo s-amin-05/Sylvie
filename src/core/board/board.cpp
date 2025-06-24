@@ -268,7 +268,7 @@ void Board::make_move(Move move) {
     else if (move.is_castling_) {
         PieceListUtils::update_piece_list(moving_piece, starting_square, target_square, piece_lists_, piece_index_board_);
         // move rook
-        PieceListUtils::update_piece_list(Piece(chess::piece::ROOK, moving_piece.piece_color_), target_square, target_square, piece_lists_, piece_index_board_);
+        PieceListUtils::update_piece_list(Piece(chess::piece::ROOK, moving_piece.piece_color_), castling_rook_start_square, castling_rook_end_square, piece_lists_, piece_index_board_);
     }else {
         PieceListUtils::update_piece_list(moving_piece, starting_square, target_square, piece_lists_, piece_index_board_);
     }
