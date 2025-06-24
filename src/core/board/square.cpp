@@ -29,7 +29,7 @@ Square::Square(std::string square_notation) {
     }
 }
 
-Square::Square() : square_(0), file_(0), rank_(0) {}
+Square::Square() : Square(chess::square::EMPTY){}
 
 std::string Square::get_square_notation() const {
     if (square_ == chess::square::EMPTY) {

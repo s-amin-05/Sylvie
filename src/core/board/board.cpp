@@ -147,10 +147,10 @@ void Board::make_move(Move move) {
     MoveUtils::set_move_flags(move, *this);
 
     // note: Board::enpassant_target_ is kept empty ONLY after setting move flags
-    enpassant_target_ = Square(chess::square::EMPTY);
+    enpassant_target_ = Square();
     Square starting_square = Square(move.starting_square_.square_);
     Square target_square = Square(move.target_square_.square_);
-    Square captured_square = Square(chess::square::EMPTY);
+    Square captured_square = Square();
     Piece moving_piece = Piece(board_[starting_square.square_]);
     Square castling_rook_start_square = Square();
     Square castling_rook_end_square = Square();
@@ -166,34 +166,27 @@ void Board::make_move(Move move) {
     // and in movgen by engine
 
     // pawn moves
-    if (moving_piece.piece_type_ == chess::piece::PAWN) {
-        if (move.is_en_passant_) {
-            // remove the captured pawn
-            if (moving_piece.piece_color_ == chess::color::WHITE) {
-                captured_square.square_ = target_square.square_ - 8;
-                captured_piece_ = Piece(board_[captured_square.square_]);
-                board_[captured_square.square_] = Piece();
 
-            }else {
-                captured_square.square_ = target_square.square_ + 8;
-                captured_piece_ = Piece(board_[captured_square.square_]);
-                board_[captured_square.square_] = Piece();
-            }
+    if (move.is_en_passant_) {
+        // remove the captured pawn
+        if (moving_piece.piece_color_ == chess::color::WHITE) {
+            captured_square.square_ = target_square.square_ - 8;
+            captured_piece_ = Piece(board_[captured_square.square_]);
 
-        }else if (MoveUtils::is_double_pawn_push(move, *this)){
-
-            if (moving_piece.piece_color_ == chess::color::WHITE) {
-                enpassant_target_ = Square(target_square.square_ - 8);
-            }else {
-                enpassant_target_ = Square(target_square.square_ + 8);
-            }
-        }
-        // promotion for both :)
-        else if (move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
-            moving_piece.piece_type_ = move.promotion_piece_.piece_type_;
+        }else {
+            captured_square.square_ = target_square.square_ + 8;
+            captured_piece_ = Piece(board_[captured_square.square_]);
         }
 
+    }else if (MoveUtils::is_double_pawn_push(move, *this)){
+
+        if (moving_piece.piece_color_ == chess::color::WHITE) {
+            enpassant_target_ = Square(target_square.square_ - 8);
+        }else {
+            enpassant_target_ = Square(target_square.square_ + 8);
+        }
     }
+
 
     // king moves
     if (moving_piece.piece_type_ == chess::piece::KING) {
@@ -256,19 +249,20 @@ void Board::make_move(Move move) {
     // capturing and promotion
     else if (move.is_capture_ && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
         PieceListUtils::remove_piece_from_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_counts_);
-        PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_counts_);
         PieceListUtils::remove_piece_from_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_counts_);
+        PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_counts_);
     }
     // not capturing and promotion
     else if (!move.is_capture_ && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
-        PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_counts_);
         PieceListUtils::remove_piece_from_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_counts_);
+        PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_counts_);
     }
     // castling (not capturing and not promotion is implied)
     else if (move.is_castling_) {
         PieceListUtils::update_piece_list(moving_piece, starting_square, target_square, piece_lists_, piece_index_board_);
         // move rook
-        PieceListUtils::update_piece_list(Piece(chess::piece::ROOK, moving_piece.piece_color_), castling_rook_start_square, castling_rook_end_square, piece_lists_, piece_index_board_);
+        Piece rook = Piece(chess::piece::ROOK, moving_piece.piece_color_);
+        PieceListUtils::update_piece_list(rook, castling_rook_start_square, castling_rook_end_square, piece_lists_, piece_index_board_);
     }else {
         PieceListUtils::update_piece_list(moving_piece, starting_square, target_square, piece_lists_, piece_index_board_);
     }
@@ -286,7 +280,9 @@ void Board::make_move(Move move) {
     irreversible_state_stack_.push(state);
     move_stack_.push(move);
     board_[starting_square.square_] = Piece();
-    board_[target_square.square_] = moving_piece;
+    if (captured_square.square_ != chess::square::EMPTY) board_[captured_square.square_] = Piece();
+    // handle promotions here
+    board_[target_square.square_] = (move.promotion_piece_.piece_type_ == chess::piece::EMPTY) ? moving_piece : Piece(move.promotion_piece_.piece_type_, moving_piece.piece_color_);
 
     // log board state
     logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");

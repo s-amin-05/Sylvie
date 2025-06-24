@@ -140,7 +140,7 @@ namespace MoveUtils {
 }
 
 namespace PieceListUtils {
-    void add_piece_to_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists,int *piece_index_board, std::vector<int> &piece_counts) {
+    void add_piece_to_piece_list(Piece &piece, Square &square, std::vector<std::vector<Square>> &piece_lists,int *piece_index_board, std::vector<int> &piece_counts) {
         int piece_list_type = get_piece_list_type(piece);
         int count = piece_counts[piece_list_type];
         piece_lists[piece_list_type][count] = Square(square.square_);
@@ -148,7 +148,7 @@ namespace PieceListUtils {
         piece_counts[piece_list_type]++;
     }
 
-    void remove_piece_from_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts) {
+    void remove_piece_from_piece_list(Piece &piece, Square &square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts) {
         int piece_list_type = get_piece_list_type(piece);
         int piece_count = --piece_counts[piece_list_type];
 
@@ -159,7 +159,7 @@ namespace PieceListUtils {
         piece_index_board[square.square_] = -1;
     }
 
-    void update_piece_list(Piece piece, Square starting_square, Square target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board) {
+    void update_piece_list(Piece &piece, Square &starting_square, Square &target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board) {
         int piece_list_type = get_piece_list_type(piece);
         int index = piece_index_board[starting_square.square_];
         piece_lists[piece_list_type][index] = Square(target_square.square_);
@@ -167,7 +167,7 @@ namespace PieceListUtils {
         piece_index_board[starting_square.square_] = -1;
     }
 
-    int get_piece_list_type(Piece piece) {
+    int get_piece_list_type(Piece &piece) {
         return (int)piece.piece_type_ - 1 + (piece.piece_color_ == chess::color::WHITE ? 0 : 6);
     }
 
