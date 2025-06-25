@@ -46,6 +46,16 @@ namespace chess::piecelists::max_count {
     const int PAWNS = 8;
 }
 
+namespace chess::file {
+    const int A = 0;
+    const int B = 1;
+    const int C = 2;
+    const int D = 3;
+    const int E = 4;
+    const int F = 5;
+    const int G = 6;
+    const int H = 7;
+}
 
 
 namespace chess::square {
@@ -141,15 +151,26 @@ namespace chess::move {
     const std::string NO_MOVE = "0000";
 }
 
-namespace movegen::sliding_directions {
-    const int NORTH = 0;
-    const int WEST = 1;
-    const int SOUTH = 2;
-    const int EAST = 3;
-    const int NORTH_WEST = 4;
-    const int SOUTH_WEST = 5;
-    const int SOUTH_EAST = 6;
-    const int NORTH_EAST = 7;
+namespace movegen::sliding_offset {
+    const int NORTH = 8;
+    const int WEST = -1;
+    const int SOUTH = -8;
+    const int EAST = 1;
+    const int NORTH_WEST = 7;
+    const int SOUTH_WEST = -9;
+    const int SOUTH_EAST = -7;
+    const int NORTH_EAST = 9;
+}
+
+namespace movegen::knight_offset {
+    const int NO_NO_WE = 15;
+    const int NO_WE_WE = 6;
+    const int SO_WE_WE = 10;
+    const int SO_SO_WE = -17;
+    const int SO_SO_EA = -15;
+    const int SO_EA_EA = -6;
+    const int NO_EA_EA = -10;
+    const int NO_NO_EA = 17;
 }
 
 namespace chess::debug {

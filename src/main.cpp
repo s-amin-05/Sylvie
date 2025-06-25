@@ -1,6 +1,9 @@
 #include <board.h>
+#include <iostream>
 #include <move.h>
 #include <string>
+
+#include <movegen.h>
 
 
 int main(){
@@ -30,6 +33,7 @@ int main(){
     board.make_move(move7);
     // board.unmake_move();
     // board.unmake_move();
+
     
 
 }
