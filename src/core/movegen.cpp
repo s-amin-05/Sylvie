@@ -3,6 +3,31 @@
 // might add some use later
 MoveGenerator::MoveGenerator() = default;
 
+void MoveGenerator::generate_pseudo_moves(Board &board) {
+    for (int i=0; i<12; i++) {
+        int piece_type = (i%6)+1;
+        for (auto &square : board.piece_lists_[i]) {
+            switch (piece_type) {
+                case chess::piece::PAWN:
+                    generate_pawn_moves(board, square);
+                    break;
+                case chess::piece::KNIGHT:
+                    generate_knight_moves(board, square);
+                    break;
+                case chess::piece::BISHOP:
+                case chess::piece::ROOK:
+                case chess::piece::QUEEN:
+                    generate_sliding_piece_moves(board, square);
+                    break;
+                case chess::piece::KING:
+                    generate_king_moves(board, square);
+                    break;
+            }
+        }
+    }
+}
+
+
 // assume the function is called for the correct piece
 void MoveGenerator::generate_sliding_piece_moves(Board &board, Square &square) {
     // counterclockwise from North (first 4 - Rooks, next 4 - Bishops)
