@@ -1,6 +1,6 @@
 #include <board.h>
 
-Square::Square(u8 square) {
+Square::Square(int square) {
     square_ = square;
     if (square == chess::square::EMPTY) {
         file_ = 8;
@@ -21,8 +21,8 @@ Square::Square(std::string square_notation) {
     if (square_notation.length() == 2) {
         char file = square_notation[0];
         char rank = square_notation[1];
-        file_ = static_cast<u8>(file - 'a');
-        rank_ = static_cast<u8>(rank - '1');
+        file_ = (file - 'a');
+        rank_ = (rank - '1');
         square_ = rank_ * 8 + file_;
     }else {
         throw std::invalid_argument("Invalid square notation length");

@@ -6,13 +6,13 @@
 // 0-63 squares
 class Square{
 public:
-    u8 square_;
-    u8 file_;
-    u8 rank_;
+    int square_;
+    int file_;
+    int rank_;
 
     Square();
 
-    Square(u8 square);
+    Square(int square);
 
     Square(std::string square_notation);
 

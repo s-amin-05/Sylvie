@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
-using u8 = uint8_t;
+using u8 = uint8_t; // Keeping typedef for backward compatibility
 using u16 = uint16_t;
 using u32 = uint32_t;
 using u64 = uint64_t;
@@ -12,13 +12,13 @@ namespace chess{
 }
 
 namespace chess::piece{
-    const u8 EMPTY = 0;
-    const u8 KING = 1;
-    const u8 QUEEN = 2;
-    const u8 ROOK = 3;
-    const u8 BISHOP = 4;
-    const u8 KNIGHT = 5;
-    const u8 PAWN = 6;
+    const int EMPTY = 0;
+    const int KING = 1;
+    const int QUEEN = 2;
+    const int ROOK = 3;
+    const int BISHOP = 4;
+    const int KNIGHT = 5;
+    const int PAWN = 6;
 };
 
 namespace chess::piecelists {
@@ -49,87 +49,87 @@ namespace chess::piecelists::max_count {
 
 
 namespace chess::square {
-    const u8 EMPTY = 64;
+    const int EMPTY = 64;
 
     // First rank (1)
-    const u8 A1 = 0;
-    const u8 B1 = 1;
-    const u8 C1 = 2;
-    const u8 D1 = 3;
-    const u8 E1 = 4;
-    const u8 F1 = 5;
-    const u8 G1 = 6;
-    const u8 H1 = 7;
+    const int A1 = 0;
+    const int B1 = 1;
+    const int C1 = 2;
+    const int D1 = 3;
+    const int E1 = 4;
+    const int F1 = 5;
+    const int G1 = 6;
+    const int H1 = 7;
 
     // Second rank (2)
-    const u8 A2 = 8;
-    const u8 B2 = 9;
-    const u8 C2 = 10;
-    const u8 D2 = 11;
-    const u8 E2 = 12;
-    const u8 F2 = 13;
-    const u8 G2 = 14;
-    const u8 H2 = 15;
+    const int A2 = 8;
+    const int B2 = 9;
+    const int C2 = 10;
+    const int D2 = 11;
+    const int E2 = 12;
+    const int F2 = 13;
+    const int G2 = 14;
+    const int H2 = 15;
 
     // Third rank (3)
-    const u8 A3 = 16;
-    const u8 B3 = 17;
-    const u8 C3 = 18;
-    const u8 D3 = 19;
-    const u8 E3 = 20;
-    const u8 F3 = 21;
-    const u8 G3 = 22;
-    const u8 H3 = 23;
+    const int A3 = 16;
+    const int B3 = 17;
+    const int C3 = 18;
+    const int D3 = 19;
+    const int E3 = 20;
+    const int F3 = 21;
+    const int G3 = 22;
+    const int H3 = 23;
 
     // Fourth rank (4)
-    const u8 A4 = 24;
-    const u8 B4 = 25;
-    const u8 C4 = 26;
-    const u8 D4 = 27;
-    const u8 E4 = 28;
-    const u8 F4 = 29;
-    const u8 G4 = 30;
-    const u8 H4 = 31;
+    const int A4 = 24;
+    const int B4 = 25;
+    const int C4 = 26;
+    const int D4 = 27;
+    const int E4 = 28;
+    const int F4 = 29;
+    const int G4 = 30;
+    const int H4 = 31;
 
     // Fifth rank (5)
-    const u8 A5 = 32;
-    const u8 B5 = 33;
-    const u8 C5 = 34;
-    const u8 D5 = 35;
-    const u8 E5 = 36;
-    const u8 F5 = 37;
-    const u8 G5 = 38;
-    const u8 H5 = 39;
+    const int A5 = 32;
+    const int B5 = 33;
+    const int C5 = 34;
+    const int D5 = 35;
+    const int E5 = 36;
+    const int F5 = 37;
+    const int G5 = 38;
+    const int H5 = 39;
 
     // Sixth rank (6)
-    const u8 A6 = 40;
-    const u8 B6 = 41;
-    const u8 C6 = 42;
-    const u8 D6 = 43;
-    const u8 E6 = 44;
-    const u8 F6 = 45;
-    const u8 G6 = 46;
-    const u8 H6 = 47;
+    const int A6 = 40;
+    const int B6 = 41;
+    const int C6 = 42;
+    const int D6 = 43;
+    const int E6 = 44;
+    const int F6 = 45;
+    const int G6 = 46;
+    const int H6 = 47;
 
     // Seventh rank (7)
-    const u8 A7 = 48;
-    const u8 B7 = 49;
-    const u8 C7 = 50;
-    const u8 D7 = 51;
-    const u8 E7 = 52;
-    const u8 F7 = 53;
-    const u8 G7 = 54;
-    const u8 H7 = 55;
+    const int A7 = 48;
+    const int B7 = 49;
+    const int C7 = 50;
+    const int D7 = 51;
+    const int E7 = 52;
+    const int F7 = 53;
+    const int G7 = 54;
+    const int H7 = 55;
 
     // Eighth rank (8)
-    const u8 A8 = 56;
-    const u8 B8 = 57;
-    const u8 C8 = 58;
-    const u8 D8 = 59;
-    const u8 E8 = 60;
-    const u8 F8 = 61;
-    const u8 G8 = 62;
-    const u8 H8 = 63;
+    const int A8 = 56;
+    const int B8 = 57;
+    const int C8 = 58;
+    const int D8 = 59;
+    const int E8 = 60;
+    const int F8 = 61;
+    const int G8 = 62;
+    const int H8 = 63;
 }
 
 namespace chess::color{
@@ -142,14 +142,14 @@ namespace chess::move {
 }
 
 namespace movegen::sliding_directions {
-    const u8 NORTH = 0;
-    const u8 WEST = 1;
-    const u8 SOUTH = 2;
-    const u8 EAST = 3;
-    const u8 NORTH_WEST = 4;
-    const u8 SOUTH_WEST = 5;
-    const u8 SOUTH_EAST = 6;
-    const u8 NORTH_EAST = 7;
+    const int NORTH = 0;
+    const int WEST = 1;
+    const int SOUTH = 2;
+    const int EAST = 3;
+    const int NORTH_WEST = 4;
+    const int SOUTH_WEST = 5;
+    const int SOUTH_EAST = 6;
+    const int NORTH_EAST = 7;
 }
 
 namespace chess::debug {
