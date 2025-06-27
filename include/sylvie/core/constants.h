@@ -151,7 +151,7 @@ namespace chess::move {
     const std::string NO_MOVE = "0000";
 }
 
-namespace movegen::sliding_offset {
+namespace movegen::direction_offset {
     const int NORTH = 8;
     const int WEST = -1;
     const int SOUTH = -8;

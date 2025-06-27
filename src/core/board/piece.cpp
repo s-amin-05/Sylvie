@@ -1,7 +1,7 @@
 #include <cctype>
 #include <piece.h>
 
-Piece::Piece() : piece_type_(0U), piece_color_(0U) {}
+Piece::Piece() : piece_type_(0U), piece_color_(chess::color::BLACK) {}
 
 Piece::Piece(u8 piece_type, bool piece_color) {
     piece_type_ = piece_type;

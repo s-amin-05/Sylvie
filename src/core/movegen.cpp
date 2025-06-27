@@ -3,43 +3,43 @@
 // might add some use later
 MoveGenerator::MoveGenerator() = default;
 
-void MoveGenerator::generate_pseudo_moves(Board &board) {
-    for (int i=0; i<12; i++) {
-        int piece_type = (i%6)+1;
-        for (auto &square : board.piece_lists_[i]) {
-            switch (piece_type) {
-                case chess::piece::PAWN:
-                    generate_pawn_moves(board, square);
-                    break;
-                case chess::piece::KNIGHT:
-                    generate_knight_moves(board, square);
-                    break;
-                case chess::piece::BISHOP:
-                case chess::piece::ROOK:
-                case chess::piece::QUEEN:
-                    generate_sliding_piece_moves(board, square);
-                    break;
-                case chess::piece::KING:
-                    generate_king_moves(board, square);
-                    break;
-            }
-        }
-    }
-}
+// void MoveGenerator::generate_pseudo_moves(Board &board) {
+//     for (int i=0; i<12; i++) {
+//         int piece_type = (i%6)+1;
+//         for (auto &square : board.piece_lists_[i]) {
+//             switch (piece_type) {
+//                 case chess::piece::PAWN:
+//                     generate_pawn_moves(board, square);
+//                     break;
+//                 case chess::piece::KNIGHT:
+//                     generate_knight_moves(board, square);
+//                     break;
+//                 case chess::piece::BISHOP:
+//                 case chess::piece::ROOK:
+//                 case chess::piece::QUEEN:
+//                     generate_sliding_piece_moves(board, square);
+//                     break;
+//                 case chess::piece::KING:
+//                     generate_king_moves(board, square);
+//                     break;
+//             }
+//         }
+//     }
+// }
 
 
 // assume the function is called for the correct piece
 void MoveGenerator::generate_sliding_piece_moves(Board &board, Square &square) {
     // counterclockwise from North (first 4 - Rooks, next 4 - Bishops)
     constexpr int direction_offsets[8] = {
-        movegen::sliding_offset::NORTH,
-        movegen::sliding_offset::WEST,
-        movegen::sliding_offset::SOUTH,
-        movegen::sliding_offset::EAST,
-        movegen::sliding_offset::NORTH_WEST,
-        movegen::sliding_offset::SOUTH_WEST,
-        movegen::sliding_offset::SOUTH_EAST,
-        movegen::sliding_offset::NORTH_EAST
+        movegen::direction_offset::NORTH,
+        movegen::direction_offset::WEST,
+        movegen::direction_offset::SOUTH,
+        movegen::direction_offset::EAST,
+        movegen::direction_offset::NORTH_WEST,
+        movegen::direction_offset::SOUTH_WEST,
+        movegen::direction_offset::SOUTH_EAST,
+        movegen::direction_offset::NORTH_EAST
     };
 
     Piece moving_piece = board.board_[square.square_];
@@ -102,18 +102,13 @@ void MoveGenerator::generate_sliding_piece_moves(Board &board, Square &square) {
 void MoveGenerator::generate_knight_moves(Board &board, Square &square) {
 
     Piece moving_piece = board.board_[square.square_];
-    if (moving_piece.piece_type_ != chess::piece::KNIGHT || moving_piece.piece_color_ != board.turn_) return;
+    if (moving_piece.piece_type_ != chess::piece::KNIGHT || moving_piece.piece_color_ != board.turn_)
+        return;
     // from noNoWe to noNoEa counterclockwise
-    int direction_offsets[8] = {
-        movegen::knight_offset::NO_NO_WE,
-        movegen::knight_offset::NO_WE_WE,
-        movegen::knight_offset::SO_WE_WE,
-        movegen::knight_offset::SO_SO_WE,
-        movegen::knight_offset::SO_SO_EA,
-        movegen::knight_offset::SO_EA_EA,
-        movegen::knight_offset::NO_EA_EA,
-        movegen::knight_offset::NO_NO_EA
-    };
+    int direction_offsets[8] = {movegen::knight_offset::NO_NO_WE, movegen::knight_offset::NO_WE_WE,
+                                movegen::knight_offset::SO_WE_WE, movegen::knight_offset::SO_SO_WE,
+                                movegen::knight_offset::SO_SO_EA, movegen::knight_offset::SO_EA_EA,
+                                movegen::knight_offset::NO_EA_EA, movegen::knight_offset::NO_NO_EA};
 
     // west side
     if (square.file_ == chess::file::B || square.file_ == chess::file::A) {
@@ -149,23 +144,134 @@ void MoveGenerator::generate_knight_moves(Board &board, Square &square) {
 
     // loop over all directions
     for (int i = 0; i < 8; i++) {
-        if (direction_offsets[i] == 0) continue;
+        if (direction_offsets[i] == 0)
+            continue;
 
         Square target_square = Square(square.square_ + direction_offsets[i]);
         Piece target_piece = board.board_[target_square.square_];
         bool is_capture = false;
 
-        if (target_piece.piece_type_ != chess::piece::EMPTY && moving_piece.piece_color_ == target_piece.piece_color_) continue;
+        if (target_piece.piece_type_ != chess::piece::EMPTY && moving_piece.piece_color_ == target_piece.piece_color_)
+            continue;
 
         if (target_piece.piece_type_ != chess::piece::EMPTY && moving_piece.piece_color_ != target_piece.piece_color_) {
             is_capture = true;
         }
 
-        Move move = Move(square, target_square, Piece(), false, is_capture, false );
+        Move move = Move(square, target_square, Piece(), false, is_capture, false);
         knight_moves_.push_back(move);
         pseudo_legal_moves_.push_back(move);
     }
-    
+}
+
+void MoveGenerator::generate_pawn_moves(Board &board, Square &square) {
+    Piece moving_piece = board.board_[square.square_];
+    if (moving_piece.piece_type_ != chess::piece::PAWN || moving_piece.piece_color_ != board.turn_)
+        return;
+    int pawn_direction = (moving_piece.piece_color_ == chess::color::WHITE) ? 1 : -1;
+    // we are taking offsets for white pawns and flipping them for black
+    int pawn_forward_offsets[] = {
+        movegen::direction_offset::NORTH * pawn_direction,
+        2 * movegen::direction_offset::NORTH * pawn_direction,
+    };
+    int pawn_capture_offsets[] = {
+        movegen::direction_offset::NORTH_WEST * pawn_direction,
+        movegen::direction_offset::NORTH_EAST * pawn_direction,
+    };
+    int promotion_piece_types[] = {chess::piece::QUEEN, chess::piece::ROOK, chess::piece::BISHOP, chess::piece::KNIGHT};
+
+    int pawn_start_rank = (moving_piece.piece_color_ == chess::color::WHITE) ? 1 : 6;
+    int pawn_promotion_rank = (moving_piece.piece_color_ == chess::color::WHITE) ? 6 : 1;
+    int pawn_enpassant_rank = (moving_piece.piece_color_ == chess::color::WHITE) ? 4 : 3;
+
+    Piece promotion_piece = Piece();
+    bool is_enpassant = false, is_capture = false, is_castling = false;
+
+    // MOVE VALIDATION
+    // check for pawn files to avoid 360 captures
+    if (square.file_ == chess::file::A) {
+        pawn_capture_offsets[(moving_piece.piece_color_? 0: 1)] = 0;
+    }else if (square.file_ == chess::file::H) {
+        pawn_capture_offsets[(moving_piece.piece_color_? 1: 0)] = 0;
+    }
+
+    // check if double pawn push is allowed or not
+    // if pawn is at its starting square or not
+    if (square.rank_ != pawn_start_rank) {
+        pawn_forward_offsets[1] = 0;
+    }
+
+    // check for blocking pieces before making moves
+    if (board.board_[square.square_ + pawn_forward_offsets[0]].piece_type_ != chess::piece::EMPTY) {
+        pawn_forward_offsets[0] = 0;
+        pawn_forward_offsets[1] = 0;
+    }else if (board.board_[square.square_ + pawn_forward_offsets[1]].piece_type_ != chess::piece::EMPTY) {
+        pawn_forward_offsets[1] = 0;
+    }
+
+    for (int i=0; i < 2; i++) {
+        Square capture_square = Square(square.square_ + pawn_capture_offsets[i]);
+        bool check_empty = (board.board_[capture_square.square_].piece_type_ == chess::piece::EMPTY);
+        bool check_same_color = (moving_piece.piece_color_ == board.board_[capture_square.square_].piece_color_);
+        bool check_enpassant = (board.enpassant_target_.square_ == capture_square.square_ && square.rank_ == pawn_enpassant_rank);
+        if ((check_empty || check_same_color) && !(check_empty && check_enpassant)) {
+            pawn_capture_offsets[i] = 0;
+        }
+    }
+
+
+    // pawn pushes
+    // single pawn push is valid but not double pawn push
+    if (pawn_forward_offsets[0] && !pawn_forward_offsets[1]) {
+        Square target_square = Square(square.square_ + pawn_forward_offsets[0]);
+        if (square.rank_ == pawn_promotion_rank) {
+            for (int i = 0; i < 4; i++) {
+                promotion_piece = Piece(promotion_piece_types[i], moving_piece.piece_color_);
+                Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
+                pawn_moves_.push_back(move);
+                pseudo_legal_moves_.push_back(move);
+            }
+        }else {
+            promotion_piece = Piece();
+            Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
+            pawn_moves_.push_back(move);
+            pseudo_legal_moves_.push_back(move);
+        }
+    }
+    // double pawn pushes
+    else if (pawn_forward_offsets[0] && pawn_forward_offsets[1]) {
+        promotion_piece = Piece();
+        for (int i = 0; i < 2; i++) {
+            Square target_square = Square(square.square_ + pawn_forward_offsets[i]);
+            Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
+            pawn_moves_.push_back(move);
+            pseudo_legal_moves_.push_back(move);
+        }
+    }
+
+    // capturing moves
+    for (int i=0; i < 2; i++) {
+        if (!pawn_capture_offsets[i]) continue;
+        Square target_square = Square(square.square_ + pawn_capture_offsets[i]);
+        is_capture = true;
+        is_enpassant = (board.enpassant_target_.square_ == target_square.square_);
+        if (square.rank_ == pawn_promotion_rank) {
+            for (int j=0; j < 4; j++) {
+                promotion_piece = Piece(promotion_piece_types[j], moving_piece.piece_color_);
+                Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
+                pawn_moves_.push_back(move);
+                pseudo_legal_moves_.push_back(move);
+            }
+        }else {
+            promotion_piece = Piece();
+            Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
+            pawn_moves_.push_back(move);
+            pseudo_legal_moves_.push_back(move);
+        }
+
+    }
+
+
 }
 
 
