@@ -173,6 +173,13 @@ namespace movegen::knight_offset {
     const int NO_NO_EA = 17;
 }
 
+namespace bitmask::castling {
+    const int BLACK_KING = 1U;
+    const int BLACK_QUEEN = 2U;
+    const int WHITE_KING = 4U;
+    const int WHITE_QUEEN = 8U;
+}
+
 namespace chess::debug {
     const std::string line_seperator = "--------********--------\n";
 }

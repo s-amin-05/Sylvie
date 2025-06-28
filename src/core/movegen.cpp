@@ -274,7 +274,53 @@ void MoveGenerator::generate_pawn_moves(Board &board, Square &square) {
 
 }
 
+void MoveGenerator::generate_king_moves(Board &board, Square &square) {
+    Piece moving_piece = board.board_[square.square_];
+    if (moving_piece.piece_type_ != chess::piece::KING || moving_piece.piece_color_ != board.turn_) return;
 
+
+    int direction_offsets[8] = {
+        movegen::direction_offset::NORTH,
+        movegen::direction_offset::WEST,
+        movegen::direction_offset::SOUTH,
+        movegen::direction_offset::EAST,
+        movegen::direction_offset::NORTH_WEST,
+        movegen::direction_offset::SOUTH_WEST,
+        movegen::direction_offset::SOUTH_EAST,
+        movegen::direction_offset::NORTH_EAST
+    };
+
+    if (square.file_ == chess::file::A) {
+        direction_offsets[1] = direction_offsets[4] = direction_offsets[5] = 0;
+    }else if (square.file_ == chess::file::H) {
+        direction_offsets[3] = direction_offsets[6] = direction_offsets[7] = 0;
+    }
+
+    if (square.rank_ == 0) {
+        direction_offsets[2] = direction_offsets[5] = direction_offsets[6] = 0;
+    }else if (square.rank_ == 7) {
+        direction_offsets[0] = direction_offsets[4] = direction_offsets[7] = 0;
+    }
+
+    // check for normal moves
+    for (int i=0; i<8; i++) {
+        if (!direction_offsets[i]) continue;
+        Square target_square = Square(square.square_ + direction_offsets[i]);
+        Piece target_piece = board.board_[target_square.square_];
+        if (target_piece.piece_type_ != chess::piece::EMPTY && target_piece.piece_color_ == moving_piece.piece_color_) continue;
+        Move move;
+        if (target_piece.piece_type_ == chess::piece::EMPTY) {
+            move = Move(square, target_square, Piece(), false, false, false);
+        }
+        else if (target_piece.piece_type_ != chess::piece::EMPTY && target_piece.piece_color_ != moving_piece.piece_color_) {
+            move = Move(square, target_square, Piece(), false, true, false);
+        }
+    }
+
+    // check for castling
+
+
+}
 
 
 

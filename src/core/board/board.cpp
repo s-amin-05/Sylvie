@@ -106,16 +106,16 @@ void Board::setup_using_fen() {
     // fenParts[2] = castling_rights
     castling_rights_ = static_cast<u8>(0);
     if (fen_parts[2].find('k') != std::string::npos) {
-        castling_rights_ |= 1U;
+        castling_rights_ |= bitmask::castling::BLACK_KING;
     }
     if (fen_parts[2].find('q') != std::string::npos) {
-        castling_rights_ |= 2U;
+        castling_rights_ |= bitmask::castling::BLACK_QUEEN;
     }
     if (fen_parts[2].find('K') != std::string::npos) {
-        castling_rights_ |= 4U;
+        castling_rights_ |= bitmask::castling::WHITE_KING;
     }
     if (fen_parts[2].find('Q') != std::string::npos) {
-        castling_rights_ |= 8U;
+        castling_rights_ |= bitmask::castling::WHITE_QUEEN;
     }
     // fenParts[3] = enpassant_targets
     if (fen_parts[3] == "-") {
@@ -226,25 +226,25 @@ void Board::make_move(Move move) {
     }else if (moving_piece.piece_type_ == chess::piece::ROOK) {
 
         if (starting_square.square_ == chess::square::A1 && moving_piece.piece_color_ == chess::color::WHITE) {
-            castling_rights_ &= ~8U;
+            castling_rights_ &= ~bitmask::castling::WHITE_QUEEN;
         }else if (starting_square.square_ == chess::square::H1 && moving_piece.piece_color_ == chess::color::WHITE) {
-            castling_rights_ &= ~4U;
+            castling_rights_ &= ~bitmask::castling::WHITE_KING;
         }else if (starting_square.square_ == chess::square::A8 && moving_piece.piece_color_ == chess::color::BLACK) {
-            castling_rights_ &= ~2U;
+            castling_rights_ &= ~bitmask::castling::BLACK_QUEEN;
         }else if (starting_square.square_ == chess::square::H8 && moving_piece.piece_color_ == chess::color::BLACK) {
-            castling_rights_ &= ~1U;
+            castling_rights_ &= ~bitmask::castling::BLACK_KING;
         }
     }
 
     // update castling rights if rooks get captured
     if (captured_piece_.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::A1) {
-        castling_rights_ &= ~8U;
+        castling_rights_ &= ~bitmask::castling::WHITE_QUEEN;
     }else if (captured_piece_.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::H1) {
-        castling_rights_ &= ~4U;
+        castling_rights_ &= ~bitmask::castling::WHITE_KING;
     }else if (captured_piece_.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::A8) {
-        castling_rights_ &= ~2U;
+        castling_rights_ &= ~bitmask::castling::BLACK_QUEEN;
     }else if (captured_piece_.piece_type_ == chess::piece::ROOK && target_square.square_ == chess::square::H8) {
-        castling_rights_ &= ~1U;
+        castling_rights_ &= ~bitmask::castling::BLACK_KING;
     }
 
     // update piece-list values
