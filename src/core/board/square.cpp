@@ -11,6 +11,10 @@ Square::Square(int square) {
     rank_ = square / 8;
 }
 
+Square::Square(int file, int rank): file_(file), rank_(rank){
+    square_ = rank * 8 + file;
+}
+
 Square::Square(std::string square_notation) {
     if (square_notation == "00") {
         square_ = chess::square::EMPTY;

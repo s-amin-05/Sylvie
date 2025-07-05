@@ -7,29 +7,24 @@ using u8=uint8_t;
 
 namespace Utils {
     std::vector<std::string> split(const std::string& s, char delim);
-
     bool is_digit(char c);
 }
 
-
 namespace MoveUtils {
-    // Move move_from_string(std::string move_string, Board &board);
-
     Move set_move_flags(Move &move, Board &board);
-
     bool is_double_pawn_push(Move &move, Board &board);
 }
 
 namespace PieceListUtils {
     void add_piece_to_piece_list(Piece &piece, Square &square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts);
-
     void remove_piece_from_piece_list(Piece &piece, Square &square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts);
-
     void update_piece_list(Piece &piece, Square &starting_square, Square &target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board);
-
     int get_piece_list_type(Piece &piece);
 }
 
+namespace BoardUtils {
+    bool is_square_attacked(Board &board, Square square, bool attacking_color);
+}
 // To be used later in the projet
 // namespace BitUtils {
 //     // Safe conversion to u8

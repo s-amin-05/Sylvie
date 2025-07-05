@@ -14,6 +14,8 @@ public:
 
     Square(int square);
 
+    Square(int file, int rank);
+
     Square(std::string square_notation);
 
     std::string get_square_notation() const;

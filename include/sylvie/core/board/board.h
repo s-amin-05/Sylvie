@@ -47,10 +47,19 @@ public:
     // used to store piece-list index of each piece on the board
     int piece_index_board_[64];
     std::vector<int> piece_counts_;
-
-
-    // for moves
     Piece captured_piece_;
+
+    // // bitboards :)
+    // // ordering of bitboards same as piece lists
+    // u64 piece_bb_[12];
+    // u64 occupancy_white_;
+    // u64 occupancy_black_;
+    //
+    // // bitboards for squares attacked
+    // u64 squares_attacked_piece_[12];
+    // u64 squares_attacked_white_;
+    // u64 squares_attacked_black_;
+
     Logger logger_;
 
     Board(const std::string &position_fen);

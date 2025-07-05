@@ -172,3 +172,117 @@ namespace PieceListUtils {
     }
 
 }
+
+namespace BoardUtils {
+
+    bool is_square_attacked(Board &board, Square square, bool attacking_color) {
+        // check for pawns
+        int pawn_attack_offset[4] = {9, 7, -7, -9};
+        if (square.file_ == chess::file::A) {
+            pawn_attack_offset[0] = pawn_attack_offset[2] = 0;
+        }else if (square.file_ == chess::file::H) {
+            pawn_attack_offset[1] = pawn_attack_offset[3] = 0;
+        }
+
+        for (int i=(attacking_color==chess::color::BLACK? 0: 2); i<(attacking_color==chess::color::BLACK? 2: 4); i++) {
+            if (!pawn_attack_offset[i]) continue;
+            Piece attacking_piece = board.board_[square.square_ + pawn_attack_offset[i]];
+            if (attacking_piece.piece_type_ == chess::piece::PAWN && attacking_piece.piece_color_ == attacking_color) {
+                return true;
+            }
+        }
+
+
+        // check for knight
+        int knight_offsets[8] = {6, -10, 15, -17, 17, -15, 10, -6};
+        int i = 0, n=8;
+        if (square.file_ == chess::file::B) {
+            i += 2;
+        }else if (square.file_ == chess::file::A) {
+            i += 4;
+        }
+        if (square.file_ == chess::file::G) {
+            n-= 2;
+        }else if (square.file_ == chess::file::H) {
+            n-= 4;
+        }
+        for (int j=i; j<n; j++) {
+            if (!knight_offsets[j]) continue;
+            if (square.square_ + knight_offsets[j] >= 64 || square.square_ + knight_offsets[j] < 0) continue;
+            Piece attacking_piece = board.board_[square.square_ + knight_offsets[j]];
+            if (attacking_piece.piece_type_ == chess::piece::KNIGHT && attacking_piece.piece_color_ == attacking_color) {
+                return true;
+            }
+        }
+
+        // check for king
+        const int king_offsets[8] = {
+            movegen::direction_offset::NORTH_WEST,
+            movegen::direction_offset::WEST,
+            movegen::direction_offset::SOUTH_WEST,
+            movegen::direction_offset::NORTH,
+            movegen::direction_offset::SOUTH,
+            movegen::direction_offset::NORTH_EAST,
+            movegen::direction_offset::EAST,
+            movegen::direction_offset::SOUTH_EAST
+        };
+
+        i = 0, n=8;
+        if (square.file_ == chess::file::A) i += 3;
+        if (square.file_ == chess::file::H) n -= 3;
+        for (int j=i; j<n; j++) {
+            if (!king_offsets[j]) continue;
+            if (square.square_ + king_offsets[j] >= 64 || square.square_ + king_offsets[j] < 0) continue;
+            Piece attacking_piece = board.board_[square.square_ + king_offsets[j]];
+            if (attacking_piece.piece_type_ == chess::piece::KING && attacking_piece.piece_color_ == attacking_color) {
+                return true;
+            }
+        }
+
+        // check for sliding pieces
+        const int sliding_offsets[8] = {
+            movegen::direction_offset::NORTH,
+            movegen::direction_offset::WEST,
+            movegen::direction_offset::SOUTH,
+            movegen::direction_offset::EAST,
+            movegen::direction_offset::NORTH_WEST,
+            movegen::direction_offset::SOUTH_WEST,
+            movegen::direction_offset::SOUTH_EAST,
+            movegen::direction_offset::NORTH_EAST
+        };
+
+        int min_distance[8] = {
+            7 - square.rank_,
+            square.file_,
+            square.rank_,
+            7 - square.file_,
+            std::min(7 - square.rank_, square.file_),
+            std::min(square.rank_, square.file_),
+            std::min(square.rank_, 7 - square.file_),
+            std::min(7 - square.rank_, 7 - square.file_)
+        };
+
+        for (int j=0; j<8; j++) {
+            u8 secondary_piece_type = (j < 4? chess::piece::ROOK: chess::piece::BISHOP);
+
+            for (int k=1; k<=min_distance[j]; k++) {
+                Piece attacking_piece = board.board_[square.square_ + k*sliding_offsets[j]];
+
+                // if blocked by friendly piece no need to check the remaining
+                // if blocked by attacking side piece
+
+                bool is_secondary = attacking_piece.piece_type_ == secondary_piece_type;
+                bool is_queen = attacking_piece.piece_type_ == chess::piece::QUEEN;
+                if (attacking_piece.piece_type_ != chess::piece::EMPTY && !(is_secondary || is_queen)) break;
+                if ((is_secondary || is_queen) && attacking_piece.piece_color_ == attacking_color) {
+                    return true;
+                }
+            }
+        }
+
+        // if not attacked by anything
+        return false;
+
+    }
+
+}
