@@ -40,9 +40,9 @@ int main(){
 
     Square square = Square("e1");
     MoveGenerator generator = MoveGenerator();
-    generator.generate_king_moves(board, square);
+    generator.generate_all_pseudo_legal_moves(board);
 
-    for (auto move : generator.king_moves_) {
+    for (auto move : generator.pseudo_legal_moves_) {
         std::cout << move.get_move_notation() << std::endl;
     }
 

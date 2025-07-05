@@ -165,11 +165,11 @@ namespace movegen::direction_offset {
 namespace movegen::knight_offset {
     const int NO_NO_WE = 15;
     const int NO_WE_WE = 6;
-    const int SO_WE_WE = 10;
+    const int SO_WE_WE = -10;
     const int SO_SO_WE = -17;
     const int SO_SO_EA = -15;
     const int SO_EA_EA = -6;
-    const int NO_EA_EA = -10;
+    const int NO_EA_EA = 10;
     const int NO_NO_EA = 17;
 }
 

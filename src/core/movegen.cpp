@@ -5,29 +5,39 @@
 // might add some use later
 MoveGenerator::MoveGenerator() = default;
 
-// void MoveGenerator::generate_pseudo_moves(Board &board) {
-//     for (int i=0; i<12; i++) {
-//         int piece_type = (i%6)+1;
-//         for (auto &square : board.piece_lists_[i]) {
-//             switch (piece_type) {
-//                 case chess::piece::PAWN:
-//                     generate_pawn_moves(board, square);
-//                     break;
-//                 case chess::piece::KNIGHT:
-//                     generate_knight_moves(board, square);
-//                     break;
-//                 case chess::piece::BISHOP:
-//                 case chess::piece::ROOK:
-//                 case chess::piece::QUEEN:
-//                     generate_sliding_piece_moves(board, square);
-//                     break;
-//                 case chess::piece::KING:
-//                     generate_king_moves(board, square);
-//                     break;
-//             }
-//         }
-//     }
-// }
+void MoveGenerator::generate_all_pseudo_legal_moves(Board &board) {
+    int i = board.turn_==chess::color::WHITE ? 0 : 6;
+    int n = board.turn_==chess::color::WHITE ? 6 : 12;
+    for (i; i<n; i++) {
+        for (auto square: board.piece_lists_[i]) {
+            generate_pseudo_moves(board, square);
+        }
+    }
+}
+
+
+void MoveGenerator::generate_pseudo_moves(Board &board, Square square) {
+
+    Piece moving_piece = board.board_[square.square_];
+    switch (moving_piece.piece_type_) {
+        case chess::piece::PAWN:
+            generate_pawn_moves(board, square);
+            break;
+        case chess::piece::KNIGHT:
+            generate_knight_moves(board, square);
+            break;
+        case chess::piece::BISHOP:
+        case chess::piece::ROOK:
+        case chess::piece::QUEEN:
+            generate_sliding_piece_moves(board, square);
+            break;
+        case chess::piece::KING:
+            generate_king_moves(board, square);
+            break;
+    }
+
+}
+
 
 
 // assume the function is called for the correct piece
