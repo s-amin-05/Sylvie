@@ -317,6 +317,8 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         else if (target_piece.piece_type_ != chess::piece::EMPTY && target_piece.piece_color_ != moving_piece.piece_color_) {
             move = Move(square, target_square, Piece(), false, true, false);
         }
+        king_moves_.push_back(move);
+        pseudo_legal_moves_.push_back(move);
     }
 
     // check for castling
@@ -330,10 +332,10 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         Square f = Square(chess::file::F, rank);
         bool g_occupied = (board.board_[g.square_].piece_type_ != chess::piece::EMPTY);
         bool f_occupied = (board.board_[f.square_].piece_type_ != chess::piece::EMPTY);
-        bool g_attacked = (BoardUtils::is_square_attacked(board, g, moving_piece.piece_color_));
-        bool f_attacked = (BoardUtils::is_square_attacked(board, f, moving_piece.piece_color_));
+        bool g_attacked = (BoardUtils::is_square_attacked(board, g, !moving_piece.piece_color_));
+        bool f_attacked = (BoardUtils::is_square_attacked(board, f, !moving_piece.piece_color_));
         if (!g_occupied && !f_occupied && !g_attacked && !f_attacked) {
-            Move move = Move(square, Square("f1"), Piece(), true, false, false);
+            Move move = Move(square, Square("g1"), Piece(), true, false, false);
             king_moves_.push_back(move);
             pseudo_legal_moves_.push_back(move);
         }
@@ -345,13 +347,14 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         bool b_occupied = (board.board_[b.square_].piece_type_ != chess::piece::EMPTY);
         bool c_occupied = (board.board_[c.square_].piece_type_ != chess::piece::EMPTY);
         bool d_occupied = (board.board_[d.square_].piece_type_ != chess::piece::EMPTY);
-        bool b_attacked = (BoardUtils::is_square_attacked(board, b, moving_piece.piece_color_));
-        bool c_attacked = (BoardUtils::is_square_attacked(board, c, moving_piece.piece_color_));
-        bool d_attacked = (BoardUtils::is_square_attacked(board, d, moving_piece.piece_color_));
+        bool b_attacked = (BoardUtils::is_square_attacked(board, b, !moving_piece.piece_color_));
+        bool c_attacked = (BoardUtils::is_square_attacked(board, c, !moving_piece.piece_color_));
+        bool d_attacked = (BoardUtils::is_square_attacked(board, d, !moving_piece.piece_color_));
 
         if (!b_occupied && !c_occupied && !d_occupied && !b_attacked && !c_attacked && !d_attacked) {
-            Move move = Move(square, Square("d1"), Piece(), true, false, false);
+            Move move = Move(square, Square("c1"), Piece(), true, false, false);
             king_moves_.push_back(move);
+            pseudo_legal_moves_.push_back(move);
         }
     }
 

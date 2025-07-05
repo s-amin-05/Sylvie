@@ -10,7 +10,8 @@
 
 int main(){
 
-    Board board = Board();
+    std::string fen = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2b1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1";
+    Board board = Board(fen);
 
     Move move1 = Move("e2e4");
     Move move2 = Move("e7e5");
@@ -25,29 +26,24 @@ int main(){
     // Move move3 = Move("e4e5");
     // Move move4 = Move("f7f5");
 
-    board.make_move(move1);
-    board.make_move(move2);
-    board.make_move(move3);
-    board.make_move(move4);
-    board.make_move(move5);
-    board.make_move(move6);
-    board.make_move(move7);
+    // board.make_move(move1);
+    // board.make_move(move2);
+    // board.make_move(move3);
+    // board.make_move(move4);
+    // board.make_move(move5);
+    // board.make_move(move6);
+    // board.make_move(move7);
 
-    if (BoardUtils::is_square_attacked(board, Square("h5"), !board.turn_)) {
-        std::cout << "true";
-    }else {
-        std::cout << "false";
+
+    // board.unmake_move();
+    // board.unmake_move();
+
+    Square square = Square("e1");
+    MoveGenerator generator = MoveGenerator();
+    generator.generate_king_moves(board, square);
+
+    for (auto move : generator.king_moves_) {
+        std::cout << move.get_move_notation() << std::endl;
     }
-
-    // board.unmake_move();
-    // board.unmake_move();
-
-    // Square square = Square("e5");
-    // MoveGenerator generator = MoveGenerator();
-    // generator.generate_pawn_moves(board, square);
-    //
-    // for (auto move : generator.pawn_moves_) {
-    //     std::cout << move.get_move_notation() << std::endl;
-    // }
 
 }
