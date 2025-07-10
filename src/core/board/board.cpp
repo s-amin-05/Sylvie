@@ -5,6 +5,22 @@
 
 Board::Board(): Board(chess::starting_pos_fen) {}
 
+void validate_piece_index_board(Board& board) {
+    for (int sq = 0; sq < 64; ++sq) {
+        const Piece& piece = board.board_[sq];
+        if (piece.piece_type_ != chess::piece::EMPTY) {
+            int index = board.piece_index_board_[sq];
+            if (index == -1) {
+                std::cerr << "[CORRUPTION] Tracked piece at "
+                          << Square(sq).get_square_notation()
+                          << " has invalid index!" << std::endl;
+                board.print_board();
+                std::abort();
+            }
+        }
+    }
+}
+
 Board::Board(const std::string &position_fen):
     turn_(chess::color::WHITE),
     castling_rights_(0xF),
@@ -85,7 +101,7 @@ void Board::setup_using_fen() {
                 board_[square.square_] = piece;
 
                 // place pieces on respective piece_lists
-                int piece_list_type = (int)piece.piece_type_ - 1 + 6*(piece.piece_color_ == chess::color::WHITE ? 0 : 1);
+                int piece_list_type = (int)piece.piece_type_ - 1 + 6*(piece.piece_color_ == chess::color::BLACK ? 1 : 0);
                 int piece_count = piece_counts_[piece_list_type];
                 int index = piece_count;
                 piece_lists_[piece_list_type][index] = Square(square.square_);
@@ -177,11 +193,11 @@ void Board::make_move(Move move) {
     if (move.is_en_passant_) {
         // remove the captured pawn
         if (moving_piece.piece_color_ == chess::color::WHITE) {
-            captured_square.square_ = target_square.square_ - 8;
+            captured_square = Square(target_square.square_ - 8);
             captured_piece_ = Piece(board_[captured_square.square_]);
 
         }else {
-            captured_square.square_ = target_square.square_ + 8;
+            captured_square = Square(target_square.square_ + 8);
             captured_piece_ = Piece(board_[captured_square.square_]);
         }
 
@@ -250,6 +266,19 @@ void Board::make_move(Move move) {
     // update piece-list values
     // capturing and not promotion (also works for enpassants)
     if (move.is_capture_ && move.promotion_piece_.piece_type_ == chess::piece::EMPTY) {
+        if (piece_index_board_[captured_square.square_] == -1) {
+          //   std::cout << "[DEBUG] About to remove piece:" << std::endl;
+          //   std::cout << "  Captured piece = " << captured_piece_.get_piece_notation() << std::endl;
+          //   std::cout << "  Captured square = " << captured_square.get_square_notation() << std::endl;
+          //   std::cout << "  Index in piece_index_board = " << piece_index_board_[captured_square.square_] << std::endl;
+          //   std::cout << "[MOVE] is_capture: " << move.is_capture_
+          //     << ", promotion: " << move.promotion_piece_.get_piece_notation()
+          //     << ", from: " << starting_square.get_square_notation()
+          //     << ", to: " << target_square.get_square_notation() << std::endl;
+          //   std::cout << "[DEBUG] Board piece at " << target_square.get_square_notation() << ": "
+          // << board_[target_square.square_].get_piece_notation() << std::endl;
+
+        }
         PieceListUtils::remove_piece_from_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_counts_);
         PieceListUtils::update_piece_list(moving_piece, starting_square, target_square, piece_lists_, piece_index_board_);
     }
@@ -290,7 +319,11 @@ void Board::make_move(Move move) {
 
     // log board state
     logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");
-    logger_.log_board_to_file(*this, move, false);
+    logger_.log_board_to_file(*this, move, true);
+
+
+    // validations
+    validate_piece_index_board(*this);
 
 }
 
@@ -314,13 +347,10 @@ void Board::unmake_move() {
     Square captured_square = Square();
     Square castling_rook_start_square = Square();
     Square castling_rook_end_square = Square();
-    captured_piece_ = state.captured_piece;
 
     // restore irreversible state
-    castling_rights_ = state.castling_rights;
-    enpassant_target_ = Square(state.enpassant_target.square_);
-    halfmove_count_ = state.halfmove_count;
-    repetition_count_ = state.repetition_count;
+    captured_piece_ = state.captured_piece;
+
 
     if (move.is_capture_) {
         captured_square = Square(target_square.square_);
@@ -330,13 +360,14 @@ void Board::unmake_move() {
     if (move.is_capture_ && move.is_en_passant_) {
         if (moving_piece.piece_color_ == chess::color::WHITE) {
             captured_square = Square(target_square.square_ - 8);
-            board_[captured_square.square_] = captured_piece_;
+            board_[captured_square.square_] = Piece(captured_piece_.get_piece_notation());
         }else {
             captured_square = Square(target_square.square_ + 8);
-            board_[captured_square.square_] = captured_piece_;
+            board_[captured_square.square_] = Piece(captured_piece_.get_piece_notation());
         }
+        board_[target_square.square_] = Piece();
     }else if (move.is_capture_) {
-        board_[captured_square.square_] = captured_piece_;
+        board_[captured_square.square_] = Piece(captured_piece_.get_piece_notation());
     }else {
         // for regular moves just empty the target square;
         board_[target_square.square_] = Piece();
@@ -362,7 +393,7 @@ void Board::unmake_move() {
     }
 
     // put moving piece back to its original place & handle promotion
-    board_[starting_square.square_] = (move.promotion_piece_.piece_type_ == chess::piece::EMPTY) ? moving_piece : Piece(chess::piece::PAWN, moving_piece.piece_color_);
+    board_[starting_square.square_] = (move.promotion_piece_.piece_type_ == chess::piece::EMPTY) ? Piece(moving_piece.get_piece_notation()) : Piece(chess::piece::PAWN, moving_piece.piece_color_);
 
     // update piece-list values
     // capturing and not promotion (also works for enpassants)
@@ -373,13 +404,13 @@ void Board::unmake_move() {
     // capturing and promotion
     else if (move.is_capture_ && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
         PieceListUtils::remove_piece_from_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_counts_);
-        PieceListUtils::add_piece_to_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_counts_);
+        PieceListUtils::add_piece_to_piece_list(Piece(chess::piece::PAWN, moving_piece.piece_color_), starting_square, piece_lists_, piece_index_board_, piece_counts_);
         PieceListUtils::add_piece_to_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_counts_);
     }
     // not capturing and promotion
     else if (!move.is_capture_ && move.promotion_piece_.piece_type_ != chess::piece::EMPTY) {
         PieceListUtils::remove_piece_from_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_counts_);
-        PieceListUtils::add_piece_to_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_counts_);
+        PieceListUtils::add_piece_to_piece_list(Piece(chess::piece::PAWN, moving_piece.piece_color_), starting_square, piece_lists_, piece_index_board_, piece_counts_);
     }
     // castling (not capturing and not promotion is implied)
     else if (move.is_castling_) {
@@ -393,10 +424,17 @@ void Board::unmake_move() {
         PieceListUtils::update_piece_list(moving_piece, target_square, starting_square, piece_lists_, piece_index_board_);
     }
 
+    castling_rights_ = state.castling_rights;
+    enpassant_target_ = Square(state.enpassant_target.square_);
+    halfmove_count_ = state.halfmove_count;
+    repetition_count_ = state.repetition_count;
+
 
     // log state after unmake move
     logger_.log_to_file("[UNMAKE MOVE " + move.get_move_notation() + "]");
     logger_.log_board_to_file(*this, move, false);
+
+    validate_piece_index_board(*this);
 }
 
 

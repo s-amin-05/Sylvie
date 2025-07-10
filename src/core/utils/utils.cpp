@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <sstream>
 #include <utils.h>
@@ -140,26 +141,45 @@ namespace MoveUtils {
 }
 
 namespace PieceListUtils {
-    void add_piece_to_piece_list(Piece &piece, Square &square, std::vector<std::vector<Square>> &piece_lists,int *piece_index_board, std::vector<int> &piece_counts) {
+    void add_piece_to_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists,int *piece_index_board, std::vector<int> &piece_counts) {
         int piece_list_type = get_piece_list_type(piece);
         int count = piece_counts[piece_list_type];
+        if (count >= piece_lists[piece_list_type].size()) {
+            std::cerr << "ERROR: Too many pieces of type " << piece_list_type << "!\n";
+            std::exit(EXIT_FAILURE);
+        }
         piece_lists[piece_list_type][count] = Square(square.square_);
         piece_index_board[square.square_] = count;
         piece_counts[piece_list_type]++;
     }
 
-    void remove_piece_from_piece_list(Piece &piece, Square &square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts) {
+    void remove_piece_from_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts) {
         int piece_list_type = get_piece_list_type(piece);
+        if (piece_counts[piece_list_type] <= 0) {
+            std::cerr << "ERROR: Removing piece from empty list for type " << piece_list_type << "\n";
+            std::exit(EXIT_FAILURE);
+        }
         int piece_count = --piece_counts[piece_list_type];
 
         int index = piece_index_board[square.square_];
+        // some thing is fucking causing the index to be -1
+        // some move is fukced up and removing a piece which doesn't exist
+        // if (index < 0 || index > piece_count) {
+        //     std::cerr << "Invalid index: " << index
+        //               << " at square: " << square.square_
+        //               << " in list: " << piece_list_type << "\n";
+        //     std::exit(EXIT_FAILURE);
+        // }
+
         Square last_square = piece_lists[piece_list_type][piece_count];
-        piece_lists[piece_list_type][index] = Square(last_square.square_);
-        piece_index_board[last_square.square_] = index;
+        if (index != piece_count) {
+            piece_lists[piece_list_type][index] = last_square;
+            piece_index_board[last_square.square_] = index;
+        }
         piece_index_board[square.square_] = -1;
     }
 
-    void update_piece_list(Piece &piece, Square &starting_square, Square &target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board) {
+    void update_piece_list(Piece piece, Square starting_square, Square target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board) {
         int piece_list_type = get_piece_list_type(piece);
         int index = piece_index_board[starting_square.square_];
         piece_lists[piece_list_type][index] = Square(target_square.square_);
@@ -273,7 +293,10 @@ namespace BoardUtils {
 
                 bool is_secondary = attacking_piece.piece_type_ == secondary_piece_type;
                 bool is_queen = attacking_piece.piece_type_ == chess::piece::QUEEN;
+                // enemy piece blocks
                 if (attacking_piece.piece_type_ != chess::piece::EMPTY && !(is_secondary || is_queen)) break;
+                // friendly piece blocks
+                if (attacking_piece.piece_type_ != chess::piece::EMPTY && attacking_piece.piece_color_ != attacking_color) break;
                 if ((is_secondary || is_queen) && attacking_piece.piece_color_ == attacking_color) {
                     return true;
                 }

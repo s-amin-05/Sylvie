@@ -5,11 +5,43 @@
 // might add some use later
 MoveGenerator::MoveGenerator() = default;
 
+void MoveGenerator::generate_legal_moves(Board &board) {
+    if (pseudo_legal_moves_.size() > 0) {
+        //clear all moves before adding legal moves
+        pseudo_legal_moves_.clear();
+        legal_moves_.clear();
+        king_moves_.clear();
+        sliding_moves_.clear();
+        knight_moves_.clear();
+        pawn_moves_.clear();
+    }
+    // generate all pseudo legal moves
+    generate_all_pseudo_legal_moves(board);
+    // filter out illegal moves
+
+
+    for (auto move: pseudo_legal_moves_) {
+        board.make_move(move);
+        if (!is_in_check(board)) legal_moves_.emplace_back(move);
+        board.unmake_move();
+    }
+    
+}
+
+bool MoveGenerator::is_in_check(Board &board) {
+    int king_color = (board.turn_ == chess::color::BLACK) ? chess::piecelists::WHITE_KING : chess::piecelists::BLACK_KING;
+    Square king_square = Square(board.piece_lists_[king_color][0]);
+    return BoardUtils::is_square_attacked(board, king_square, board.turn_);
+}
+
+
+
 void MoveGenerator::generate_all_pseudo_legal_moves(Board &board) {
     int i = board.turn_==chess::color::WHITE ? 0 : 6;
-    int n = board.turn_==chess::color::WHITE ? 6 : 12;
+    int n = i+6;
     for (i; i<n; i++) {
-        for (auto square: board.piece_lists_[i]) {
+        for (int j=0; j<board.piece_counts_[i]; j++) {
+            Square square = Square(board.piece_lists_[i][j]);
             generate_pseudo_moves(board, square);
         }
     }
@@ -97,14 +129,16 @@ void MoveGenerator::generate_sliding_piece_moves(Board &board, Square &square) {
                 }
                 min_distance_squares[dir_index_start] = i;
                 move = Move(square, curr_square_num, Piece(), false, true, false );
-                sliding_moves_.push_back(move);
-                pseudo_legal_moves_.push_back(move);
+                sliding_moves_.emplace_back(move);
+                pseudo_legal_moves_.emplace_back(move);
+                nonking_moves.emplace_back(move);
                 break;
             }
             // no piece found -> normal move can be made
             move = Move(square, curr_square_num, Piece(), false, false, false );
-            sliding_moves_.push_back(move);
-            pseudo_legal_moves_.push_back(move);
+            sliding_moves_.emplace_back(move);
+            pseudo_legal_moves_.emplace_back(move);
+            nonking_moves.emplace_back(move);
         }
 
     }
@@ -131,28 +165,28 @@ void MoveGenerator::generate_knight_moves(Board &board, Square &square) {
     }
 
     // east side
-    if (square.file_ == chess::file::F || square.file_ == chess::file::G) {
+    if (square.file_ == chess::file::G || square.file_ == chess::file::H) {
         direction_offsets[5] = direction_offsets[6] = 0;
     }
-    if (square.file_ == chess::file::G) {
+    if (square.file_ == chess::file::H) {
         direction_offsets[4] = direction_offsets[7] = 0;
     }
 
-    // north side
-    if (square.rank_ == 6 || square.rank_ == 7) {
-        direction_offsets[1] = direction_offsets[6] = 0;
-    }
-    if (square.rank_ == 7) {
-        direction_offsets[0] = direction_offsets[7] = 0;
-    }
-
-    // south side
-    if (square.rank_ == 0 || square.rank_ == 1) {
-        direction_offsets[3] = direction_offsets[4] = 0;
-    }
-    if (square.rank_ == 0) {
-        direction_offsets[2] = direction_offsets[5] = 0;
-    }
+    // // north side
+    // if (square.rank_ == 6 || square.rank_ == 7) {
+    //     direction_offsets[1] = direction_offsets[6] = 0;
+    // }
+    // if (square.rank_ == 7) {
+    //     direction_offsets[0] = direction_offsets[7] = 0;
+    // }
+    //
+    // // south side
+    // if (square.rank_ == 0 || square.rank_ == 1) {
+    //     direction_offsets[3] = direction_offsets[4] = 0;
+    // }
+    // if (square.rank_ == 0) {
+    //     direction_offsets[2] = direction_offsets[5] = 0;
+    // }
 
     // loop over all directions
     for (int i = 0; i < 8; i++) {
@@ -160,6 +194,7 @@ void MoveGenerator::generate_knight_moves(Board &board, Square &square) {
             continue;
 
         Square target_square = Square(square.square_ + direction_offsets[i]);
+        if (target_square.square_ < 0 || target_square.square_ > 63) continue;
         Piece target_piece = board.board_[target_square.square_];
         bool is_capture = false;
 
@@ -171,8 +206,9 @@ void MoveGenerator::generate_knight_moves(Board &board, Square &square) {
         }
 
         Move move = Move(square, target_square, Piece(), false, is_capture, false);
-        knight_moves_.push_back(move);
-        pseudo_legal_moves_.push_back(move);
+        knight_moves_.emplace_back(move);
+        pseudo_legal_moves_.emplace_back(move);
+        nonking_moves.emplace_back(move);
     }
 }
 
@@ -240,14 +276,16 @@ void MoveGenerator::generate_pawn_moves(Board &board, Square &square) {
             for (int i = 0; i < 4; i++) {
                 promotion_piece = Piece(promotion_piece_types[i], moving_piece.piece_color_);
                 Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
-                pawn_moves_.push_back(move);
-                pseudo_legal_moves_.push_back(move);
+                pawn_moves_.emplace_back(move);
+                pseudo_legal_moves_.emplace_back(move);
+                nonking_moves.emplace_back(move);
             }
         }else {
             promotion_piece = Piece();
             Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
-            pawn_moves_.push_back(move);
-            pseudo_legal_moves_.push_back(move);
+            pawn_moves_.emplace_back(move);
+            pseudo_legal_moves_.emplace_back(move);
+            nonking_moves.emplace_back(move);
         }
     }
     // double pawn pushes
@@ -256,8 +294,9 @@ void MoveGenerator::generate_pawn_moves(Board &board, Square &square) {
         for (int i = 0; i < 2; i++) {
             Square target_square = Square(square.square_ + pawn_forward_offsets[i]);
             Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
-            pawn_moves_.push_back(move);
-            pseudo_legal_moves_.push_back(move);
+            pawn_moves_.emplace_back(move);
+            pseudo_legal_moves_.emplace_back(move);
+            nonking_moves.emplace_back(move);
         }
     }
 
@@ -271,14 +310,16 @@ void MoveGenerator::generate_pawn_moves(Board &board, Square &square) {
             for (int j=0; j < 4; j++) {
                 promotion_piece = Piece(promotion_piece_types[j], moving_piece.piece_color_);
                 Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
-                pawn_moves_.push_back(move);
-                pseudo_legal_moves_.push_back(move);
+                pawn_moves_.emplace_back(move);
+                pseudo_legal_moves_.emplace_back(move);
+                nonking_moves.emplace_back(move);
             }
         }else {
             promotion_piece = Piece();
             Move move = Move(square, target_square, promotion_piece, is_castling, is_capture, is_enpassant);
-            pawn_moves_.push_back(move);
-            pseudo_legal_moves_.push_back(move);
+            pawn_moves_.emplace_back(move);
+            pseudo_legal_moves_.emplace_back(move);
+            nonking_moves.emplace_back(move);
         }
 
     }
@@ -317,6 +358,7 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
     // check for normal moves
     for (int i=0; i<8; i++) {
         if (!direction_offsets[i]) continue;
+        if (square.square_ + direction_offsets[i] < 0 || square.square_ + direction_offsets[i] > 63) continue;
         Square target_square = Square(square.square_ + direction_offsets[i]);
         Piece target_piece = board.board_[target_square.square_];
         if (target_piece.piece_type_ != chess::piece::EMPTY && target_piece.piece_color_ == moving_piece.piece_color_) continue;
@@ -327,8 +369,8 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         else if (target_piece.piece_type_ != chess::piece::EMPTY && target_piece.piece_color_ != moving_piece.piece_color_) {
             move = Move(square, target_square, Piece(), false, true, false);
         }
-        king_moves_.push_back(move);
-        pseudo_legal_moves_.push_back(move);
+        king_moves_.emplace_back(move);
+        pseudo_legal_moves_.emplace_back(move);
     }
 
     // check for castling
@@ -346,8 +388,8 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         bool f_attacked = (BoardUtils::is_square_attacked(board, f, !moving_piece.piece_color_));
         if (!g_occupied && !f_occupied && !g_attacked && !f_attacked) {
             Move move = Move(square, Square("g1"), Piece(), true, false, false);
-            king_moves_.push_back(move);
-            pseudo_legal_moves_.push_back(move);
+            king_moves_.emplace_back(move);
+            pseudo_legal_moves_.emplace_back(move);
         }
     }else if (is_queenside) {
         // check for occupancy
@@ -363,8 +405,8 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
 
         if (!b_occupied && !c_occupied && !d_occupied && !b_attacked && !c_attacked && !d_attacked) {
             Move move = Move(square, Square("c1"), Piece(), true, false, false);
-            king_moves_.push_back(move);
-            pseudo_legal_moves_.push_back(move);
+            king_moves_.emplace_back(move);
+            pseudo_legal_moves_.emplace_back(move);
         }
     }
 

@@ -73,7 +73,7 @@ void Logger::log_board_to_file(Board &board, Move move, bool detailed) {
             log_move_stack_to_file(board.move_stack_);
 
             // board state (irreversible stack)
-            log_irreversible_state_stack_to_file(board.irreversible_state_stack_);
+            // log_irreversible_state_stack_to_file(board.irreversible_state_stack_);
         }
 
         log_to_file(chess::debug::line_seperator);
@@ -140,7 +140,7 @@ void Logger::log_board_state_to_file(Board &board) {
 void Logger::log_irreversible_state_to_file(Board &board) {
     if (!debug_flag) return;
     file_ << "Irreversible Board State:- \n";
-    file_ << "Captured Piece: " << board.captured_piece_.get_piece_notation() << "\n";
+    // file_ << "Captured Piece: " << board.captured_piece_.get_piece_notation() << "\n";
     file_ << "Castling Rights: " << (board.castling_rights_ & 0xF) << "\n";
     file_ << "En Passant Target: " << board.enpassant_target_.get_square_notation() << "\n";
     file_ << "Halfmove Count: " << board.halfmove_count_ << "\n";
@@ -159,7 +159,7 @@ void Logger::log_move_to_file(Move move) {
 
 void Logger::log_move_stack_to_file(std::stack<Move> &move_stack) {
     if (!debug_flag) return;
-    file_ << "Move Stack:- \n";
+    file_ << "Move Stack: ";
     std::stack<Move> temp_stack;
 
     // if empty
@@ -178,14 +178,15 @@ void Logger::log_move_stack_to_file(std::stack<Move> &move_stack) {
     int i=0;
     while (!temp_stack.empty()) {
         Move move = temp_stack.top();
-        file_ << "Move " << i++ << ":\n";
-        log_move_to_file(move);
+        file_  << move.get_move_notation() <<" ";
+
         move_stack.push(move);
         temp_stack.pop();
     }
-    file_ << "\n";
+    file_ << "\n\n";
 
 }
+
 
 void Logger::log_irreversible_state_stack_to_file(std::stack<IrreversibleState> &irreversible_state_stack) {
     if (!debug_flag) return;

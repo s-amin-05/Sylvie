@@ -13,6 +13,7 @@ class MoveGenerator {
     std::vector<Move> pawn_moves_;
     std::vector<Move> king_moves_;
     std::vector<Move> knight_moves_;
+    std::vector<Move> nonking_moves;
 
     // legal moves are moves after which our king is not in check
     std::vector<Move> legal_moves_;
@@ -32,6 +33,8 @@ class MoveGenerator {
     void generate_king_moves(Board &board, Square &square);
 
     void generate_knight_moves(Board &board, Square &square);
+
+    bool is_in_check(Board &board);
 };
 
 
