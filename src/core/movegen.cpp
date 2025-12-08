@@ -391,7 +391,8 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
             king_moves_.emplace_back(move);
             pseudo_legal_moves_.emplace_back(move);
         }
-    }else if (is_queenside) {
+    }
+    if (is_queenside) {
         // check for occupancy
         Square b = Square(chess::file::B, rank);
         Square c = Square(chess::file::C, rank);

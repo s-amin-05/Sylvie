@@ -20,11 +20,13 @@ target_include_directories(${EngineName} PUBLIC
     ${CMAKE_SOURCE_DIR}/include/${EngineName}/core/board/
 )
 
-target_compile_options(${EngineName} PUBLIC 
-    -O3
-    # $<$<BOOL:${USE_POPCNT}>:-msse4.2>
-)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_options(${EngineName} PUBLIC -O3)
+endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(${EngineName} PUBLIC -g -O0)
+endif()
 # Linking core and debug libraries
 add_subdirectory(src/core)
 target_link_libraries(${EngineName} PUBLIC core)

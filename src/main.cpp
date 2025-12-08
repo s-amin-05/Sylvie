@@ -10,7 +10,7 @@
 
 int main(){
 
-    std::string fen = "r1bqkb1r/pppp1ppp/2n2n2/4p3/2b1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1";
+    std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
     Board board = Board(fen);
 
     Move move1 = Move("e2e4");
@@ -40,9 +40,9 @@ int main(){
 
     Square square = Square("e1");
     MoveGenerator generator = MoveGenerator();
-    generator.generate_legal_moves(board);
+    generator.generate_all_pseudo_legal_moves(board);
 
-    for (auto move : generator.legal_moves_) {
+    for (auto move : generator.pseudo_legal_moves_) {
         std::cout << move.get_move_notation() << std::endl;
     }
 
