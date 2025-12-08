@@ -1,3 +1,4 @@
+#include <iostream>
 #include <movegen.h>
 
 #include "utils.h"
@@ -6,7 +7,7 @@
 MoveGenerator::MoveGenerator() = default;
 
 void MoveGenerator::generate_legal_moves(Board &board) {
-    if (pseudo_legal_moves_.size() > 0) {
+    if (!pseudo_legal_moves_.empty()) {
         //clear all moves before adding legal moves
         pseudo_legal_moves_.clear();
         legal_moves_.clear();
@@ -29,21 +30,27 @@ void MoveGenerator::generate_legal_moves(Board &board) {
 }
 
 bool MoveGenerator::is_in_check(Board &board) {
-    int king_color = (board.turn_ == chess::color::BLACK) ? chess::piecelists::WHITE_KING : chess::piecelists::BLACK_KING;
-    Square king_square = Square(board.piece_lists_[king_color][0]);
+    bool king_color = !board.turn_;
+    // Square king_square = Square(board.piece_lists_[king_color][0]);
+    Square king_square;
+    for (int sq=0; sq<64; sq++) {
+        auto piece = Piece(board.board_[sq].piece_type_, board.board_[sq].piece_color_);
+        // std::cout << piece.get_piece_notation() << std::endl;
+        if (piece.piece_type_ == chess::piece::KING && piece.piece_color_ == king_color) {
+            king_square = Square(sq);
+            break;
+        }
+    }
     return BoardUtils::is_square_attacked(board, king_square, board.turn_);
 }
 
 
 
 void MoveGenerator::generate_all_pseudo_legal_moves(Board &board) {
-    int i = board.turn_==chess::color::WHITE ? 0 : 6;
-    int n = i+6;
-    for (i; i<n; i++) {
-        for (int j=0; j<board.piece_counts_[i]; j++) {
-            Square square = Square(board.piece_lists_[i][j]);
-            generate_pseudo_moves(board, square);
-        }
+
+    for (int sq=0; sq<64; sq++) {
+        Square square = Square(sq);
+        generate_pseudo_moves(board, square);
     }
 }
 

@@ -86,17 +86,17 @@ struct PerftTest {
 
 void run_perft_tests() {
     std::vector<PerftTest> tests = {
-        // {
-        //     "Initial Position",
-        //     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        //     {0,
-        //      20,
-        //      400,
-        //      8902,
-        //      197281,
-        //      4865609,
-        //      119060324}
-        // },
+        {
+            "Initial Position",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            {0,
+             20,
+             400,
+             8902,
+             197281,
+             4865609,
+             119060324}
+        },
         {
             "Kiwipete",
             "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",

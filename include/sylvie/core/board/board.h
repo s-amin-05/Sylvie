@@ -41,12 +41,7 @@ public:
     int repetition_count_;
     int halfmove_count_;
 
-    // adding piece-lists because looping over <=32 squares is better than looping over 64
-    // these will be used for generating bitboards later
-    std::vector<std::vector<Square>> piece_lists_;
-    // used to store piece-list index of each piece on the board
-    int piece_index_board_[64];
-    std::vector<int> piece_counts_;
+
     Piece captured_piece_;
 
     // // bitboards :)
