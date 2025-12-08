@@ -365,6 +365,7 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
     // check for normal moves
     for (int i=0; i<8; i++) {
         if (!direction_offsets[i]) continue;
+        // may remove to optimize
         if (square.square_ + direction_offsets[i] < 0 || square.square_ + direction_offsets[i] > 63) continue;
         Square target_square = Square(square.square_ + direction_offsets[i]);
         Piece target_piece = board.board_[target_square.square_];
@@ -394,7 +395,7 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         bool g_attacked = (BoardUtils::is_square_attacked(board, g, !moving_piece.piece_color_));
         bool f_attacked = (BoardUtils::is_square_attacked(board, f, !moving_piece.piece_color_));
         if (!g_occupied && !f_occupied && !g_attacked && !f_attacked) {
-            Move move = Move(square, Square("g1"), Piece(), true, false, false);
+            Move move = Move(square, g, Piece(), true, false, false);
             king_moves_.emplace_back(move);
             pseudo_legal_moves_.emplace_back(move);
         }
@@ -407,12 +408,12 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         bool b_occupied = (board.board_[b.square_].piece_type_ != chess::piece::EMPTY);
         bool c_occupied = (board.board_[c.square_].piece_type_ != chess::piece::EMPTY);
         bool d_occupied = (board.board_[d.square_].piece_type_ != chess::piece::EMPTY);
-        bool b_attacked = (BoardUtils::is_square_attacked(board, b, !moving_piece.piece_color_));
+        // bool b_attacked = (BoardUtils::is_square_attacked(board, b, !moving_piece.piece_color_));
         bool c_attacked = (BoardUtils::is_square_attacked(board, c, !moving_piece.piece_color_));
         bool d_attacked = (BoardUtils::is_square_attacked(board, d, !moving_piece.piece_color_));
 
-        if (!b_occupied && !c_occupied && !d_occupied && !b_attacked && !c_attacked && !d_attacked) {
-            Move move = Move(square, Square("c1"), Piece(), true, false, false);
+        if (!b_occupied && !c_occupied && !d_occupied && !c_attacked && !d_attacked) {
+            Move move = Move(square, c, Piece(), true, false, false);
             king_moves_.emplace_back(move);
             pseudo_legal_moves_.emplace_back(move);
         }
