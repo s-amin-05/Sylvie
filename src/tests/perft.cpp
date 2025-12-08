@@ -160,11 +160,12 @@ void run_perft_tests() {
 
 int main() {
     {
-        // std::string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
-        // Board board = Board(fen);
-        // perft_divide(1, board);
+        std::string fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+        Board board = Board(fen);
+        board.make_move(Move("e2e3"));
+        perft_divide(1, board);
         // time_perft(5, board);
-        run_perft_tests();
+        // run_perft_tests();
 
     }
 

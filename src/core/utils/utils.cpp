@@ -197,7 +197,7 @@ namespace BoardUtils {
 
     bool is_square_attacked(Board &board, Square square, bool attacking_color) {
         // check for pawns
-        int pawn_attack_offset[4] = {9, 7, -7, -9};
+        int pawn_attack_offset[4] = {9, 7, -9, -7};
         if (square.file_ == chess::file::A) {
             pawn_attack_offset[0] = pawn_attack_offset[2] = 0;
         }else if (square.file_ == chess::file::H) {
