@@ -91,17 +91,12 @@ struct PerftTest {
 void run_perft_test_suite() {
     std::vector<PerftTest> tests = {
         {
-            "Initial Position",
+            "Position 1 (Initial Position)",
             "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
             {0, 20, 400, 8902, 197281, 4865609, 119060324}
         },
         {
-            "Position 4",
-            "r3k2r/p1pp1pb1/bn2Qnp1/3PN3/1p2P3/2N2q1p/PPPBBPPP/R3K2R b KQkq - 1 1",
-            {0, 4, 188, 8731, 372338, 16825938}
-        },
-        {
-            "Kiwipete",
+            "Position 2 (Kiwipete)",
             "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
             {0, 48, 2039, 97862, 4085603, 193690690}
         },
@@ -109,7 +104,23 @@ void run_perft_test_suite() {
             "Position 3",
             "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
             {0, 14, 191, 2812, 43238, 674624, 11030083}
+        },
+        {
+            "Position 4",
+            "r3k2r/p1pp1pb1/bn2Qnp1/3PN3/1p2P3/2N2q1p/PPPBBPPP/R3K2R b KQkq - 1 1",
+            {0, 4, 188, 8731, 372338, 16825938}
+        },
+        {
+            "Position 5",
+            "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
+            {0, 44, 1486, 62379, 2103487, 89941194}
+        },
+        {
+            "Position 6",
+            "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10",
+            {0, 46, 2079, 89890, 3894594, 164075551}
         }
+
     };
 
     for (auto &t : tests) {
