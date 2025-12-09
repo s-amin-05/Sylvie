@@ -1,3 +1,4 @@
+#include <iostream>
 #include <movegen.h>
 
 #include "utils.h"
@@ -6,7 +7,7 @@
 MoveGenerator::MoveGenerator() = default;
 
 void MoveGenerator::generate_legal_moves(Board &board) {
-    if (pseudo_legal_moves_.size() > 0) {
+    if (!pseudo_legal_moves_.empty()) {
         //clear all moves before adding legal moves
         pseudo_legal_moves_.clear();
         legal_moves_.clear();
@@ -29,21 +30,27 @@ void MoveGenerator::generate_legal_moves(Board &board) {
 }
 
 bool MoveGenerator::is_in_check(Board &board) {
-    int king_color = (board.turn_ == chess::color::BLACK) ? chess::piecelists::WHITE_KING : chess::piecelists::BLACK_KING;
-    Square king_square = Square(board.piece_lists_[king_color][0]);
+    bool king_color = !board.turn_;
+    // Square king_square = Square(board.piece_lists_[king_color][0]);
+    Square king_square;
+    for (int sq=0; sq<64; sq++) {
+        auto piece = Piece(board.board_[sq].piece_type_, board.board_[sq].piece_color_);
+        // std::cout << piece.get_piece_notation() << std::endl;
+        if (piece.piece_type_ == chess::piece::KING && piece.piece_color_ == king_color) {
+            king_square = Square(sq);
+            break;
+        }
+    }
     return BoardUtils::is_square_attacked(board, king_square, board.turn_);
 }
 
 
 
 void MoveGenerator::generate_all_pseudo_legal_moves(Board &board) {
-    int i = board.turn_==chess::color::WHITE ? 0 : 6;
-    int n = i+6;
-    for (i; i<n; i++) {
-        for (int j=0; j<board.piece_counts_[i]; j++) {
-            Square square = Square(board.piece_lists_[i][j]);
-            generate_pseudo_moves(board, square);
-        }
+
+    for (int sq=0; sq<64; sq++) {
+        Square square = Square(sq);
+        generate_pseudo_moves(board, square);
     }
 }
 
@@ -358,6 +365,7 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
     // check for normal moves
     for (int i=0; i<8; i++) {
         if (!direction_offsets[i]) continue;
+        // may remove to optimize
         if (square.square_ + direction_offsets[i] < 0 || square.square_ + direction_offsets[i] > 63) continue;
         Square target_square = Square(square.square_ + direction_offsets[i]);
         Piece target_piece = board.board_[target_square.square_];
@@ -374,11 +382,16 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
     }
 
     // check for castling
-    bool is_kingside = (board.castling_rights_ & (bitmask::castling::WHITE_KING | bitmask::castling::BLACK_KING));
-    bool is_queenside = (board.castling_rights_ & (bitmask::castling::WHITE_QUEEN | bitmask::castling::BLACK_QUEEN));
+    int kingside_bitmask = (board.turn_ == chess::color::WHITE) ? bitmask::castling::WHITE_KING : bitmask::castling::BLACK_KING;
+    int queenside_bitmask = (board.turn_ == chess::color::WHITE) ? bitmask::castling::WHITE_QUEEN : bitmask::castling::BLACK_QUEEN;
+
+    bool is_kingside = (board.castling_rights_ & kingside_bitmask);
+    bool is_queenside = (board.castling_rights_ & queenside_bitmask);
     int rank = (moving_piece.piece_color_ == chess::color::WHITE) ? 0 : 7;
 
-    if (is_kingside) {
+    bool king_in_check = BoardUtils::is_square_attacked(board, square, !board.turn_);
+
+    if (is_kingside && !king_in_check) {
         // check for occupancy
         Square g = Square(chess::file::G, rank);
         Square f = Square(chess::file::F, rank);
@@ -387,12 +400,12 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         bool g_attacked = (BoardUtils::is_square_attacked(board, g, !moving_piece.piece_color_));
         bool f_attacked = (BoardUtils::is_square_attacked(board, f, !moving_piece.piece_color_));
         if (!g_occupied && !f_occupied && !g_attacked && !f_attacked) {
-            Move move = Move(square, Square("g1"), Piece(), true, false, false);
+            Move move = Move(square, g, Piece(), true, false, false);
             king_moves_.emplace_back(move);
             pseudo_legal_moves_.emplace_back(move);
         }
     }
-    if (is_queenside) {
+    if (is_queenside && !king_in_check) {
         // check for occupancy
         Square b = Square(chess::file::B, rank);
         Square c = Square(chess::file::C, rank);
@@ -400,12 +413,12 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
         bool b_occupied = (board.board_[b.square_].piece_type_ != chess::piece::EMPTY);
         bool c_occupied = (board.board_[c.square_].piece_type_ != chess::piece::EMPTY);
         bool d_occupied = (board.board_[d.square_].piece_type_ != chess::piece::EMPTY);
-        bool b_attacked = (BoardUtils::is_square_attacked(board, b, !moving_piece.piece_color_));
+        // bool b_attacked = (BoardUtils::is_square_attacked(board, b, !moving_piece.piece_color_));
         bool c_attacked = (BoardUtils::is_square_attacked(board, c, !moving_piece.piece_color_));
         bool d_attacked = (BoardUtils::is_square_attacked(board, d, !moving_piece.piece_color_));
 
-        if (!b_occupied && !c_occupied && !d_occupied && !b_attacked && !c_attacked && !d_attacked) {
-            Move move = Move(square, Square("c1"), Piece(), true, false, false);
+        if (!b_occupied && !c_occupied && !d_occupied && !c_attacked && !d_attacked) {
+            Move move = Move(square, c, Piece(), true, false, false);
             king_moves_.emplace_back(move);
             pseudo_legal_moves_.emplace_back(move);
         }

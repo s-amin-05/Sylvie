@@ -47,10 +47,10 @@ void Logger::log_board_to_file(Board &board, Move move, bool detailed) {
         log_pieces_to_file(board.board_);
 
         // print piece lists
-        log_piece_list_to_file(board.piece_lists_, board.piece_counts_);
+        // log_piece_list_to_file(board.piece_lists_, board.piece_counts_);
 
         // print piece index board
-        log_piece_index_board_to_file(board.piece_index_board_);
+        // log_piece_index_board_to_file(board.piece_index_board_);
 
         // board fen
         file_ << "FEN: \"" << board.board_fen_ << "\"\n\n";
@@ -95,37 +95,37 @@ void Logger::log_pieces_to_file(Piece board[]) {
     file_ << "\n";
 }
 
-void Logger::log_piece_list_to_file(std::vector<std::vector<Square>> &piece_lists, std::vector<int> &piece_counts) {
-    if (!debug_flag) return;
-    file_ << "Piece Lists:- \n\n";
-    for (int i= 0; i < 12; i++) {
-        int piece_type = (i%6)+1;
-        bool piece_color = (i/6 == 0? chess::color::WHITE: chess::color::BLACK);
-        Piece piece = Piece(piece_type, piece_color);
-        file_ << piece.get_piece_notation() << " : " << piece_counts[i]<< " { ";
-        for (int j=0; j < piece_counts[i]; j++) {
-            file_ << piece_lists[i][j].get_square_notation() << " ";
-        }
-        file_ << "} \n";
-    }
-    file_ << "\n";
-}
-
-void Logger::log_piece_index_board_to_file(int *piece_index_board) {
-    if (!debug_flag) return;
-    file_ << "Piece Index Board:- \n\n";
-    for (int i=0; i < 8; i++) {
-        for (int j=0; j < 8; j++) {
-            if (piece_index_board[(7-i)*8+j] == -1) {
-                file_ << ". ";
-            }else {
-                file_ << piece_index_board[(7-i)*8+j] << " ";
-            }
-        }
-        file_ << "\n";
-    }
-    file_ << "\n";
-}
+// void Logger::log_piece_list_to_file(std::vector<std::vector<Square>> &piece_lists, std::vector<int> &piece_counts) {
+//     if (!debug_flag) return;
+//     file_ << "Piece Lists:- \n\n";
+//     for (int i= 0; i < 12; i++) {
+//         int piece_type = (i%6)+1;
+//         bool piece_color = (i/6 == 0? chess::color::WHITE: chess::color::BLACK);
+//         Piece piece = Piece(piece_type, piece_color);
+//         file_ << piece.get_piece_notation() << " : " << piece_counts[i]<< " { ";
+//         for (int j=0; j < piece_counts[i]; j++) {
+//             file_ << piece_lists[i][j].get_square_notation() << " ";
+//         }
+//         file_ << "} \n";
+//     }
+//     file_ << "\n";
+// }
+//
+// void Logger::log_piece_index_board_to_file(int *piece_index_board) {
+//     if (!debug_flag) return;
+//     file_ << "Piece Index Board:- \n\n";
+//     for (int i=0; i < 8; i++) {
+//         for (int j=0; j < 8; j++) {
+//             if (piece_index_board[(7-i)*8+j] == -1) {
+//                 file_ << ". ";
+//             }else {
+//                 file_ << piece_index_board[(7-i)*8+j] << " ";
+//             }
+//         }
+//         file_ << "\n";
+//     }
+//     file_ << "\n";
+// }
 
 
 
