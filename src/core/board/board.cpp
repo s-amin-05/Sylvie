@@ -175,7 +175,7 @@ void Board::make_move(Move move) {
     if (moving_piece.piece_type_ == chess::piece::KING) {
         // castling rights
         // if the king moves, castling rights will be lost for him
-        castling_rights_ &= moving_piece.piece_color_ == chess::color::WHITE ? ~12U : ~3U;
+        castling_rights_ &= moving_piece.piece_color_ == chess::color::WHITE ? ~(bitmask::castling::WHITE_KING | bitmask::castling::WHITE_QUEEN) : ~(bitmask::castling::BLACK_KING | bitmask::castling::BLACK_QUEEN);
 
         if (move.is_castling_) {
             switch (target_square.square_) {

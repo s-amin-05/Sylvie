@@ -197,15 +197,20 @@ namespace BoardUtils {
 
     bool is_square_attacked(Board &board, Square square, bool attacking_color) {
         // check for pawns
-        int pawn_attack_offset[4] = {9, 7, -9, -7};
+        int pawn_attack_offset[4] = {
+            movegen::direction_offset::NORTH_EAST,
+            movegen::direction_offset::NORTH_WEST,
+            movegen::direction_offset::SOUTH_EAST,
+            movegen::direction_offset::SOUTH_WEST
+        };
         if (square.file_ == chess::file::A) {
-            pawn_attack_offset[0] = pawn_attack_offset[2] = 0;
-        }else if (square.file_ == chess::file::H) {
             pawn_attack_offset[1] = pawn_attack_offset[3] = 0;
+        }else if (square.file_ == chess::file::H) {
+            pawn_attack_offset[0] = pawn_attack_offset[2] = 0;
         }
 
         for (int i=(attacking_color==chess::color::BLACK? 0: 2); i<(attacking_color==chess::color::BLACK? 2: 4); i++) {
-            if (!pawn_attack_offset[i]) continue;
+            if (pawn_attack_offset[i] == 0) continue;
             Piece attacking_piece = board.board_[square.square_ + pawn_attack_offset[i]];
             if (attacking_piece.piece_type_ == chess::piece::PAWN && attacking_piece.piece_color_ == attacking_color) {
                 return true;

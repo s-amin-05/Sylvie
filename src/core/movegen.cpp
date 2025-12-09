@@ -382,11 +382,16 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
     }
 
     // check for castling
-    bool is_kingside = (board.castling_rights_ & (bitmask::castling::WHITE_KING | bitmask::castling::BLACK_KING));
-    bool is_queenside = (board.castling_rights_ & (bitmask::castling::WHITE_QUEEN | bitmask::castling::BLACK_QUEEN));
+    int kingside_bitmask = (board.turn_ == chess::color::WHITE) ? bitmask::castling::WHITE_KING : bitmask::castling::BLACK_KING;
+    int queenside_bitmask = (board.turn_ == chess::color::WHITE) ? bitmask::castling::WHITE_QUEEN : bitmask::castling::BLACK_QUEEN;
+
+    bool is_kingside = (board.castling_rights_ & kingside_bitmask);
+    bool is_queenside = (board.castling_rights_ & queenside_bitmask);
     int rank = (moving_piece.piece_color_ == chess::color::WHITE) ? 0 : 7;
 
-    if (is_kingside) {
+    bool king_in_check = BoardUtils::is_square_attacked(board, square, !board.turn_);
+
+    if (is_kingside && !king_in_check) {
         // check for occupancy
         Square g = Square(chess::file::G, rank);
         Square f = Square(chess::file::F, rank);
@@ -400,7 +405,7 @@ void MoveGenerator::generate_king_moves(Board &board, Square &square) {
             pseudo_legal_moves_.emplace_back(move);
         }
     }
-    if (is_queenside) {
+    if (is_queenside && !king_in_check) {
         // check for occupancy
         Square b = Square(chess::file::B, rank);
         Square c = Square(chess::file::C, rank);
