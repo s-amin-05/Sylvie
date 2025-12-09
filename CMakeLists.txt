@@ -8,7 +8,12 @@ set(EngineName "sylvie")
 
 cmake_minimum_required(VERSION 3.15)
 project(${EngineName} VERSION 1.0)
-add_executable(${EngineName} src/main.cpp)
+add_executable(${EngineName} src/main.cpp
+        src/bot.cpp
+        src/uci.cpp
+        include/sylvie/bot.h
+        include/sylvie/uci.h
+)
 
 # add executable for custom gui (maybe)
 
