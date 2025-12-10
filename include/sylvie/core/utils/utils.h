@@ -7,6 +7,7 @@ using u8=uint8_t;
 
 namespace Utils {
     std::vector<std::string> split(const std::string& s, char delim);
+    std::string trim(const std::string& s);
     bool is_digit(char c);
 }
 

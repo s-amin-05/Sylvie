@@ -1,8 +1,16 @@
-//
-// Created by amin05 on 12/9/25.
-//
+#pragma once
+#include <string>
 
-#ifndef SYLVIE_UCI_H
-#define SYLVIE_UCI_H
+namespace UCI {
+    void handle_input(std::string &input);
 
-#endif // SYLVIE_UCI_H
+    void handle_uci(std::vector<std::string> &args);
+
+    void handle_debug(std::vector<std::string> &args);
+
+    void handle_isready(std::vector<std::string> &args);
+
+    void handle_position(std::vector<std::string> &args);
+
+    void handle_go(std::vector<std::string> &args);
+}

@@ -1,11 +1,11 @@
-#pragma once
-#include <climits>
+// #pragma once
+// #include <climits>
 #include <movegen.h>
 #include <search.h>
 #include <eval.h>
 
 namespace Search {
-    void handleBestEvaluation(int &best_evaluation, int &evaluation, Move &best_move, Move &move) {
+    void handle_best_evaluation(int &best_evaluation, int &evaluation, Move &best_move, Move &move) {
         if (evaluation > best_evaluation) {
             best_evaluation = evaluation;
             best_move = move;
@@ -33,7 +33,7 @@ namespace Search {
             board.make_move(move);
 
             int evaluation = -minmax_search(depth-1, board, best_move);
-            handleBestEvaluation(best_evaluation, evaluation, best_move, move);
+            handle_best_evaluation(best_evaluation, evaluation, best_move, move);
 
             board.unmake_move();
         }
