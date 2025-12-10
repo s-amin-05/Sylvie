@@ -2,11 +2,9 @@
 #include <iostream>
 #include <move.h>
 #include <string>
+#include <eval.h>
+#include <search.h>
 
-#include <movegen.h>
-
-#include "eval.h"
-#include "utils.h"
 
 
 int main(){
@@ -48,6 +46,10 @@ int main(){
     // }
 
     // make evaluation
-    std::cout << Evaluation::evaluate(board);
+    Move best_move = Move();
+    int evaluation = Search::minmax_search(4, board, best_move);
+
+    std::cout << "Best Move: " <<best_move.get_move_notation() << std::endl;
+    std::cout << "Evaluation: " << evaluation << std::endl;
 
 }
