@@ -5,12 +5,13 @@
 
 #include <movegen.h>
 
+#include "eval.h"
 #include "utils.h"
 
 
 int main(){
 
-    std::string fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+    std::string fen = "8/2p5/3p4/KP6/1R3p1k/8/4P1P1/8 w - - 0 1";
     Board board = Board(fen);
 
     Move move1 = Move("e2e4");
@@ -38,12 +39,15 @@ int main(){
     // board.unmake_move();
     // board.unmake_move();
 
-    Square square = Square("e1");
-    MoveGenerator generator = MoveGenerator();
-    generator.generate_legal_moves(board);
+    // Square square = Square("e1");
+    // MoveGenerator generator = MoveGenerator();
+    // generator.generate_legal_moves(board);
+    //
+    // for (auto move : generator.legal_moves_) {
+    //     std::cout << move.get_move_notation() << std::endl;
+    // }
 
-    for (auto move : generator.legal_moves_) {
-        std::cout << move.get_move_notation() << std::endl;
-    }
+    // make evaluation
+    std::cout << Evaluation::evaluate(board);
 
 }
