@@ -48,6 +48,10 @@ void Searcher::search_best_move(int depth, Board &board) {
     best_evaluation_ = -inf;
 
     // board.print_board();
+    if (move_generator.legal_moves_.size() == 1) {
+        best_move_ = move_generator.legal_moves_[0];
+        best_evaluation_ = -minmax_search(depth-1, board);
+    }
 
     for (auto move: move_generator.legal_moves_) {
 
