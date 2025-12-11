@@ -1,4 +1,3 @@
-#pragma once
 #include <functional>
 #include <uci.h>
 #include <unordered_map>
@@ -67,8 +66,8 @@ void UCI::handle_position() {
 }
 
 void UCI::handle_go() {
-    if (args_.empty()) return;
-    int depth;
+    // if (args_.empty()) return;
+
     int btime, winc, binc;
     int wtime = btime = winc = binc = 0;
 
@@ -92,6 +91,8 @@ void UCI::handle_go() {
 
 
     // start search
+    std::string best_move_print = engine_.search_best_move();
+    std::cout << "bestmove " << best_move_print << std::endl;
 }
 
 

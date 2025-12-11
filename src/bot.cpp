@@ -5,10 +5,9 @@
 
 Engine::Engine() {
      debug_flag_ = false;
-     evaluation_ = 0;
      time_increment_black_ = time_increment_white_ = time_remaining_black_ = time_remaining_white_ = 0;
      move_generator_ = MoveGenerator();
-     best_move_ = Move();
+     // TODO: add iterative deepening
      depth_ = 4;
  }
 
@@ -27,7 +26,6 @@ bool Engine::get_debug_flag() {
 
 void Engine::clear_engine_state() {
      board_.reset_board();
-     best_move_ = Move();
      move_generator_ = MoveGenerator();
      Engine();
  }
@@ -35,6 +33,7 @@ void Engine::clear_engine_state() {
 
 
 void Engine::setup_board(const std::string &fen_string) {
+     board_.reset_board();
      board_.board_fen_ = fen_string;
      board_.setup_using_fen();
 }
@@ -44,16 +43,13 @@ void Engine::make_move(Move &move) {
 }
 
 
-void Engine::set_best_eval() {
-     Search::minmax_search(depth_, board_, best_move_);
- }
-
-std::string Engine::get_best_move() {
-    return best_move_.get_move_notation();
+std::string Engine::search_best_move() {
+    searcher_.search_best_move(depth_, board_);
+    return searcher_.get_best_move().get_move_notation();
 }
 
 float Engine::get_evaluation() {
-    return evaluation_ / 100.0f;
+    return searcher_.get_best_evaluation() / 100.0f;
 }
 
 void Engine::set_times(int time_remaining_white, int time_remaining_black, int time_increment_white,

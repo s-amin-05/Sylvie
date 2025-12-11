@@ -1,7 +1,7 @@
 #pragma once
 #include <board.h>
 #include <movegen.h>
-#include <atomic>
+#include <search.h>
 
 class Engine {
 
@@ -12,13 +12,13 @@ class Engine {
     Board board_;
     std::string fen_string_;
     MoveGenerator move_generator_;
-    Move best_move_;
-    int evaluation_;
+    Searcher searcher_;
     int depth_;
+
+    // TODO: put them in search
     int time_remaining_black_, time_remaining_white_;
     int time_increment_black_, time_increment_white_;
 
-    std::atomic<bool> stop_search_;
 
 
 public:
@@ -36,13 +36,12 @@ public:
 
     void make_move(Move &move);
 
-    // set best
-    void set_best_eval();
-    std::string get_best_move();
+    std::string search_best_move();
     float get_evaluation();
 
 
     void set_times(int time_remaining_white, int time_remaining_black, int time_increment_white, int time_increment_black);
+
 
 
 };

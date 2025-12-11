@@ -2,6 +2,9 @@
 #include <constants.h>
 #include <iostream>
 #include <movegen.h>
+
+#include <bot.h>
+#include "search.h"
 #define ANSI_RESET  "\033[0m"
 #define ANSI_RED    "\033[31m"
 #define ANSI_GREEN  "\033[32m"
@@ -157,14 +160,23 @@ void run_perft_test_suite() {
 
 int main() {
     {
-        std::string fen = "r3k2r/p1pp1pb1/bn2Qnp1/3PN3/1p2P3/2N2q1p/PPPBBPPP/R3K2R b KQkq - 1 1";
-        Board board = Board(fen);
-        // board.make_move(Move("a1b1"));
-        // board.make_move(Move("f6d5"));
-        // board.make_move(Move("f3f7"));
-        // perft_divide(1, board);
-        // time_perft(5, board);
-        run_perft_test_suite();
+        std::string fen = "r3k2r/Pppp1ppp/1b3nbN/nP2Q3/qBP1P3/5N2/P2P2PP/5R1K b kq - 1 3";
+        // Board board = Board(fen);
+        // // board.make_move(Move("a1b1"));
+        // // board.make_move(Move("f6d5"));
+        // // board.make_move(Move("f3f7"));
+        // // perft_divide(1, board);
+        // // time_perft(5, board);
+        // MoveGenerator move_generator = MoveGenerator();
+        // move_generator.generate_legal_moves(board);
+        // // for (auto move: move_generator.legal_moves_) {
+        // //     std::cout << move.get_move_notation() << std::endl;
+        // // }
+
+        Engine engine = Engine();
+        engine.setup_board(fen);
+        std::cout << engine.search_best_move() << std::endl;
+        // run_perft_test_suite();
 
     }
 
