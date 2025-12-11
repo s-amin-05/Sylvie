@@ -23,14 +23,14 @@ void MoveGenerator::generate_legal_moves(Board &board) {
 
     for (auto move: pseudo_legal_moves_) {
         board.make_move(move);
-        if (!is_in_check(board)) legal_moves_.emplace_back(move);
+        if (!is_in_check(board, !board.turn_)) legal_moves_.emplace_back(move);
         board.unmake_move();
     }
     
 }
 
-bool MoveGenerator::is_in_check(Board &board) {
-    bool king_color = !board.turn_;
+bool MoveGenerator::is_in_check(Board &board, bool color) {
+    bool king_color = color;
     // Square king_square = Square(board.piece_lists_[king_color][0]);
     Square king_square;
     for (int sq=0; sq<64; sq++) {
@@ -41,7 +41,7 @@ bool MoveGenerator::is_in_check(Board &board) {
             break;
         }
     }
-    return BoardUtils::is_square_attacked(board, king_square, board.turn_);
+    return BoardUtils::is_square_attacked(board, king_square, !color);
 }
 
 

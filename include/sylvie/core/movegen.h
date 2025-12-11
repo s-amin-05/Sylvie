@@ -34,7 +34,7 @@ class MoveGenerator {
 
     void generate_knight_moves(Board &board, Square &square);
 
-    bool is_in_check(Board &board);
+    bool is_in_check(Board &board, bool color);
 };
 
 

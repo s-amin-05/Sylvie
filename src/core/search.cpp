@@ -4,9 +4,11 @@
 #include <movegen.h>
 #include <search.h>
 
+constexpr int inf = 20000;
+
 Searcher::Searcher() {
     best_move_ = Move();
-    best_evaluation_ = -INT_MAX;
+    best_evaluation_ = 0;
 }
 
 
@@ -19,22 +21,22 @@ int Searcher::minmax_search(int depth, Board &board) {
     move_generator.generate_legal_moves(board);
 
     if (move_generator.legal_moves_.empty()) {
-        if (move_generator.is_in_check(board)) {
-            return INT_MAX * (board.turn_ == chess::color::WHITE ? -1 : 1);
+        if (move_generator.is_in_check(board, board.turn_)) {
+            return -inf;
         }
         return 0;
     }
 
-    int max_evaluation = -INT_MAX;
+    int max_evaluation = -inf;
 
     for (Move move: move_generator.legal_moves_) {
         board.make_move(move);
 
         int evaluation = -minmax_search(depth-1, board);
+        max_evaluation = std::max(evaluation, max_evaluation);
 
         board.unmake_move();
 
-        max_evaluation = std::max(evaluation, max_evaluation);
     }
     return max_evaluation;
 }
@@ -43,9 +45,9 @@ void Searcher::search_best_move(int depth, Board &board) {
     auto move_generator = MoveGenerator();
     move_generator.generate_legal_moves(board);
 
-    best_evaluation_ = -INT_MAX;
+    best_evaluation_ = -inf;
 
-    board.print_board();
+    // board.print_board();
 
     for (auto move: move_generator.legal_moves_) {
 

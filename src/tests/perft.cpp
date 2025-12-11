@@ -45,7 +45,7 @@ u64 perft_pseudo(int depth, Board &board) {
     for (auto move: generator.pseudo_legal_moves_) {
         // std::cout << "Making... " <<move.get_move_notation() << std::endl;
         board.make_move(move);
-        if (!generator.is_in_check(board))
+        if (!generator.is_in_check(board, !board.turn_))
             nodes += perft(depth - 1, board);
         // std::cout << "Unmaking... " <<move.get_move_notation() << std::endl;
         board.unmake_move();
@@ -160,7 +160,7 @@ void run_perft_test_suite() {
 
 int main() {
     {
-        std::string fen = "r3k2r/Pppp1ppp/1b3nbN/nP2Q3/qBP1P3/5N2/P2P2PP/5R1K b kq - 1 3";
+        std::string fen = "r1k1n3/Pppp1ppp/1b4bN/nP2N3/qBP1P3/8/P2P2PP/3R3K b - - 1 7";
         // Board board = Board(fen);
         // // board.make_move(Move("a1b1"));
         // // board.make_move(Move("f6d5"));
