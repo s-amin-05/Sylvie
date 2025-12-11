@@ -27,6 +27,52 @@ namespace Utils {
         return s.substr(start, end - start);
     }
 
+    std::string get_fen_from_args(std::vector<std::string> &args) {
+        std::string fen;
+
+        auto it = std::find(args.begin(), args.end(), "fen");
+        if (it == args.end())
+            return "";
+
+        ++it;
+
+        for (; it != args.end(); ++it) {
+            if (*it == "moves")
+                break;
+
+            if (!fen.empty())
+                fen += " ";
+
+            fen += *it;
+        }
+        return fen;
+    }
+
+    std::vector<std::string> get_moves_from_args(std::vector<std::string> &args) {
+        std::vector<std::string> moves;
+
+        auto it = std::find(args.begin(), args.end(), "moves");
+        if (it == args.end())
+            return moves;
+
+        ++it;
+
+        for (; it != args.end(); ++it) {
+            moves.push_back(*it);
+        }
+        return moves;
+    }
+
+    std::string get_arg_after_keyword(std::vector<std::string> &args, std::string keyword) {
+        auto it = std::find(args.begin(), args.end(), keyword);
+        if (it == args.end())
+            return "";
+
+        ++it;
+        return *it;
+    }
+
+
     bool is_digit(char c) {
         return c >= '0' && c <= '9';
     }

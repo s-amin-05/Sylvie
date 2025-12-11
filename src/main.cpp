@@ -5,6 +5,7 @@
 #include <eval.h>
 #include <search.h>
 
+#include <uci.h>
 
 
 int main(){
@@ -45,11 +46,18 @@ int main(){
     //     std::cout << move.get_move_notation() << std::endl;
     // }
 
-    // make evaluation
-    Move best_move = Move();
-    int evaluation = Search::minmax_search(4, board, best_move);
+    // // make evaluation
+    // Move best_move = Move();
+    // int evaluation = Search::minmax_search(4, board, best_move);
+    //
+    // std::cout << "Best Move: " <<best_move.get_move_notation() << std::endl;
+    // std::cout << "Evaluation: " << evaluation << std::endl;
 
-    std::cout << "Best Move: " <<best_move.get_move_notation() << std::endl;
-    std::cout << "Evaluation: " << evaluation << std::endl;
+    auto uci_parser = UCI();
 
+    std::string line;
+
+    while (std::getline(std::cin, line)) {
+        uci_parser.handle_input(line);
+    }
 }

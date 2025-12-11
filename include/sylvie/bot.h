@@ -1,6 +1,7 @@
 #pragma once
 #include <board.h>
 #include <movegen.h>
+#include <atomic>
 
 class Engine {
 
@@ -17,6 +18,8 @@ class Engine {
     int time_remaining_black_, time_remaining_white_;
     int time_increment_black_, time_increment_white_;
 
+    std::atomic<bool> stop_search_;
+
 
 public:
     // initialize MoveGenerator, debug flag as false
@@ -29,10 +32,7 @@ public:
 
     void clear_engine_state();
 
-    void set_fen_string(const std::string &fen_string);
-    std::string get_fen_string();
-
-    void setup_board();
+    void setup_board(const std::string &fen_string);
 
     void make_move(Move &move);
 

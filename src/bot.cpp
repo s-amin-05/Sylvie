@@ -1,4 +1,3 @@
-#pragma once
 #include <bot.h>
 #include <iostream>
 
@@ -33,17 +32,10 @@ void Engine::clear_engine_state() {
      Engine();
  }
 
-void Engine::set_fen_string(const std::string &fen_string) {
-     fen_string_ = fen_string;
- }
 
-// remove maybe
-std::string Engine::get_fen_string() {
-     return fen_string_;
- }
 
-void Engine::setup_board() {
-     board_.board_fen_ = fen_string_;
+void Engine::setup_board(const std::string &fen_string) {
+     board_.board_fen_ = fen_string;
      board_.setup_using_fen();
 }
 
@@ -71,6 +63,8 @@ void Engine::set_times(int time_remaining_white, int time_remaining_black, int t
     time_increment_white_ = time_increment_white;
     time_increment_black_ = time_increment_black;
 }
+
+
 
 
 
