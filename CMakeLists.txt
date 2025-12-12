@@ -40,10 +40,12 @@ target_link_libraries(${EngineName} PUBLIC core)
  # Tests
 add_executable(tests
     src/tests/perft.cpp
+    src/bot.cpp
+    src/uci.cpp
 )
 
 target_include_directories(tests PUBLIC
-    ${CMAKE_SOURCE_DIR}/include/${EngineName}/tests/
+    ${CMAKE_SOURCE_DIR}/include/${EngineName}/
 )
 
 target_link_libraries(tests PRIVATE core)

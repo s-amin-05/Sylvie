@@ -7,6 +7,10 @@ using u8=uint8_t;
 
 namespace Utils {
     std::vector<std::string> split(const std::string& s, char delim);
+    std::string trim(const std::string& s);
+    std::string get_fen_from_args(std::vector<std::string> &args);
+    std::vector<std::string> get_moves_from_args(std::vector<std::string> &args);
+    std::string get_arg_after_keyword(std::vector<std::string> &args, std::string keyword);
     bool is_digit(char c);
 }
 

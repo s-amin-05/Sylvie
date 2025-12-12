@@ -327,7 +327,11 @@ void Board::unmake_move() {
 
 
 void Board::reset_board() {
-    setup_using_fen();
+    // board_fen_ = chess::starting_pos_fen;
+    for (int sq=0; sq < 64; sq++) {
+        board_[sq] = Piece();
+    }
+    // setup_using_fen();
 }
 
 void Board::print_board() {
