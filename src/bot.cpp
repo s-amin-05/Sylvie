@@ -8,7 +8,7 @@ Engine::Engine() {
      time_increment_black_ = time_increment_white_ = time_remaining_black_ = time_remaining_white_ = 0;
      move_generator_ = MoveGenerator();
      // TODO: add iterative deepening
-     depth_ = 5;
+     depth_ = 4;
  }
 
 void Engine::print_engine_info() {
@@ -67,7 +67,7 @@ void Engine::search_loop() {
 
     if (searcher_.stop_search_)
         std::cout << "info string search stopped early\n";
-    std::cout << searcher_.get_best_move().get_move_notation() << std::endl;
+    std::cout << "bestmove " << searcher_.get_best_move().get_move_notation() << std::endl;
 }
 
 
