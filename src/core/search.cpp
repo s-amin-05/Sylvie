@@ -4,7 +4,6 @@
 #include <movegen.h>
 #include <search.h>
 
-constexpr int inf = 20000;
 
 Searcher::Searcher() {
     best_move_ = Move();
@@ -24,12 +23,12 @@ int Searcher::minmax_search(int depth, Board &board) {
 
     if (move_generator.legal_moves_.empty()) {
         if (move_generator.is_in_check(board, board.turn_)) {
-            return -inf;
+            return -chess::evaluation::INF;
         }
         return 0;
     }
 
-    int max_evaluation = -inf;
+    int max_evaluation = -chess::evaluation::INF;
 
     for (Move move: move_generator.legal_moves_) {
         board.make_move(move);
@@ -47,7 +46,7 @@ void Searcher::search_best_move(int depth, Board &board) {
     auto move_generator = MoveGenerator();
     move_generator.generate_legal_moves(board);
 
-    best_evaluation_ = -inf;
+    best_evaluation_ = -chess::evaluation::INF;
     best_move_ = move_generator.legal_moves_[0];
 
     for (auto move: move_generator.legal_moves_) {
