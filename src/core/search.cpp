@@ -46,10 +46,9 @@ void Searcher::search_best_move(int depth, Board &board) {
     move_generator.generate_legal_moves(board);
 
     best_evaluation_ = -inf;
-
+    best_move_ = move_generator.legal_moves_[0];
 
     for (auto move: move_generator.legal_moves_) {
-        best_move_ = move;
 
         board.make_move(move);
 
