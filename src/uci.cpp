@@ -20,6 +20,7 @@ void UCI::handle_input(std::string &input) {
     uci_handler["isready"] = [this](){handle_isready();};
     uci_handler["position"] = [this](){handle_position();};
     uci_handler["go"] = [this](){handle_go();};
+    uci_handler["stop"] = [this](){handle_stop();};
     uci_handler["quit"] = [this](){handle_quit();};
 
     auto it = uci_handler.find(command_type_);
@@ -91,8 +92,14 @@ void UCI::handle_go() {
 
 
     // start search
-    std::string best_move_print = engine_.search_best_move();
-    std::cout << "bestmove " << best_move_print << std::endl;
+    engine_.start_search();
+
+    // std::string best_move_print = engine_.search_best_move();
+    // std::cout << "bestmove " << best_move_print << std::endl;
+}
+
+void UCI::handle_stop() {
+    engine_.stop_search();
 }
 
 

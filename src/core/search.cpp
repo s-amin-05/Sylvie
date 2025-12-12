@@ -13,6 +13,8 @@ Searcher::Searcher() {
 
 
 int Searcher::minmax_search(int depth, Board &board) {
+    if (stop_search_) return Evaluation::evaluate(board);
+
     if (depth == 0) {
         return Evaluation::evaluate(board);
     }
@@ -61,7 +63,6 @@ void Searcher::search_best_move(int depth, Board &board) {
             best_move_ = move;
         }
     }
-
 }
 
 Move Searcher::get_best_move() {
@@ -72,6 +73,6 @@ int Searcher::get_best_evaluation() {
     return best_evaluation_;
 }
 
-void Searcher::set_stop_search_flag(bool flag) {
-    stop_search_ = flag;
-}
+// void Searcher::set_stop_search_flag(bool flag) {
+//     stop_search_ = flag;
+// }

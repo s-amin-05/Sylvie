@@ -2,6 +2,8 @@
 #include <board.h>
 #include <movegen.h>
 #include <search.h>
+#include <atomic>
+#include <thread>
 
 class Engine {
 
@@ -11,15 +13,19 @@ class Engine {
     bool debug_flag_;
     Board board_;
     std::string fen_string_;
+    // put it in search
     MoveGenerator move_generator_;
     Searcher searcher_;
     int depth_;
+
+
 
     // TODO: put them in search
     int time_remaining_black_, time_remaining_white_;
     int time_increment_black_, time_increment_white_;
 
 
+    void search_loop();
 
 public:
     // initialize MoveGenerator, debug flag as false
@@ -36,6 +42,8 @@ public:
 
     void make_move(Move &move);
 
+    void start_search();
+    void stop_search();
     std::string search_best_move();
     float get_evaluation();
 

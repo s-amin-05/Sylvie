@@ -23,5 +23,7 @@ public:
 
     void handle_go();
 
+    void handle_stop();
+
     void handle_quit();
 };

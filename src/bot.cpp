@@ -8,13 +8,13 @@ Engine::Engine() {
      time_increment_black_ = time_increment_white_ = time_remaining_black_ = time_remaining_white_ = 0;
      move_generator_ = MoveGenerator();
      // TODO: add iterative deepening
-     depth_ = 4;
+     depth_ = 5;
  }
 
 void Engine::print_engine_info() {
      std::cout << "id name " << name_ << std::endl;
      std::cout << "id author " << author_ << std::endl;
- }
+}
 
 void Engine::set_debug_flag(bool flag) {
      debug_flag_ = flag;
@@ -42,11 +42,34 @@ void Engine::make_move(Move &move) {
     board_.make_move(move);
 }
 
+void Engine::start_search() {
+    searcher_.stop_search_ = false;
 
-std::string Engine::search_best_move() {
-    searcher_.search_best_move(depth_, board_);
-    return searcher_.get_best_move().get_move_notation();
+    // Prevent multiple threads
+    if (searcher_.search_thread_.joinable())
+        searcher_.search_thread_.join();
+
+    // Launch thread
+    searcher_.search_thread_ = std::thread([&]() {
+        search_loop();
+    });
 }
+
+void Engine::stop_search() {
+    searcher_.stop_search_ = true;
+
+    if (searcher_.search_thread_.joinable())
+        searcher_.search_thread_.join();
+}
+
+void Engine::search_loop() {
+    searcher_.search_best_move(depth_, board_);
+
+    if (searcher_.stop_search_)
+        std::cout << "info string search stopped early\n";
+    std::cout << searcher_.get_best_move().get_move_notation() << std::endl;
+}
+
 
 float Engine::get_evaluation() {
     return searcher_.get_best_evaluation() / 100.0f;
