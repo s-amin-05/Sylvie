@@ -3,7 +3,7 @@
 
 Piece::Piece() : piece_type_(chess::piece::EMPTY), piece_color_(chess::color::BLACK) {}
 
-Piece::Piece(u8 piece_type, bool piece_color) {
+Piece::Piece(const u8 piece_type, const bool piece_color) {
     piece_type_ = piece_type;
     piece_color_ = piece_color;
 }

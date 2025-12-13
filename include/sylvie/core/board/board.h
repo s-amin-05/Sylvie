@@ -4,7 +4,6 @@
 #include <piece.h>
 #include <square.h>
 #include <stack>
-#include <vector>
 #include <string>
 #include <utils/logger.h>
 
@@ -70,7 +69,7 @@ public:
     // helper functions
     void setup_using_fen();
 
-    void print_board();
+    void print_board() const;
 
 };
 

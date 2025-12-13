@@ -22,7 +22,7 @@ public:
 
     Move();
 
-    Move(std::string move_notation);
+    Move(const std::string &move_notation);
 
     Move(Square starting_square, Square target_square, Piece promotion_piece, bool is_castling, bool is_capture, bool is_en_passant);
 

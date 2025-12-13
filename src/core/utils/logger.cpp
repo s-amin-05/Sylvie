@@ -9,7 +9,7 @@
     bool debug_flag = false;
 #endif
 
-Logger::Logger(std::string filename) {
+Logger::Logger(const std::string &filename) {
     if (debug_flag) {
         file_.open(filename, std::ios::out | std::ios::trunc);
         if (!file_.is_open()) {
@@ -19,7 +19,7 @@ Logger::Logger(std::string filename) {
 
 }
 
-void Logger::log_to_file(std::string msg) {
+void Logger::log_to_file(const std::string &msg) {
     if (!debug_flag) return;
     if (file_.is_open()) {
         file_ << msg << std::endl;
@@ -39,7 +39,7 @@ Logger::~Logger() {
     close_file();
 }
 
-void Logger::log_board_to_file(Board &board, Move move, bool detailed) {
+void Logger::log_board_to_file(Board &board, const Move &move, const bool detailed) {
     if (!debug_flag) return;
     if (file_.is_open()) {
 
@@ -129,7 +129,7 @@ void Logger::log_pieces_to_file(Piece board[]) {
 
 
 
-void Logger::log_board_state_to_file(Board &board) {
+void Logger::log_board_state_to_file(const Board &board) {
     if (!debug_flag) return;
     file_ << "Incremental Board State:- \n";
     file_ << "Turn: " << (board.turn_ == chess::color::WHITE? "White" : "Black") << "\n";
@@ -137,7 +137,7 @@ void Logger::log_board_state_to_file(Board &board) {
     file_ << "Fullmove Number: " << board.fullmove_number_ << "\n\n";
 }
 
-void Logger::log_irreversible_state_to_file(Board &board) {
+void Logger::log_irreversible_state_to_file(const Board &board) {
     if (!debug_flag) return;
     file_ << "Irreversible Board State:- \n";
     // file_ << "Captured Piece: " << board.captured_piece_.get_piece_notation() << "\n";
@@ -147,7 +147,7 @@ void Logger::log_irreversible_state_to_file(Board &board) {
     file_ << "Repetition Count: " << board.repetition_count_ << "\n\n";
 }
 
-void Logger::log_move_to_file(Move move) {
+void Logger::log_move_to_file(const Move &move) {
     if (!debug_flag) return;
     file_ << "Starting Square: " << move.starting_square_.get_square_notation() << "\n";
     file_ << "Target Square: " << move.target_square_.get_square_notation() << "\n";

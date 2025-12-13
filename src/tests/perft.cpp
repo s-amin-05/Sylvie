@@ -189,33 +189,20 @@ void run_search_benchmark(const std::string& test_name, const std::string& fen, 
 }
 
 void run_search_test_suite() {
-    int search_depth = 4;
+    int search_depth = 5;
 
-    // for (const auto& test : tests) {
-    //     run_search_benchmark(test.name, test.fen, search_depth);
-    // }
-    auto test = tests[3];
-    run_search_benchmark(test.name, "r3k2r/p1ppqpb1/Bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPB1PPP/R3K2R b KQkq - 0 1", search_depth);
+    for (const auto& test : tests) {
+        run_search_benchmark(test.name, test.fen, search_depth);
+    }
+    // auto test = tests[3];
+    // run_search_benchmark(test.name, "r3k2r/p1ppqpb1/Bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPB1PPP/R3K2R b KQkq - 0 1", search_depth);
 
 }
 
 int main() {
     {
-        std::string fen = "r3k2r/p1pp1pb1/bn2Qnp1/3PN3/1p2P3/2N2q1p/PPPBBPPP/R3K2R b KQkq - 1 1";
-        Board board = Board(fen);
-        // // board.make_move(Move("a1b1"));
-        // // board.make_move(Move("f6d5"));
-        // // board.make_move(Move("f3f7"));
-        // // perft_divide(1, board);
-        // // time_perft(5, board);
-        // MoveGenerator move_generator = MoveGenerator();
-        // move_generator.generate_legal_moves(board);
-        // for (auto move: move_generator.legal_moves_) {
-        //     std::cout << move.get_move_notation() << std::endl;
-        // }
 
         run_search_test_suite();
-
 
     }
 

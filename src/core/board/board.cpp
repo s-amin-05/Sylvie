@@ -51,21 +51,21 @@ Board::Board(const std::string &position_fen):
 
 void Board::setup_using_fen() {
 
-    std::vector<std::string> fen_parts = Utils::split(board_fen_, ' ');
+    const std::vector<std::string> fen_parts = Utils::split(board_fen_, ' ');
 
     // fenParts[0] = piece_placement
-    std::vector<std::string> piece_placement = Utils::split(fen_parts[0], '/');
+    const std::vector<std::string> piece_placement = Utils::split(fen_parts[0], '/');
 
     for (int i = 0; i < 8; i++) {
         int j=0;
-        for (char c : piece_placement[i]) {
+        for (const char c : piece_placement[i]) {
             if (Utils::is_digit(c)) {
                 j += c - '0';
             }
             else {
                 // place the piece on board
-                Piece piece = Piece(c);
-                Square square = Square((7-i)*8 + j);
+                const auto piece = Piece(c);
+                const auto square = Square((7-i)*8 + j);
                 board_[square.square_] = piece;
                 j++;
             }
@@ -131,12 +131,12 @@ void Board::make_move(Move move) {
 
     // note: Board::enpassant_target_ is kept empty ONLY after setting move flags
     enpassant_target_ = Square();
-    Square starting_square = Square(move.starting_square_.square_);
-    Square target_square = Square(move.target_square_.square_);
-    Square captured_square = Square();
-    Piece moving_piece = Piece(board_[starting_square.square_]);
-    Square castling_rook_start_square = Square();
-    Square castling_rook_end_square = Square();
+    const auto starting_square = Square(move.starting_square_.square_);
+    const auto target_square = Square(move.target_square_.square_);
+    auto captured_square = Square();
+    auto moving_piece = Piece(board_[starting_square.square_]);
+    auto castling_rook_start_square = Square();
+    auto castling_rook_end_square = Square();
 
     if (move.is_capture_) {
         captured_piece_ = Piece(board_[target_square.square_]);
@@ -194,6 +194,8 @@ void Board::make_move(Move move) {
                 case chess::square::C8:
                     castling_rook_start_square = Square(chess::square::A8);
                     castling_rook_end_square = Square(chess::square::D8);
+                    break;
+                default:
                     break;
             }
             board_[castling_rook_start_square.square_] = Piece();
@@ -258,12 +260,12 @@ void Board::unmake_move() {
     Move move = move_stack_.top();
     move_stack_.pop();
 
-    Square starting_square = Square(move.starting_square_.square_);
-    Square target_square = Square(move.target_square_.square_);
-    Piece moving_piece = Piece(board_[target_square.square_]);
-    Square captured_square = Square();
-    Square castling_rook_start_square = Square();
-    Square castling_rook_end_square = Square();
+    const auto starting_square = Square(move.starting_square_.square_);
+    const auto target_square = Square(move.target_square_.square_);
+    const auto moving_piece = Piece(board_[target_square.square_]);
+    auto captured_square = Square();
+    auto castling_rook_start_square = Square();
+    auto castling_rook_end_square = Square();
 
     // restore irreversible state
     captured_piece_ = state.captured_piece;
@@ -334,7 +336,7 @@ void Board::reset_board() {
     // setup_using_fen();
 }
 
-void Board::print_board() {
+void Board::print_board() const {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             std::cout<<board_[(7-i)*8+j].get_piece_notation()<<" ";

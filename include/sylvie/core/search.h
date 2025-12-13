@@ -25,10 +25,10 @@ class Searcher {
     // depth needs to be passed for recursion
     void search_best_move(int depth, Board &board);
 
-    Move get_best_move();
-    int get_best_evaluation();
+    Move get_best_move() const;
+    int get_best_evaluation() const;
 
-    int get_nodes_searched();
+    u64 get_nodes_searched() const;
 
     // void set_stop_search_flag(bool flag);
 

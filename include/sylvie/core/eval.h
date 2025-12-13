@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 namespace Evaluation {
-    int evaluate(Board &board);
-    int count_material(Board &board, bool color);
+    int evaluate(const Board &board);
+    int count_material(const Board &board, bool color);
     int get_position_bonus(int piece_type, int square, bool color);
 }

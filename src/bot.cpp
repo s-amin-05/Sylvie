@@ -11,16 +11,16 @@ Engine::Engine() {
      depth_ = 4;
  }
 
-void Engine::print_engine_info() {
+void Engine::print_engine_info() const {
      std::cout << "id name " << name_ << std::endl;
      std::cout << "id author " << author_ << std::endl;
 }
 
-void Engine::set_debug_flag(bool flag) {
+void Engine::set_debug_flag(const bool flag) {
      debug_flag_ = flag;
  }
 
-bool Engine::get_debug_flag() {
+bool Engine::get_debug_flag() const {
      return debug_flag_;
  }
 
@@ -38,7 +38,7 @@ void Engine::setup_board(const std::string &fen_string) {
      board_.setup_using_fen();
 }
 
-void Engine::make_move(Move &move) {
+void Engine::make_move(const Move &move) {
     board_.make_move(move);
 }
 

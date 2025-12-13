@@ -15,8 +15,8 @@ namespace Utils {
 }
 
 namespace MoveUtils {
-    Move set_move_flags(Move &move, Board &board);
-    bool is_double_pawn_push(Move &move, Board &board);
+    Move set_move_flags(Move &move, const Board &board);
+    bool is_double_pawn_push(const Move &move, const Board &board);
 }
 
 namespace PieceListUtils {
@@ -27,7 +27,7 @@ namespace PieceListUtils {
 }
 
 namespace BoardUtils {
-    bool is_square_attacked(Board &board, Square square, bool attacking_color);
+    bool is_square_attacked(const Board &board, Square square, bool attacking_color);
 }
 // To be used later in the projet
 // namespace BitUtils {

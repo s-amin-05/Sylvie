@@ -13,7 +13,7 @@ Searcher::Searcher() {
 
 
 
-int Searcher::minmax_search(int depth, Board &board) {
+int Searcher::minmax_search(const int depth, Board &board) {
     // count nodes searched
     nodes_searched_++;
 
@@ -35,7 +35,7 @@ int Searcher::minmax_search(int depth, Board &board) {
 
     int max_evaluation = -chess::evaluation::INF;
 
-    for (Move move: move_generator.legal_moves_) {
+    for (const Move move: move_generator.legal_moves_) {
         board.make_move(move);
 
         int evaluation = -minmax_search(depth-1, board);
@@ -82,7 +82,7 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
     return alpha;
 }
 
-void Searcher::search_best_move(int depth, Board &board) {
+void Searcher::search_best_move(const int depth, Board &board) {
     auto move_generator = MoveGenerator();
     move_generator.generate_legal_moves(board);
 
@@ -90,7 +90,7 @@ void Searcher::search_best_move(int depth, Board &board) {
     best_move_ = move_generator.legal_moves_[0];
     nodes_searched_ = 0;
 
-    for (auto move: move_generator.legal_moves_) {
+    for (const auto move: move_generator.legal_moves_) {
 
         board.make_move(move);
 
@@ -105,15 +105,15 @@ void Searcher::search_best_move(int depth, Board &board) {
     }
 }
 
-Move Searcher::get_best_move() {
+Move Searcher::get_best_move() const {
     return best_move_;
 }
 
-int Searcher::get_best_evaluation() {
+int Searcher::get_best_evaluation() const {
     return best_evaluation_;
 }
 
-int Searcher::get_nodes_searched() {
+u64 Searcher::get_nodes_searched() const {
     return nodes_searched_;
 }
 

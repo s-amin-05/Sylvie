@@ -7,7 +7,7 @@
 UCI::UCI() = default;
 
 
-void UCI::handle_input(std::string &input) {
+void UCI::handle_input(const std::string &input) {
     input_ = Utils::trim(input);
     input_tokens_ = Utils::split(input_, ' ');
     command_type_ = input_tokens_[0];
@@ -94,8 +94,6 @@ void UCI::handle_go() {
     // start search
     engine_.start_search();
 
-    // std::string best_move_print = engine_.search_best_move();
-    // std::cout << "bestmove " << best_move_print << std::endl;
 }
 
 void UCI::handle_stop() {

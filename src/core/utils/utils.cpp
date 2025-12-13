@@ -4,7 +4,7 @@
 #include <utils.h>
 
 namespace Utils {
-    std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> split(const std::string &s, const char delim) {
         std::stringstream ss(s);
         std::string token;
         std::vector<std::string> string_parts;
@@ -30,7 +30,7 @@ namespace Utils {
     std::string get_fen_from_args(std::vector<std::string> &args) {
         std::string fen;
 
-        auto it = std::find(args.begin(), args.end(), "fen");
+        auto it = std::ranges::find(args, "fen");
         if (it == args.end())
             return "";
 
@@ -51,7 +51,7 @@ namespace Utils {
     std::vector<std::string> get_moves_from_args(std::vector<std::string> &args) {
         std::vector<std::string> moves;
 
-        auto it = std::find(args.begin(), args.end(), "moves");
+        auto it = std::ranges::find(args, "moves");
         if (it == args.end())
             return moves;
 
@@ -64,7 +64,7 @@ namespace Utils {
     }
 
     std::string get_arg_after_keyword(std::vector<std::string> &args, std::string keyword) {
-        auto it = std::find(args.begin(), args.end(), keyword);
+        auto it = std::ranges::find(args, keyword);
         if (it == args.end())
             return "";
 
@@ -129,17 +129,17 @@ namespace MoveUtils {
     //     return move;
     // }
 
-    Move set_move_flags(Move &move, Board &board) {
-        Square starting_square = Square(move.starting_square_.square_);
-        Square target_square = Square(move.target_square_.square_);
-        u8 moving_piece_type = board.board_[starting_square.square_].piece_type_;
-        bool moving_piece_color = board.board_[starting_square.square_].piece_color_;
-        u8 target_piece_type = board.board_[target_square.square_].piece_type_;
-        bool target_piece_color = board.board_[target_square.square_].piece_color_;
+    Move set_move_flags(Move &move, const Board &board) {
+        const auto starting_square = Square(move.starting_square_.square_);
+        const auto target_square = Square(move.target_square_.square_);
+        const u8 moving_piece_type = board.board_[starting_square.square_].piece_type_;
+        const bool moving_piece_color = board.board_[starting_square.square_].piece_color_;
+        const u8 target_piece_type = board.board_[target_square.square_].piece_type_;
+        const bool target_piece_color = board.board_[target_square.square_].piece_color_;
 
         // doing this because the assignment operator was not copying the whole object properly
-        Piece moving_piece = Piece(moving_piece_type, moving_piece_color);
-        Piece target_piece = Piece(target_piece_type, target_piece_color);
+        const auto moving_piece = Piece(moving_piece_type, moving_piece_color);
+        const auto target_piece = Piece(target_piece_type, target_piece_color);
 
 
 
@@ -158,10 +158,10 @@ namespace MoveUtils {
 
         // check for castling
         if (moving_piece.piece_type_ == chess::piece::KING) {
-            bool is_king_side_castle_black = board.castling_rights_ & 1U;
-            bool is_queen_side_castle_black = board.castling_rights_ & 2U;
-            bool is_king_side_castle_white = board.castling_rights_ & 4U;
-            bool is_queen_side_castle_white = board.castling_rights_ & 8U;
+            const bool is_king_side_castle_black = board.castling_rights_ & 1U;
+            const bool is_queen_side_castle_black = board.castling_rights_ & 2U;
+            const bool is_king_side_castle_white = board.castling_rights_ & 4U;
+            const bool is_queen_side_castle_white = board.castling_rights_ & 8U;
 
 
             // we can skip checking piece type on the square since castling rights tell us if the king/rook has moved
@@ -182,10 +182,10 @@ namespace MoveUtils {
         return move;
     }
 
-    bool is_double_pawn_push(Move &move, Board &board) {
-        u8 moving_piece_type = board.board_[move.starting_square_.square_].piece_type_;
-        bool moving_piece_color = board.board_[move.starting_square_.square_].piece_color_;
-        Piece moving_piece = Piece(moving_piece_type, moving_piece_color);
+    bool is_double_pawn_push(const Move &move, const Board &board) {
+        const u8 moving_piece_type = board.board_[move.starting_square_.square_].piece_type_;
+        const bool moving_piece_color = board.board_[move.starting_square_.square_].piece_color_;
+        auto moving_piece = Piece(moving_piece_type, moving_piece_color);
 
         if (moving_piece.piece_type_ != chess::piece::PAWN) {
             return false;
@@ -198,62 +198,62 @@ namespace MoveUtils {
 
 }
 
-namespace PieceListUtils {
-    void add_piece_to_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists,int *piece_index_board, std::vector<int> &piece_counts) {
-        int piece_list_type = get_piece_list_type(piece);
-        int count = piece_counts[piece_list_type];
-        if (count >= piece_lists[piece_list_type].size()) {
-            std::cerr << "ERROR: Too many pieces of type " << piece_list_type << "!\n";
-            std::exit(EXIT_FAILURE);
-        }
-        piece_lists[piece_list_type][count] = Square(square.square_);
-        piece_index_board[square.square_] = count;
-        piece_counts[piece_list_type]++;
-    }
-
-    void remove_piece_from_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts) {
-        int piece_list_type = get_piece_list_type(piece);
-        if (piece_counts[piece_list_type] <= 0) {
-            std::cerr << "ERROR: Removing piece from empty list for type " << piece_list_type << "\n";
-            std::exit(EXIT_FAILURE);
-        }
-        int piece_count = --piece_counts[piece_list_type];
-
-        int index = piece_index_board[square.square_];
-        // some thing is fucking causing the index to be -1
-        // some move is fukced up and removing a piece which doesn't exist
-        // if (index < 0 || index > piece_count) {
-        //     std::cerr << "Invalid index: " << index
-        //               << " at square: " << square.square_
-        //               << " in list: " << piece_list_type << "\n";
-        //     std::exit(EXIT_FAILURE);
-        // }
-
-        Square last_square = piece_lists[piece_list_type][piece_count];
-        if (index != piece_count) {
-            piece_lists[piece_list_type][index] = last_square;
-            piece_index_board[last_square.square_] = index;
-        }
-        piece_index_board[square.square_] = -1;
-    }
-
-    void update_piece_list(Piece piece, Square starting_square, Square target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board) {
-        int piece_list_type = get_piece_list_type(piece);
-        int index = piece_index_board[starting_square.square_];
-        piece_lists[piece_list_type][index] = Square(target_square.square_);
-        piece_index_board[target_square.square_] = index;
-        piece_index_board[starting_square.square_] = -1;
-    }
-
-    int get_piece_list_type(Piece &piece) {
-        return (int)piece.piece_type_ - 1 + (piece.piece_color_ == chess::color::WHITE ? 0 : 6);
-    }
-
-}
+// namespace PieceListUtils {
+//     void add_piece_to_piece_list(Piece piece, const Square square, std::vector<std::vector<Square>> &piece_lists,int *piece_index_board, std::vector<int> &piece_counts) {
+//         const int piece_list_type = get_piece_list_type(piece);
+//         const int count = piece_counts[piece_list_type];
+//         if (count >= piece_lists[piece_list_type].size()) {
+//             std::cerr << "ERROR: Too many pieces of type " << piece_list_type << "!\n";
+//             std::exit(EXIT_FAILURE);
+//         }
+//         piece_lists[piece_list_type][count] = Square(square.square_);
+//         piece_index_board[square.square_] = count;
+//         piece_counts[piece_list_type]++;
+//     }
+//
+//     void remove_piece_from_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts) {
+//         const int piece_list_type = get_piece_list_type(piece);
+//         if (piece_counts[piece_list_type] <= 0) {
+//             std::cerr << "ERROR: Removing piece from empty list for type " << piece_list_type << "\n";
+//             std::exit(EXIT_FAILURE);
+//         }
+//         int piece_count = --piece_counts[piece_list_type];
+//
+//         int index = piece_index_board[square.square_];
+//         // some thing is fucking causing the index to be -1
+//         // some move is fukced up and removing a piece which doesn't exist
+//         // if (index < 0 || index > piece_count) {
+//         //     std::cerr << "Invalid index: " << index
+//         //               << " at square: " << square.square_
+//         //               << " in list: " << piece_list_type << "\n";
+//         //     std::exit(EXIT_FAILURE);
+//         // }
+//
+//         const Square last_square = piece_lists[piece_list_type][piece_count];
+//         if (index != piece_count) {
+//             piece_lists[piece_list_type][index] = last_square;
+//             piece_index_board[last_square.square_] = index;
+//         }
+//         piece_index_board[square.square_] = -1;
+//     }
+//
+//     void update_piece_list(Piece piece, const Square starting_square, const Square target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board) {
+//         const int piece_list_type = get_piece_list_type(piece);
+//         int index = piece_index_board[starting_square.square_];
+//         piece_lists[piece_list_type][index] = Square(target_square.square_);
+//         piece_index_board[target_square.square_] = index;
+//         piece_index_board[starting_square.square_] = -1;
+//     }
+//
+//     int get_piece_list_type(const Piece &piece) {
+//         return static_cast<int>(piece.piece_type_) - 1 + (piece.piece_color_ == chess::color::WHITE ? 0 : 6);
+//     }
+//
+// }
 
 namespace BoardUtils {
 
-    bool is_square_attacked(Board &board, Square square, bool attacking_color) {
+    bool is_square_attacked(const Board &board, const Square square, const bool attacking_color) {
         // check for pawns
         int pawn_attack_offset[4] = {
             movegen::direction_offset::NORTH_EAST,
@@ -277,7 +277,7 @@ namespace BoardUtils {
 
 
         // check for knight
-        int knight_offsets[8] = {6, -10, 15, -17, 17, -15, 10, -6};
+        constexpr int knight_offsets[8] = {6, -10, 15, -17, 17, -15, 10, -6};
         int i = 0, n=8;
         if (square.file_ == chess::file::B) {
             i += 2;
@@ -299,7 +299,7 @@ namespace BoardUtils {
         }
 
         // check for king
-        const int king_offsets[8] = {
+        constexpr int king_offsets[8] = {
             movegen::direction_offset::NORTH_WEST,
             movegen::direction_offset::WEST,
             movegen::direction_offset::SOUTH_WEST,
@@ -323,7 +323,7 @@ namespace BoardUtils {
         }
 
         // check for sliding pieces
-        const int sliding_offsets[8] = {
+        constexpr int sliding_offsets[8] = {
             movegen::direction_offset::NORTH,
             movegen::direction_offset::WEST,
             movegen::direction_offset::SOUTH,
@@ -346,16 +346,16 @@ namespace BoardUtils {
         };
 
         for (int j=0; j<8; j++) {
-            u8 secondary_piece_type = (j < 4? chess::piece::ROOK: chess::piece::BISHOP);
+            const u8 secondary_piece_type = (j < 4? chess::piece::ROOK: chess::piece::BISHOP);
 
             for (int k=1; k<=min_distance[j]; k++) {
-                Piece attacking_piece = board.board_[square.square_ + k*sliding_offsets[j]];
+                const Piece attacking_piece = board.board_[square.square_ + k*sliding_offsets[j]];
 
                 // if blocked by friendly piece no need to check the remaining
                 // if blocked by attacking side piece
 
-                bool is_secondary = attacking_piece.piece_type_ == secondary_piece_type;
-                bool is_queen = attacking_piece.piece_type_ == chess::piece::QUEEN;
+                const bool is_secondary = attacking_piece.piece_type_ == secondary_piece_type;
+                const bool is_queen = attacking_piece.piece_type_ == chess::piece::QUEEN;
                 // enemy piece blocks
                 if (attacking_piece.piece_type_ != chess::piece::EMPTY && !(is_secondary || is_queen)) break;
                 // friendly piece blocks
