@@ -17,9 +17,10 @@ namespace Evaluation {
         int material = 0;
 
         for (int sq=0; sq < 64; sq++) {
-            auto piece = Piece(board.board_[sq].piece_type_, board.board_[sq].piece_color_);
-            if (piece.piece_type_ != chess::piece::EMPTY && piece.piece_type_ != chess::piece::KING && piece.piece_color_ == color ) {
-                material += chess::evaluation::PIECE_VALUE_MAP.at(piece.piece_type_) + get_position_bonus(piece.piece_type_, sq, color);
+            int piece_type = board.board_[sq].piece_type_;
+            int piece_color = board.board_[sq].piece_color_;
+            if (piece_type != chess::piece::EMPTY && piece_type != chess::piece::KING && piece_color == color ) {
+                material += chess::evaluation::PIECE_VALUE_MAP.at(piece_type) + get_position_bonus(piece_type, sq, color);
             }
         }
         return material;

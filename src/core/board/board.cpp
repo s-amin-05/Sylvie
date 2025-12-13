@@ -237,8 +237,8 @@ void Board::make_move(Move move) {
     board_[target_square.square_] = (move.promotion_piece_.piece_type_ == chess::piece::EMPTY) ? moving_piece : Piece(move.promotion_piece_.piece_type_, moving_piece.piece_color_);
 
     // log board state
-    logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");
-    logger_.log_board_to_file(*this, move, true);
+    // logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");
+    // logger_.log_board_to_file(*this, move, true);
 
 
     // validations
@@ -321,8 +321,8 @@ void Board::unmake_move() {
 
 
     // log state after unmake move
-    logger_.log_to_file("[UNMAKE MOVE " + move.get_move_notation() + "]");
-    logger_.log_board_to_file(*this, move, false);
+    // logger_.log_to_file("[UNMAKE MOVE " + move.get_move_notation() + "]");
+    // logger_.log_board_to_file(*this, move, false);
 
     // validate_piece_index_board(*this);
 }
