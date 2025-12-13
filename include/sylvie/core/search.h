@@ -7,8 +7,11 @@
 class Searcher {
     Move best_move_;
     int best_evaluation_;
+    u64 nodes_searched_;
 
     int minmax_search(int depth, Board &board);
+
+    int alpha_beta_pruning(int depth, int alpha, int beta, Board &board);
 
     public:
     Searcher();
@@ -24,6 +27,8 @@ class Searcher {
 
     Move get_best_move();
     int get_best_evaluation();
+
+    int get_nodes_searched();
 
     // void set_stop_search_flag(bool flag);
 
