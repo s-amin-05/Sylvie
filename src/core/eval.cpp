@@ -1,38 +1,39 @@
 #include <eval.h>
 #include <unordered_map>
 
+
 namespace Evaluation {
 
     int evaluate(const Board &board) {
-        const int white_material = count_material(board, chess::color::WHITE);
-        const int black_material = count_material(board, chess::color::BLACK);
+        int score = 0;
 
-        const int evaluation = white_material - black_material;
-        const int perspective = board.turn_ == chess::color::WHITE ? 1 : -1;
+        // One loop, 64 iterations.
+        for (int sq = 0; sq < 64; ++sq) {
+            const auto& piece = board.board_[sq];
+            const int piece_type = piece.piece_type_;
 
-        return evaluation * perspective;
-    }
+            if (piece_type == chess::piece::EMPTY) continue;
 
-    int count_material(const Board &board, const bool color) {
-        int material = 0;
-
-        for (int sq=0; sq < 64; sq++) {
-            int piece_type = board.board_[sq].piece_type_;
-            int piece_color = board.board_[sq].piece_color_;
-            if (piece_type != chess::piece::EMPTY && piece_type != chess::piece::KING && piece_color == color ) {
-                material += chess::evaluation::PIECE_VALUE_MAP.at(piece_type) + get_position_bonus(piece_type, sq, color);
-            }
+            int value = get_piece_material_value(piece_type);
+            int position_bonus = get_position_bonus(piece_type, sq, piece.piece_color_);
+            int perspective = (piece.piece_color_ == chess::color::WHITE ? 1 : -1);
+            score += perspective * (value + position_bonus);
         }
-        return material;
+
+        // 3. Return perspective score
+        return (board.turn_ == chess::color::WHITE) ? score : -score;
     }
 
-    int get_position_bonus(const int piece_type, const int square, const bool color) {
-        const std::vector<int>& piece_sq_table = chess::piece_sq_table::PIECE_TABLE_MAP.at(piece_type);
+    int get_piece_material_value(int piece_type) {
+        return chess::evaluation::PIECE_VALUES[piece_type];
+    }
 
+    int get_position_bonus(int piece_type, int square, bool color) {
+        const std::vector<int>& table = chess::piece_sq_table::PIECE_SQUARE_TABLE[piece_type];
         if (color == chess::color::WHITE) {
-            // we will reverse the board for white
-            return piece_sq_table[chess::square::H8-square];
+            return table[chess::square::H8 - square];
         }
-        return piece_sq_table[square];
+        return table[square];
     }
+
 }

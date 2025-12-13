@@ -196,13 +196,18 @@ namespace chess::evaluation {
     constexpr int QUEEN = 900;
     constexpr int KING = 20000;
 
-    const std::unordered_map<int, int> PIECE_VALUE_MAP = {
-        {piece::PAWN, PAWN},
-        {piece::KNIGHT, KNIGHT},
-        {piece::BISHOP, BISHOP},
-        {piece::ROOK, ROOK},
-        {piece::QUEEN, QUEEN}
+
+
+    const std::vector<int> PIECE_VALUES = {
+        0,
+        KING,
+        QUEEN,
+        ROOK,
+        BISHOP,
+        KNIGHT,
+        PAWN
     };
+
 }
 
 namespace chess::piece_sq_table {
@@ -285,11 +290,14 @@ namespace chess::piece_sq_table {
         -50,-30,-30,-30,-30,-30,-30,-50
     };
 
-    const std::unordered_map<int, std::vector<int>> PIECE_TABLE_MAP = {
-        {piece::PAWN, PAWN},
-        {piece::KNIGHT, KNIGHT},
-        {piece::BISHOP, BISHOP},
-        {piece::ROOK, ROOK},
-        {piece::QUEEN, QUEEN}
+
+    const std::vector<std::vector<int>> PIECE_SQUARE_TABLE = {
+        {}, // temp, will update to better looking code
+        KING_MIDGAME,
+        QUEEN,
+        ROOK,
+        BISHOP,
+        KNIGHT,
+        PAWN
     };
 }
