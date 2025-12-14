@@ -9,7 +9,7 @@ int Piece::color_(const int piece) {
 }
 
 int Piece::piece_(const int type, const int color) {
-    return color << 3 | type;
+    return (color << 3) | type;
 }
 
 char Piece::piece_notation(int piece) {

@@ -128,7 +128,7 @@ void Board::make_move(Move move) {
 
 
     // SET Move flags for special cases based on board state
-    MoveUtils::set_move_flags(move, *this);
+    // MoveUtils::set_move_flags(move, *this);
 
     // note: Board::enpassant_target_ is kept empty ONLY after setting move flags
     enpassant_target_ = chess::square::EMPTY;

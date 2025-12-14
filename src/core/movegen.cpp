@@ -423,8 +423,8 @@ void MoveGenerator::generate_king_moves(const Board &board, int &square) {
     if (is_queenside && !king_in_check) {
         // check for occupancy
         int b = Square::square_(chess::file::B, rank);
-        auto c = Square::square_(chess::file::C, rank);
-        auto d = Square::square_(chess::file::D, rank);
+        int c = Square::square_(chess::file::C, rank);
+        int d = Square::square_(chess::file::D, rank);
         bool b_occupied = (board.board_[b] != chess::piece::EMPTY);
         bool c_occupied = (board.board_[c] != chess::piece::EMPTY);
         bool d_occupied = (board.board_[d] != chess::piece::EMPTY);

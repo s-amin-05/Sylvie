@@ -3,6 +3,8 @@
 #include <sstream>
 #include <utils.h>
 
+#include "eval.h"
+
 namespace Utils {
     std::vector<std::string> split(const std::string &s, const char delim) {
         std::stringstream ss(s);
@@ -375,4 +377,36 @@ namespace BoardUtils {
 
     }
 
+}
+
+
+namespace SearchUtils {
+    int score_mvv_lva(const Move& move, const Board& board) {
+
+        if (!move.is_capture_) {
+            return 0;
+        }
+
+        int victim_value = 0;
+        if (move.is_en_passant_) {
+            victim_value = chess::evaluation::PAWN;
+        } else {
+            int victim_square = board.board_[move.target_square_];
+            int victim_type = Piece::type_(victim_square);
+            int victim_color = Piece::color_(victim_square);
+            victim_value = Evaluation::get_piece_material_value(victim_type) + Evaluation::get_position_bonus(victim_type, move.target_square_, victim_color);
+        }
+        int aggressor_square = board.board_[move.starting_square_];
+        int aggressor_type = Piece::type_(aggressor_square);
+        int aggressor_color = Piece::color_(aggressor_square);
+        int aggressor_value = Evaluation::get_piece_material_value(aggressor_type) + Evaluation::get_position_bonus(aggressor_type, move.starting_square_, aggressor_color);
+
+        return 100000 + (victim_value * 1000) - aggressor_value;
+    }
+
+    void order_moves(std::vector<Move> &move_list, const Board &board) {
+        std::sort(move_list.begin(), move_list.end(), [&board](const Move &a, const Move &b) {
+            return score_mvv_lva(a, board) > score_mvv_lva(b, board);
+        });
+    }
 }

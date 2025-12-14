@@ -4,6 +4,8 @@
 #include <movegen.h>
 
 #include <bot.h>
+
+#include "eval.h"
 #include "search.h"
 #define ANSI_RESET  "\033[0m"
 #define ANSI_RED    "\033[31m"
@@ -189,7 +191,7 @@ void run_search_benchmark(const std::string& test_name, const std::string& fen, 
 }
 
 void run_search_test_suite() {
-    int search_depth = 4;
+    int search_depth = 5;
 
     for (const auto& test : tests) {
         run_search_benchmark(test.name, test.fen, search_depth);
@@ -202,11 +204,19 @@ void run_search_test_suite() {
 int main() {
     {
 
-        // run_search_test_suite();
-        run_perft_test_suite();
-        // Board board = Board(tests[1].fen);
-        // board.make_move(Move("f3f6"));
+        run_search_test_suite();
+        // run_perft_test_suite();
+        // Board board = Board(tests[0].fen);
+        // board.make_move(Move("d2d3"));
+        // board.make_move(Move("f7f6"));
+        // board.make_move(Move("a2a4"));
+        // board.make_move(Move("g8h6"));
         // board.print_board();
+        // // std::cout << Piece::type_(chess::piece::KNIGHT | (chess::color::BLACK << 3)) << std::endl;
+        // std::cout << Piece::get_piece_from_notation('n') << std::endl;
+        // board.make_move(Move("c1h6"));
+        // board.print_board();
+
 
         // perft_divide(1, board);
 

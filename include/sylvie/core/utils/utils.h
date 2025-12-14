@@ -57,3 +57,6 @@ namespace BoardUtils {
 //     }
 // }
 
+namespace  SearchUtils {
+    void order_moves(std::vector<Move> &move_list, const Board &board);
+}

@@ -4,6 +4,8 @@
 #include <movegen.h>
 #include <search.h>
 
+#include "utils.h"
+
 
 Searcher::Searcher() {
     best_move_ = Move();
@@ -67,6 +69,8 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
         return 0;
     }
 
+    SearchUtils::order_moves(move_generator.legal_moves_, board);
+
     for (Move move: move_generator.legal_moves_) {
         board.make_move(move);
         int evaluation = -alpha_beta_pruning(depth-1, -beta, -alpha, board);
@@ -85,6 +89,7 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
 void Searcher::search_best_move(const int depth, Board &board) {
     auto move_generator = MoveGenerator();
     move_generator.generate_legal_moves(board);
+    SearchUtils::order_moves(move_generator.legal_moves_, board);
 
     best_evaluation_ = -chess::evaluation::INF;
     best_move_ = move_generator.legal_moves_[0];
