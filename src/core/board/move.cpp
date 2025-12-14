@@ -23,7 +23,7 @@ Move::Move(const int starting_square, const int target_square, const int promoti
 {}
 
 Move::Move(const std::string &move_notation): Move() {
-    if (move_notation.length() != 4) {
+    if (move_notation.length() < 4 || move_notation.length() > 5) {
         throw std::invalid_argument("Invalid move notation length");
     }
 

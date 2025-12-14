@@ -8,7 +8,7 @@ Engine::Engine() {
      time_increment_black_ = time_increment_white_ = time_remaining_black_ = time_remaining_white_ = 0;
      move_generator_ = MoveGenerator();
      // TODO: add iterative deepening
-     depth_ = 4;
+     depth_ = 5;
  }
 
 void Engine::print_engine_info() const {
