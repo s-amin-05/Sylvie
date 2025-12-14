@@ -1,20 +1,18 @@
 #pragma once
 #include <constants.h>
 #include <move.h>
-#include <piece.h>
-#include <square.h>
 #include <stack>
 #include <string>
 #include <utils/logger.h>
 
 
-typedef struct IrreversibleState{
+using IrreversibleState = struct IrreversibleState {
     u8 castling_rights;
-    Square enpassant_target;
+    int enpassant_target;
     int repetition_count;
     int halfmove_count;
-    Piece captured_piece;
-}IrreversibleState;
+    int captured_piece;
+};
 
 // piece-lists are used for generating bitboards later
 // added count here for efficient removal of pieces
@@ -23,7 +21,7 @@ typedef struct IrreversibleState{
 class Board{
 public:
     std::string board_fen_;
-    bool turn_;
+    int turn_;
     /*
      xxx1 - king side for black
      xx1x - queen side for black
@@ -33,15 +31,15 @@ public:
     u8 castling_rights_;
     std::stack<Move> move_stack_;
     std::stack<IrreversibleState> irreversible_state_stack_;
-    Square enpassant_target_;
-    Piece board_[64];
+    int enpassant_target_;
+    int board_[64];
     int ply_count_;
     int fullmove_number_;
     int repetition_count_;
     int halfmove_count_;
 
 
-    Piece captured_piece_;
+    int captured_piece_;
 
     // // bitboards :)
     // // ordering of bitboards same as piece lists

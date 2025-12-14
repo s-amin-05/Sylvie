@@ -13,9 +13,9 @@
 class Move
 {
 public:
-    Square starting_square_;
-    Square target_square_;
-    Piece promotion_piece_;
+    int starting_square_;
+    int target_square_;
+    int promotion_piece_;
     bool is_castling_;
     bool is_capture_;
     bool is_en_passant_;
@@ -24,7 +24,7 @@ public:
 
     Move(const std::string &move_notation);
 
-    Move(Square starting_square, Square target_square, Piece promotion_piece, bool is_castling, bool is_capture, bool is_en_passant);
+    Move(int starting_square, int target_square, int promotion_piece, bool is_castling, bool is_capture, bool is_en_passant);
 
     std::string get_move_notation() const;
 };

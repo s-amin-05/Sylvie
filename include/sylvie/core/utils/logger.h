@@ -27,7 +27,7 @@ public:
 
     void log_irreversible_state_to_file(const Board &board);
 
-    void log_pieces_to_file(Piece board[]);
+    void log_pieces_to_file(int board[]);
 
     void log_piece_list_to_file(std::vector<std::vector<Square>> &piece_lists, std::vector<int> &piece_counts);
 

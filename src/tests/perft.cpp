@@ -189,7 +189,7 @@ void run_search_benchmark(const std::string& test_name, const std::string& fen, 
 }
 
 void run_search_test_suite() {
-    int search_depth = 5;
+    int search_depth = 4;
 
     for (const auto& test : tests) {
         run_search_benchmark(test.name, test.fen, search_depth);
@@ -202,9 +202,17 @@ void run_search_test_suite() {
 int main() {
     {
 
-        run_search_test_suite();
-        // run_perft_test_suite();
+        // run_search_test_suite();
+        run_perft_test_suite();
+        // Board board = Board(tests[1].fen);
+        // board.make_move(Move("f3f6"));
+        // board.print_board();
+
+        // perft_divide(1, board);
+
+
     }
+
 
     return 0;
 }

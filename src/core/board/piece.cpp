@@ -1,49 +1,53 @@
-#include <cctype>
 #include <piece.h>
 
-Piece::Piece() : piece_type_(chess::piece::EMPTY), piece_color_(chess::color::BLACK) {}
-
-Piece::Piece(const u8 piece_type, const bool piece_color) {
-    piece_type_ = piece_type;
-    piece_color_ = piece_color;
+int Piece::type_(const int piece) {
+    return piece & bitmask::piece::PIECE_TYPE;
 }
 
-Piece::Piece(char piece_notation) {
+int Piece::color_(const int piece) {
+    return (piece & bitmask::piece::PIECE_COLOR) >> 3;
+}
 
-    piece_color_ = isupper(piece_notation);
+int Piece::piece_(const int type, const int color) {
+    return color << 3 | type;
+}
+
+char Piece::piece_notation(int piece) {
+    int color = color_(piece);
+    int type = type_(piece);
+
+    char symbols[] = {'.', 'K', 'Q', 'R', 'B', 'N', 'P'};
+    char symbol = symbols[type];
+
+    return (color == chess::color::WHITE)  ? symbol : std::tolower(symbol);
+}
+
+int Piece::get_piece_from_notation(char piece_notation) {
+    int piece_color = isupper(piece_notation) ? chess::color::WHITE : chess::color::BLACK;
+    int piece_type;
     piece_notation = toupper(piece_notation);
     switch (piece_notation) {
         case 'P':
-            piece_type_ = chess::piece::PAWN;
+            piece_type = chess::piece::PAWN;
             break;
         case 'N':
-            piece_type_ = chess::piece::KNIGHT;
+            piece_type = chess::piece::KNIGHT;
             break;
         case 'B':
-            piece_type_ = chess::piece::BISHOP;
+            piece_type = chess::piece::BISHOP;
             break;
         case 'R':
-            piece_type_ = chess::piece::ROOK;
+            piece_type = chess::piece::ROOK;
             break;
         case 'Q':
-            piece_type_ = chess::piece::QUEEN;
+            piece_type = chess::piece::QUEEN;
             break;
         case 'K':
-            piece_type_ = chess::piece::KING;
+            piece_type = chess::piece::KING;
             break;
         default:
-            piece_type_ = chess::piece::EMPTY;
+            piece_type = chess::piece::EMPTY;
             break;
     }
-
-}
-
-char Piece::get_piece_notation() const{
-    if (piece_type_ == chess::piece::EMPTY) return '.';
-
-    char symbols[] = {'.', 'K', 'Q', 'R', 'B', 'N', 'P'};
-    char symbol = symbols[piece_type_];
-
-    return piece_color_ ? symbol : tolower(symbol);
-
+    return (piece_color << 3) | piece_type;
 }

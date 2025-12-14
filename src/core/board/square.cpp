@@ -1,43 +1,37 @@
-#include <board.h>
+#include <square.h>
+#include <constants.h>
 
-Square::Square(int square) {
-    square_ = square;
+int Square::rank_(const int square) {
+    return square >> 3;
+}
+
+int Square::file_(const int square) {
+    return square & 7;
+}
+
+int Square::square_(int file, int rank) {
+    return rank << 3 | file;
+}
+
+
+int Square::get_square_from_notation(const std::string &square_notation) {
+    if (square_notation == "00" || square_notation.size() != 2) {
+        return chess::square::EMPTY;
+    }
+
+    int file = square_notation[0] - 'a';
+    int rank = square_notation[1] - '1';
+
+    return rank << 3 | file;
+
+}
+
+std::string Square::square_notation(int square) {
     if (square == chess::square::EMPTY) {
-        file_ = 8;
-        rank_ = 8;
-        return;
-    }
-    file_ = square % 8;
-    rank_ = square / 8;
-}
-
-Square::Square(const int file, const int rank): file_(file), rank_(rank){
-    square_ = rank * 8 + file;
-}
-
-Square::Square(const std::string &square_notation) {
-    if (square_notation == "00") {
-        square_ = chess::square::EMPTY;
-        file_ = 8;
-        rank_ = 8;
-        return;
-    }
-    if (square_notation.length() == 2) {
-        char file = square_notation[0];
-        char rank = square_notation[1];
-        file_ = (file - 'a');
-        rank_ = (rank - '1');
-        square_ = rank_ * 8 + file_;
-    }else {
-        throw std::invalid_argument("Invalid square notation length");
-    }
-}
-
-Square::Square() : Square(chess::square::EMPTY){}
-
-std::string Square::get_square_notation() const {
-    if (square_ == chess::square::EMPTY) {
         return "-";
     }
-    return std::string(1, 'a' + file_) + std::to_string(rank_ + 1);
+    int file = file_(square);
+    int rank = rank_(square);
+    return std::string(1, 'a' + file) + std::to_string(rank + 1);
 }
+

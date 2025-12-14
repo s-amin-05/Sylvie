@@ -1,22 +1,13 @@
 #pragma once
 #include <string>
-#include <constants.h>
 
+class Square {
+    public:
+    static int file_(int square);
+    static int rank_(int square);
+    static int square_(int file, int rank);
 
-// 0-63 squares
-class Square{
-public:
-    int square_;
-    int file_;
-    int rank_;
+    static int get_square_from_notation(const std::string &square_notation);
+    static std::string square_notation(int square);
 
-    Square();
-
-    Square(int square);
-
-    Square(int file, int rank);
-
-    Square(const std::string &square_notation);
-
-    std::string get_square_notation() const;
 };

@@ -14,13 +14,13 @@ namespace chess{
 }
 
 namespace chess::piece{
-    const int EMPTY = 0;
-    const int KING = 1;
-    const int QUEEN = 2;
-    const int ROOK = 3;
-    const int BISHOP = 4;
-    const int KNIGHT = 5;
-    const int PAWN = 6;
+    const int EMPTY = 0U;
+    const int KING = 1U;
+    const int QUEEN = 2U;
+    const int ROOK = 3U;
+    const int BISHOP = 4U;
+    const int KNIGHT = 5U;
+    const int PAWN = 6U;
 };
 
 namespace chess::piecelists {
@@ -145,8 +145,8 @@ namespace chess::square {
 }
 
 namespace chess::color{
-    const bool WHITE = true;
-    const bool BLACK = false;
+    const int WHITE = 1U;
+    const int BLACK = 0U;
 };
 
 namespace chess::move {
@@ -180,6 +180,11 @@ namespace bitmask::castling {
     const int BLACK_QUEEN = 2U;
     const int WHITE_KING = 4U;
     const int WHITE_QUEEN = 8U;
+}
+
+namespace bitmask::piece {
+    constexpr int PIECE_COLOR = 8U;
+    constexpr int PIECE_TYPE = 7U;
 }
 
 namespace chess::debug {

@@ -10,13 +10,13 @@ namespace Evaluation {
         // One loop, 64 iterations.
         for (int sq = 0; sq < 64; ++sq) {
             const auto& piece = board.board_[sq];
-            const int piece_type = piece.piece_type_;
 
-            if (piece_type == chess::piece::EMPTY) continue;
+            if (piece == chess::piece::EMPTY) continue;
 
+            int piece_type = Piece::type_(piece);
             int value = get_piece_material_value(piece_type);
-            int position_bonus = get_position_bonus(piece_type, sq, piece.piece_color_);
-            int perspective = (piece.piece_color_ == chess::color::WHITE ? 1 : -1);
+            int position_bonus = get_position_bonus(piece_type, sq, Piece::color_(piece));
+            int perspective = (Piece::color_(piece) == chess::color::WHITE ? 1 : -1);
             score += perspective * (value + position_bonus);
         }
 
@@ -28,7 +28,7 @@ namespace Evaluation {
         return chess::evaluation::PIECE_VALUES[piece_type];
     }
 
-    int get_position_bonus(int piece_type, int square, bool color) {
+    int get_position_bonus(int piece_type, int square, int color) {
         const std::vector<int>& table = chess::piece_sq_table::PIECE_SQUARE_TABLE[piece_type];
         if (color == chess::color::WHITE) {
             return table[chess::square::H8 - square];

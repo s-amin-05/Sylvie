@@ -83,12 +83,12 @@ void Logger::log_board_to_file(Board &board, const Move &move, const bool detail
     }
 }
 
-void Logger::log_pieces_to_file(Piece board[]) {
+void Logger::log_pieces_to_file(int board[]) {
     if (!debug_flag) return;
     file_ << "Pieces on Board:- \n\n";
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            file_ << board[(7-i)*8+j].get_piece_notation() << " ";
+            file_ << Piece::piece_notation(board[(7-i)*8+j]) << " ";
         }
         file_ << "\n";
     }
@@ -142,16 +142,16 @@ void Logger::log_irreversible_state_to_file(const Board &board) {
     file_ << "Irreversible Board State:- \n";
     // file_ << "Captured Piece: " << board.captured_piece_.get_piece_notation() << "\n";
     file_ << "Castling Rights: " << (board.castling_rights_ & 0xF) << "\n";
-    file_ << "En Passant Target: " << board.enpassant_target_.get_square_notation() << "\n";
+    file_ << "En Passant Target: " << Square::square_notation(board.enpassant_target_) << "\n";
     file_ << "Halfmove Count: " << board.halfmove_count_ << "\n";
     file_ << "Repetition Count: " << board.repetition_count_ << "\n\n";
 }
 
 void Logger::log_move_to_file(const Move &move) {
     if (!debug_flag) return;
-    file_ << "Starting Square: " << move.starting_square_.get_square_notation() << "\n";
-    file_ << "Target Square: " << move.target_square_.get_square_notation() << "\n";
-    file_ << "Promotion Piece: " << move.promotion_piece_.get_piece_notation() << "\n";
+    file_ << "Starting Square: " << Square::square_notation(move.starting_square_) << "\n";
+    file_ << "Target Square: " << Square::square_notation(move.target_square_) << "\n";
+    file_ << "Promotion Piece: " << Piece::piece_notation(move.promotion_piece_) << "\n";
     file_ << "Is Capture: " << (move.is_capture_? "True": "False") << "\n";
     file_ << "Is En Passant: " << (move.is_en_passant_? "True": "False") << "\n";
     file_ << "Is Castling: " << (move.is_castling_? "True": "False") << "\n";
@@ -210,9 +210,9 @@ void Logger::log_irreversible_state_stack_to_file(std::stack<IrreversibleState> 
     while (!temp_stack.empty()) {
         IrreversibleState state = temp_stack.top();
         file_ << "Move " << i++ << ": \n";
-        file_ << "Captured Piece: " << state.captured_piece.get_piece_notation() << "\n";
+        file_ << "Captured Piece: " << Piece::piece_notation(state.captured_piece) << "\n";
         file_ << "Castling Rights: " << (state.castling_rights & 0xF) << "\n";
-        file_ << "En Passant Target: " << state.enpassant_target.get_square_notation() << "\n";
+        file_ << "En Passant Target: " << Square::square_notation(state.enpassant_target) << "\n";
         file_ << "Halfmove Count: " << state.halfmove_count << "\n";
         file_ << "Repetition Count: " << state.repetition_count << "\n";
         irreversible_state_stack.push(state);
