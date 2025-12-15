@@ -38,7 +38,7 @@ public:
 
     void setup_board(const std::string &fen_string);
 
-    void make_move(const Move &move);
+    void make_move(Move &move);
 
     void start_search();
     void stop_search();

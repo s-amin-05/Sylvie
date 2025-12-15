@@ -7,6 +7,7 @@
 
 #include "eval.h"
 #include "search.h"
+#include "utils.h"
 #define ANSI_RESET  "\033[0m"
 #define ANSI_RED    "\033[31m"
 #define ANSI_GREEN  "\033[32m"
@@ -25,7 +26,7 @@ u64 perft(int depth, Board &board) {
 
     for (auto move: generator.legal_moves_) {
         // std::cout << "Making... " <<move.get_move_notation() << std::endl;
-        board.make_move(move);
+        board.make_move(move, false);
         nodes += perft(depth - 1, board);
         // std::cout << "Unmaking... " <<move.get_move_notation() << std::endl;
         board.unmake_move();
@@ -46,7 +47,7 @@ u64 perft_pseudo(int depth, Board &board) {
 
     for (auto move: generator.pseudo_legal_moves_) {
         // std::cout << "Making... " <<move.get_move_notation() << std::endl;
-        board.make_move(move);
+        board.make_move(move, false);
         if (!generator.is_in_check(board, !board.turn_))
             nodes += perft(depth - 1, board);
         // std::cout << "Unmaking... " <<move.get_move_notation() << std::endl;
@@ -63,7 +64,7 @@ void perft_divide(int depth, Board &board) {
 
     for (auto move: generator.legal_moves_) {
         // board.make_move(move);
-        board.make_move(move);
+        board.make_move(move, false);
         u64 nodes = perft(depth - 1, board);
         board.unmake_move();
 
@@ -204,20 +205,22 @@ void run_search_test_suite() {
 int main() {
     {
 
-        run_search_test_suite();
-        // run_perft_test_suite();
+        // run_search_test_suite();
+        run_perft_test_suite();
         // Board board = Board(tests[0].fen);
-        // board.make_move(Move("d2d3"));
-        // board.make_move(Move("f7f6"));
-        // board.make_move(Move("a2a4"));
-        // board.make_move(Move("g8h6"));
+        //
+        // std::string moves = "d2d4 g8f6 c2c4 e7e5 d4e5 f6g4 g1f3 b8c6 c1g5 f7f6 e5f6 g7f6 g5h4 f8b4 b1d2 c6e5 e2e3 e8g8 f1e2 e5g6 d1b3 c7c5 h4g3 d8a5 a2a3 f6f5 e1g1 b4d2 f3d2 a5d2 a1d1 d2e2 b3c3 e2d1 f1d1 h7h6 g3d6";
+        // std::vector<std::string> moveListStr = Utils::split(moves, ' ');
+        // for (auto move: moveListStr) {
+        //     Move mv = Move(move);
+        //
+        //     board.make_move(mv, true);
+        //     if (mv.is_castling_) {
+        //         std::cout << "Castling" << std::endl;
+        //     }
+        //
+        // }
         // board.print_board();
-        // // std::cout << Piece::type_(chess::piece::KNIGHT | (chess::color::BLACK << 3)) << std::endl;
-        // std::cout << Piece::get_piece_from_notation('n') << std::endl;
-        // board.make_move(Move("c1h6"));
-        // board.print_board();
-
-
         // perft_divide(1, board);
 
 

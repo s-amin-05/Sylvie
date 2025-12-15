@@ -22,7 +22,7 @@ void MoveGenerator::generate_legal_moves(Board &board) {
 
     int opp_color = board.turn_ == chess::color::WHITE ? chess::color::BLACK : chess::color::WHITE;
     for (auto move: pseudo_legal_moves_) {
-        board.make_move(move);
+        board.make_move(move, false);
         if (!is_in_check(board, !opp_color)) legal_moves_.emplace_back(move);
         board.unmake_move();
     }

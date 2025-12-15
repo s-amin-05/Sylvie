@@ -37,8 +37,8 @@ int Searcher::minmax_search(const int depth, Board &board) {
 
     int max_evaluation = -chess::evaluation::INF;
 
-    for (const Move move: move_generator.legal_moves_) {
-        board.make_move(move);
+    for (Move move: move_generator.legal_moves_) {
+        board.make_move(move, false);
 
         int evaluation = -minmax_search(depth-1, board);
         max_evaluation = std::max(evaluation, max_evaluation);
@@ -72,7 +72,7 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
     SearchUtils::order_moves(move_generator.legal_moves_, board);
 
     for (Move move: move_generator.legal_moves_) {
-        board.make_move(move);
+        board.make_move(move, false);
         int evaluation = -alpha_beta_pruning(depth-1, -beta, -alpha, board);
         board.unmake_move();
 
@@ -95,9 +95,9 @@ void Searcher::search_best_move(const int depth, Board &board) {
     best_move_ = move_generator.legal_moves_[0];
     nodes_searched_ = 0;
 
-    for (const auto move: move_generator.legal_moves_) {
+    for (auto move: move_generator.legal_moves_) {
 
-        board.make_move(move);
+        board.make_move(move, false);
 
         int move_eval = -alpha_beta_pruning(depth-1, -chess::evaluation::INF, chess::evaluation::INF, board);
 

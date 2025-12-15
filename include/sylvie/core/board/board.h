@@ -58,7 +58,7 @@ public:
 
     Board();
 
-    void make_move(Move move);
+    void make_move(Move &move, bool uci_flag);
 
     void unmake_move();
 

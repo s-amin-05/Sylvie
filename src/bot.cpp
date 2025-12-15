@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include <search.h>
+#include <utils.h>
 
 Engine::Engine() {
      debug_flag_ = false;
@@ -38,8 +39,9 @@ void Engine::setup_board(const std::string &fen_string) {
      board_.setup_using_fen();
 }
 
-void Engine::make_move(const Move &move) {
-    board_.make_move(move);
+void Engine::make_move(Move &move) {
+    // MoveUtils::set_move_flags(move, board_);
+    board_.make_move(move, true);
 }
 
 void Engine::start_search() {

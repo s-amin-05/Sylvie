@@ -109,7 +109,8 @@ void Board::setup_using_fen() {
     ply_count_ = (fullmove_number_ - 1) * 2 + (turn_ == chess::color::BLACK ? 1 : 0);
 }
 
-void Board::make_move(Move move) {
+
+void Board::make_move(Move &move, const bool uci_flag) {
     // assuming the generated/uci-given move is correct
 
     // incremental updates
@@ -128,7 +129,7 @@ void Board::make_move(Move move) {
 
 
     // SET Move flags for special cases based on board state
-    // MoveUtils::set_move_flags(move, *this);
+    if (uci_flag) MoveUtils::set_move_flags(move, *this);
 
     // note: Board::enpassant_target_ is kept empty ONLY after setting move flags
     enpassant_target_ = chess::square::EMPTY;
