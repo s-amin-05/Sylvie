@@ -29,21 +29,10 @@ void MoveGenerator::generate_legal_moves(Board &board) {
     
 }
 
-bool MoveGenerator::is_in_check(const Board &board, const int color) {
-    const int king_color = color;
-    const int opp_color = color == chess::color::WHITE ? chess::color::BLACK : chess::color::WHITE;
-    // Square king_square = Square(board.piece_lists_[king_color][0]);
-    int king_square = chess::square::EMPTY;
-    for (int sq=0; sq<64; sq++) {
-        int piece = board.board_[sq];
-        if (piece == chess::piece::EMPTY) continue;
-        // std::cout << piece.get_piece_notation() << std::endl;
-        if (Piece::type_(piece) == chess::piece::KING && Piece::color_(piece) == king_color) {
-            king_square = sq;
-            break;
-        }
-    }
-    return BoardUtils::is_square_attacked(board, king_square, opp_color);
+bool MoveGenerator::is_in_check(const Board &board, int in_check_color) {
+    int king_square = in_check_color == chess::color::WHITE ? board.white_king_square_ : board.black_king_square_;
+    int attacking_color = in_check_color == chess::color::WHITE ? chess::color::BLACK : chess::color::WHITE;
+    return BoardUtils::is_square_attacked(board, king_square, attacking_color);
 }
 
 

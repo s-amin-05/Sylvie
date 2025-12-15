@@ -66,7 +66,13 @@ void Board::setup_using_fen() {
             else {
                 // place the piece on board
                 const int piece = Piece::get_piece_from_notation(c);
+                const int piece_type = Piece::type_(piece);
+                const int piece_color = Piece::color_(piece);
                 const int square = (7-i)*8 + j;
+                if (piece_type == chess::piece::KING && piece_color == chess::color::WHITE)
+                    white_king_square_ = square;
+                else if (piece_type == chess::piece::KING && piece_color == chess::color::BLACK)
+                    black_king_square_ = square;
                 board_[square] = piece;
                 j++;
             }
@@ -145,6 +151,8 @@ void Board::make_move(Move &move, const bool uci_flag) {
         captured_square = target_square;
     }
 
+    int moving_piece_type = Piece::type_(moving_piece);
+    int moving_piece_color = Piece::color_(moving_piece);
 
     // special cases for promotion, enpassants & castling
     // note that is_capture_, etc will be set in utils by user
@@ -154,7 +162,7 @@ void Board::make_move(Move &move, const bool uci_flag) {
 
     if (move.is_en_passant_) {
         // remove the captured pawn
-        if (Piece::color_(moving_piece) == chess::color::WHITE) {
+        if (moving_piece_color == chess::color::WHITE) {
             captured_square = target_square - 8;
             captured_piece_ = board_[captured_square];
 
@@ -165,19 +173,19 @@ void Board::make_move(Move &move, const bool uci_flag) {
 
     }else if (MoveUtils::is_double_pawn_push(move, *this)){
 
-        if (Piece::color_(moving_piece) == chess::color::WHITE) {
+        if (moving_piece_color == chess::color::WHITE) {
             enpassant_target_ = target_square - 8;
         }else {
             enpassant_target_ = target_square + 8;
         }
     }
 
-    int moving_piece_type = Piece::type_(moving_piece);
+
     // king moves
     if (moving_piece_type == chess::piece::KING) {
         // castling rights
         // if the king moves, castling rights will be lost for him
-        castling_rights_ &= Piece::color_(moving_piece) == chess::color::WHITE ? ~(bitmask::castling::WHITE_KING | bitmask::castling::WHITE_QUEEN) : ~(bitmask::castling::BLACK_KING | bitmask::castling::BLACK_QUEEN);
+        castling_rights_ &= moving_piece_color == chess::color::WHITE ? ~(bitmask::castling::WHITE_KING | bitmask::castling::WHITE_QUEEN) : ~(bitmask::castling::BLACK_KING | bitmask::castling::BLACK_QUEEN);
 
         if (move.is_castling_) {
             switch (target_square) {
@@ -202,18 +210,20 @@ void Board::make_move(Move &move, const bool uci_flag) {
             }
             if (castling_rook_start_square != chess::square::EMPTY && castling_rook_end_square != chess::square::EMPTY) {
                 board_[castling_rook_start_square] = chess::piece::EMPTY;
-                board_[castling_rook_end_square] = Piece::piece_(chess::piece::ROOK, Piece::color_(moving_piece));
+                board_[castling_rook_end_square] = Piece::piece_(chess::piece::ROOK, moving_piece_color);
             }
         }
+        if (moving_piece_color == chess::color::WHITE) white_king_square_ = target_square;
+        else black_king_square_ = target_square;
     }else if (moving_piece_type == chess::piece::ROOK) {
 
-        if (starting_square == chess::square::A1 && Piece::color_(moving_piece) == chess::color::WHITE) {
+        if (starting_square == chess::square::A1 && moving_piece_color == chess::color::WHITE) {
             castling_rights_ &= ~bitmask::castling::WHITE_QUEEN;
-        }else if (starting_square == chess::square::H1 && Piece::color_(moving_piece) == chess::color::WHITE) {
+        }else if (starting_square == chess::square::H1 && moving_piece_color == chess::color::WHITE) {
             castling_rights_ &= ~bitmask::castling::WHITE_KING;
-        }else if (starting_square == chess::square::A8 && Piece::color_(moving_piece) == chess::color::BLACK) {
+        }else if (starting_square == chess::square::A8 && moving_piece_color == chess::color::BLACK) {
             castling_rights_ &= ~bitmask::castling::BLACK_QUEEN;
-        }else if (starting_square == chess::square::H8 && Piece::color_(moving_piece) == chess::color::BLACK) {
+        }else if (starting_square == chess::square::H8 && moving_piece_color == chess::color::BLACK) {
             castling_rights_ &= ~bitmask::castling::BLACK_KING;
         }
     }
@@ -239,7 +249,7 @@ void Board::make_move(Move &move, const bool uci_flag) {
     board_[starting_square] = chess::piece::EMPTY;
     if (captured_square != chess::square::EMPTY) board_[captured_square] = chess::piece::EMPTY;
     // handle promotions here
-    board_[target_square] = (move.promotion_piece_ == chess::piece::EMPTY) ? moving_piece : Piece::piece_(Piece::type_(move.promotion_piece_), Piece::color_(moving_piece));
+    board_[target_square] = (move.promotion_piece_ == chess::piece::EMPTY) ? moving_piece : Piece::piece_(Piece::type_(move.promotion_piece_), moving_piece_color);
 
     // log board state
     // logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");
@@ -280,9 +290,12 @@ void Board::unmake_move() {
         captured_square = target_square;
     }
 
+    int moving_piece_type = Piece::type_(moving_piece);
+    int moving_piece_color = Piece::color_(moving_piece);
+
     // handle enpassants & captures
     if (move.is_capture_ && move.is_en_passant_) {
-        if (Piece::color_(moving_piece) == chess::color::WHITE) {
+        if (moving_piece_color == chess::color::WHITE) {
             captured_square = target_square - 8;
             board_[captured_square] = captured_piece_;
         }else {
@@ -314,12 +327,17 @@ void Board::unmake_move() {
         }
         if (castling_rook_start_square != chess::square::EMPTY && castling_rook_end_square != chess::square::EMPTY) {
             board_[castling_rook_end_square] = chess::piece::EMPTY;
-            board_[castling_rook_start_square] = Piece::piece_(chess::piece::ROOK, Piece::color_(moving_piece));
+            board_[castling_rook_start_square] = Piece::piece_(chess::piece::ROOK, moving_piece_color);
         }
     }
 
+    if (moving_piece_type == chess::piece::KING && moving_piece_color == chess::color::WHITE)
+        white_king_square_ = starting_square;
+    else if (moving_piece_type == chess::piece::KING && moving_piece_color == chess::color::BLACK)
+        black_king_square_ = starting_square;
+
     // put moving piece back to its original place & handle promotion
-    board_[starting_square] = (move.promotion_piece_ == chess::piece::EMPTY) ? moving_piece : Piece::piece_(chess::piece::PAWN, Piece::color_(moving_piece));
+    board_[starting_square] = (move.promotion_piece_ == chess::piece::EMPTY) ? moving_piece : Piece::piece_(chess::piece::PAWN, moving_piece_color);
 
     castling_rights_ = state.castling_rights;
     enpassant_target_ = state.enpassant_target;
