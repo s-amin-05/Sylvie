@@ -70,6 +70,7 @@ void Engine::search_loop() {
     if (searcher_.stop_search_)
         std::cout << "info string search stopped early\n";
     std::cout << "bestmove " << searcher_.get_best_move().get_move_notation() << std::endl;
+    std::cout << "info evaluation " << searcher_.get_best_evaluation() / 100.0f << std::endl;
 }
 
 

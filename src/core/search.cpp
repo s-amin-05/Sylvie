@@ -64,7 +64,7 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
 
     if (move_generator.legal_moves_.empty()) {
         if (move_generator.is_in_check(board, board.turn_)) {
-            return -chess::evaluation::INF;
+            return -chess::evaluation::INF + depth;
         }
         return 0;
     }
@@ -76,11 +76,8 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
         int evaluation = -alpha_beta_pruning(depth-1, -beta, -alpha, board);
         board.unmake_move();
 
-        if (evaluation >= beta) {
-            // too good for the opponent to make this move
-            return beta;
-        }
-        alpha = std::max(evaluation, alpha);
+        beta = std::min(evaluation, beta + depth);
+        alpha = std::max(evaluation, alpha - depth);
 
     }
     return alpha;
