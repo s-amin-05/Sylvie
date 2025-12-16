@@ -28,25 +28,25 @@ int Piece::get_piece_from_notation(char piece_notation) {
     piece_notation = toupper(piece_notation);
     switch (piece_notation) {
         case 'P':
-            piece_type = chess::piece::PAWN;
+            piece_type = chess::piece_type::PAWN;
             break;
         case 'N':
-            piece_type = chess::piece::KNIGHT;
+            piece_type = chess::piece_type::KNIGHT;
             break;
         case 'B':
-            piece_type = chess::piece::BISHOP;
+            piece_type = chess::piece_type::BISHOP;
             break;
         case 'R':
-            piece_type = chess::piece::ROOK;
+            piece_type = chess::piece_type::ROOK;
             break;
         case 'Q':
-            piece_type = chess::piece::QUEEN;
+            piece_type = chess::piece_type::QUEEN;
             break;
         case 'K':
-            piece_type = chess::piece::KING;
+            piece_type = chess::piece_type::KING;
             break;
         default:
-            piece_type = chess::piece::EMPTY;
+            piece_type = chess::piece_type::EMPTY;
             break;
     }
     return (piece_color << 3) | piece_type;

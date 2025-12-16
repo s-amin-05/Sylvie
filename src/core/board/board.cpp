@@ -34,14 +34,15 @@ Board::Board(const std::string &position_fen):
     // piece_lists_(12),
     // piece_index_board_{-1},
     // piece_counts_(12, 0),
-    captured_piece_(chess::piece::EMPTY),
+    piece_count_(12, 0),
+    captured_piece_(chess::piece_type::EMPTY),
     logger_("board.log")
 {
     board_fen_ = position_fen;
 
     // Initialize board array to empty & index board to -1
     for (int sq = 0; sq < 64; sq++) {
-        board_[sq] = chess::piece::EMPTY;
+        board_[sq] = chess::piece_type::EMPTY;
     }
 
     setup_using_fen();
@@ -69,10 +70,12 @@ void Board::setup_using_fen() {
                 const int piece_type = Piece::type_(piece);
                 const int piece_color = Piece::color_(piece);
                 const int square = (7-i)*8 + j;
-                if (piece_type == chess::piece::KING && piece_color == chess::color::WHITE)
+                if (piece_type == chess::piece_type::KING && piece_color == chess::color::WHITE)
                     white_king_square_ = square;
-                else if (piece_type == chess::piece::KING && piece_color == chess::color::BLACK)
+                else if (piece_type == chess::piece_type::KING && piece_color == chess::color::BLACK)
                     black_king_square_ = square;
+
+                PieceCountUtils::increment_piece_count(*this, piece, 1);
                 board_[square] = piece;
                 j++;
             }
@@ -182,7 +185,7 @@ void Board::make_move(Move &move, const bool uci_flag) {
 
 
     // king moves
-    if (moving_piece_type == chess::piece::KING) {
+    if (moving_piece_type == chess::piece_type::KING) {
         // castling rights
         // if the king moves, castling rights will be lost for him
         castling_rights_ &= moving_piece_color == chess::color::WHITE ? ~(bitmask::castling::WHITE_KING | bitmask::castling::WHITE_QUEEN) : ~(bitmask::castling::BLACK_KING | bitmask::castling::BLACK_QUEEN);
@@ -209,13 +212,13 @@ void Board::make_move(Move &move, const bool uci_flag) {
                     break;
             }
             if (castling_rook_start_square != chess::square::EMPTY && castling_rook_end_square != chess::square::EMPTY) {
-                board_[castling_rook_start_square] = chess::piece::EMPTY;
-                board_[castling_rook_end_square] = Piece::piece_(chess::piece::ROOK, moving_piece_color);
+                board_[castling_rook_start_square] = chess::piece_type::EMPTY;
+                board_[castling_rook_end_square] = Piece::piece_(chess::piece_type::ROOK, moving_piece_color);
             }
         }
         if (moving_piece_color == chess::color::WHITE) white_king_square_ = target_square;
         else black_king_square_ = target_square;
-    }else if (moving_piece_type == chess::piece::ROOK) {
+    }else if (moving_piece_type == chess::piece_type::ROOK) {
 
         if (starting_square == chess::square::A1 && moving_piece_color == chess::color::WHITE) {
             castling_rights_ &= ~bitmask::castling::WHITE_QUEEN;
@@ -230,15 +233,17 @@ void Board::make_move(Move &move, const bool uci_flag) {
 
     int captured_piece_type = Piece::type_(captured_piece_);
     // update castling rights if rooks get captured
-    if (captured_piece_type == chess::piece::ROOK && target_square == chess::square::A1) {
+    if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::A1) {
         castling_rights_ &= ~bitmask::castling::WHITE_QUEEN;
-    }else if (captured_piece_type == chess::piece::ROOK && target_square == chess::square::H1) {
+    }else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::H1) {
         castling_rights_ &= ~bitmask::castling::WHITE_KING;
-    }else if (captured_piece_type == chess::piece::ROOK && target_square == chess::square::A8) {
+    }else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::A8) {
         castling_rights_ &= ~bitmask::castling::BLACK_QUEEN;
-    }else if (captured_piece_type == chess::piece::ROOK && target_square == chess::square::H8) {
+    }else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::H8) {
         castling_rights_ &= ~bitmask::castling::BLACK_KING;
     }
+
+    PieceCountUtils::increment_piece_count(*this, captured_piece_, -1);
 
     // make the move on the board finally
 
@@ -246,10 +251,14 @@ void Board::make_move(Move &move, const bool uci_flag) {
     state.captured_piece = captured_piece_;
     irreversible_state_stack_.push(state);
     move_stack_.push(move);
-    board_[starting_square] = chess::piece::EMPTY;
-    if (captured_square != chess::square::EMPTY) board_[captured_square] = chess::piece::EMPTY;
+    board_[starting_square] = chess::piece_type::EMPTY;
+    if (captured_square != chess::square::EMPTY) board_[captured_square] = chess::piece_type::EMPTY;
     // handle promotions here
-    board_[target_square] = (move.promotion_piece_ == chess::piece::EMPTY) ? moving_piece : Piece::piece_(Piece::type_(move.promotion_piece_), moving_piece_color);
+    if (move.promotion_piece_ != chess::piece_type::EMPTY ) {
+        PieceCountUtils::increment_piece_count(*this, moving_piece, -1);
+        PieceCountUtils::increment_piece_count(*this, Piece::piece_(Piece::type_(move.promotion_piece_), moving_piece_color), 1);
+    }
+    board_[target_square] = (move.promotion_piece_ == chess::piece_type::EMPTY) ? moving_piece : Piece::piece_(Piece::type_(move.promotion_piece_), moving_piece_color);
 
     // log board state
     // logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");
@@ -302,12 +311,12 @@ void Board::unmake_move() {
             captured_square = target_square + 8;
             board_[captured_square] = captured_piece_;
         }
-        board_[target_square] = chess::piece::EMPTY;
+        board_[target_square] = chess::piece_type::EMPTY;
     }else if (move.is_capture_) {
         board_[captured_square] = captured_piece_;
     }else {
         // for regular moves just empty the target square;
-        board_[target_square] = chess::piece::EMPTY;
+        board_[target_square] = chess::piece_type::EMPTY;
     }
 
     // handle castling
@@ -326,18 +335,25 @@ void Board::unmake_move() {
             castling_rook_end_square = chess::square::F8;
         }
         if (castling_rook_start_square != chess::square::EMPTY && castling_rook_end_square != chess::square::EMPTY) {
-            board_[castling_rook_end_square] = chess::piece::EMPTY;
-            board_[castling_rook_start_square] = Piece::piece_(chess::piece::ROOK, moving_piece_color);
+            board_[castling_rook_end_square] = chess::piece_type::EMPTY;
+            board_[castling_rook_start_square] = Piece::piece_(chess::piece_type::ROOK, moving_piece_color);
         }
     }
 
-    if (moving_piece_type == chess::piece::KING && moving_piece_color == chess::color::WHITE)
+    if (moving_piece_type == chess::piece_type::KING && moving_piece_color == chess::color::WHITE)
         white_king_square_ = starting_square;
-    else if (moving_piece_type == chess::piece::KING && moving_piece_color == chess::color::BLACK)
+    else if (moving_piece_type == chess::piece_type::KING && moving_piece_color == chess::color::BLACK)
         black_king_square_ = starting_square;
 
+    PieceCountUtils::increment_piece_count(*this, captured_piece_, 1);
+
+
     // put moving piece back to its original place & handle promotion
-    board_[starting_square] = (move.promotion_piece_ == chess::piece::EMPTY) ? moving_piece : Piece::piece_(chess::piece::PAWN, moving_piece_color);
+    if (move.promotion_piece_ != chess::piece_type::EMPTY) {
+        PieceCountUtils::increment_piece_count(*this, moving_piece, 1);
+        PieceCountUtils::increment_piece_count(*this, Piece::piece_(Piece::type_(move.promotion_piece_), moving_piece_color), -1);
+    }
+    board_[starting_square] = (move.promotion_piece_ == chess::piece_type::EMPTY) ? moving_piece : Piece::piece_(chess::piece_type::PAWN, moving_piece_color);
 
     castling_rights_ = state.castling_rights;
     enpassant_target_ = state.enpassant_target;
@@ -356,8 +372,10 @@ void Board::unmake_move() {
 void Board::reset_board() {
     // board_fen_ = chess::starting_pos_fen;
     for (int sq=0; sq < 64; sq++) {
-        board_[sq] = chess::piece::EMPTY;
+        board_[sq] = chess::piece_type::EMPTY;
     }
+    piece_count_.clear();
+    piece_count_.resize(12, 0);
     // setup_using_fen();
 }
 

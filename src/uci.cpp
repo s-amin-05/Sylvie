@@ -4,7 +4,9 @@
 #include <utils/utils.h>
 #include <iostream>
 
-UCI::UCI() = default;
+UCI::UCI() {
+    std::cout << "Sylvie v1 by Amin." << std::endl;
+}
 
 
 void UCI::handle_input(const std::string &input) {
@@ -59,8 +61,8 @@ void UCI::handle_position() {
     else return;
 
     std::vector<std::string> moves_to_play = Utils::get_moves_from_args(args_);
-    for (auto move_str: moves_to_play) {
-        Move move = Move(move_str);
+    for (const auto& move_str: moves_to_play) {
+        auto move = Move(move_str);
         engine_.make_move(move);
     }
 

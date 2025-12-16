@@ -39,10 +39,15 @@ public:
     int halfmove_count_;
     int captured_piece_;
 
+
+
     // just a temporary solution, for v1 only
     // will use bitboards and piece_lists for better consistency
     int white_king_square_;
     int black_king_square_;
+
+    // for setting up endgame weight;
+    std::vector<int> piece_count_;
     // // bitboards :)
     // // ordering of bitboards same as piece lists
     // u64 piece_bb_[12];

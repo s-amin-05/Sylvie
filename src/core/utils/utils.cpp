@@ -148,12 +148,12 @@ namespace MoveUtils {
 
 
         // check for captures
-        if (target_piece_type != chess::piece::EMPTY && target_piece_color != moving_piece_color) {
+        if (target_piece_type != chess::piece_type::EMPTY && target_piece_color != moving_piece_color) {
             move.is_capture_ = true;
         }
 
         // check for enpassant
-        if (moving_piece_type == chess::piece::PAWN) {
+        if (moving_piece_type == chess::piece_type::PAWN) {
             if (target_square == board.enpassant_target_) {
                 move.is_en_passant_ = true;
                 move.is_capture_ = true;
@@ -161,7 +161,7 @@ namespace MoveUtils {
         }
 
         // check for castling
-        if (moving_piece_type == chess::piece::KING) {
+        if (moving_piece_type == chess::piece_type::KING) {
             const bool is_king_side_castle_black = board.castling_rights_ & 1U;
             const bool is_queen_side_castle_black = board.castling_rights_ & 2U;
             const bool is_king_side_castle_white = board.castling_rights_ & 4U;
@@ -191,7 +191,7 @@ namespace MoveUtils {
         const int moving_piece_type = Piece::type_(moving_piece);
         const int moving_piece_color = Piece::color_(moving_piece);
 
-        if (moving_piece_type != chess::piece::PAWN) {
+        if (moving_piece_type != chess::piece_type::PAWN) {
             return false;
         }
         if ((Square::rank_(move.starting_square_) == 1 || Square::rank_(move.starting_square_) == 6) && abs(Square::rank_(move.target_square_) - Square::rank_(move.starting_square_)) == 2) {
@@ -255,6 +255,52 @@ namespace MoveUtils {
 //
 // }
 
+namespace PieceCountUtils {
+    void increment_piece_count(Board &board, int piece, int increment) {
+        switch (piece) {
+            case chess::piece::WHITE_KING:
+                board.piece_count_[chess::piecelists::WHITE_KING] += increment;
+                break;
+            case chess::piece::BLACK_KING:
+                board.piece_count_[chess::piecelists::BLACK_KING] += increment;
+                break;
+            case chess::piece::WHITE_QUEEN:
+                board.piece_count_[chess::piecelists::WHITE_QUEEN] += increment;
+                break;
+            case chess::piece::BLACK_QUEEN:
+                board.piece_count_[chess::piecelists::BLACK_QUEEN] += increment;
+                break;
+            case chess::piece::WHITE_ROOK:
+                board.piece_count_[chess::piecelists::WHITE_ROOK] += increment;
+                break;
+            case chess::piece::BLACK_ROOK:
+                board.piece_count_[chess::piecelists::BLACK_ROOK] += increment;
+                break;
+            case chess::piece::WHITE_BISHOP:
+                board.piece_count_[chess::piecelists::WHITE_BISHOP] += increment;
+                break;
+            case chess::piece::BLACK_BISHOP:
+                board.piece_count_[chess::piecelists::BLACK_BISHOP] += increment;
+                break;
+            case chess::piece::WHITE_KNIGHT:
+                board.piece_count_[chess::piecelists::WHITE_KNIGHT] += increment;
+                break;
+            case chess::piece::BLACK_KNIGHT:
+                board.piece_count_[chess::piecelists::BLACK_KNIGHT] += increment;
+                break;
+            case chess::piece::WHITE_PAWN:
+                board.piece_count_[chess::piecelists::WHITE_PAWN] += increment;
+                break;
+            case chess::piece::BLACK_PAWN:
+                board.piece_count_[chess::piecelists::BLACK_PAWN] += increment;
+                break;
+            default:
+                break;
+
+        }
+    }
+}
+
 namespace BoardUtils {
 
     bool is_square_attacked(const Board &board, const int square, const int attacking_color) {
@@ -276,7 +322,7 @@ namespace BoardUtils {
         for (int i=(attacking_color==chess::color::BLACK? 0: 2); i<(attacking_color==chess::color::BLACK? 2: 4); i++) {
             if (pawn_attack_offset[i] == 0) continue;
             int attacking_piece = board.board_[square + pawn_attack_offset[i]];
-            if (Piece::type_(attacking_piece) == chess::piece::PAWN && Piece::color_(attacking_piece) == attacking_color) {
+            if (Piece::type_(attacking_piece) == chess::piece_type::PAWN && Piece::color_(attacking_piece) == attacking_color) {
                 return true;
             }
         }
@@ -299,7 +345,7 @@ namespace BoardUtils {
             if (!knight_offsets[j]) continue;
             if (square + knight_offsets[j] >= 64 || square + knight_offsets[j] < 0) continue;
             int attacking_piece = board.board_[square + knight_offsets[j]];
-            if (Piece::type_(attacking_piece) == chess::piece::KNIGHT && Piece::color_(attacking_piece) == attacking_color) {
+            if (Piece::type_(attacking_piece) == chess::piece_type::KNIGHT && Piece::color_(attacking_piece) == attacking_color) {
                 return true;
             }
         }
@@ -323,7 +369,7 @@ namespace BoardUtils {
             if (!king_offsets[j]) continue;
             if (square + king_offsets[j] >= 64 || square + king_offsets[j] < 0) continue;
             int attacking_piece = board.board_[square + king_offsets[j]];
-            if (Piece::type_(attacking_piece) == chess::piece::KING && Piece::color_(attacking_piece) == attacking_color) {
+            if (Piece::type_(attacking_piece) == chess::piece_type::KING && Piece::color_(attacking_piece) == attacking_color) {
                 return true;
             }
         }
@@ -352,7 +398,7 @@ namespace BoardUtils {
         };
 
         for (int j=0; j<8; j++) {
-            const int secondary_piece_type = (j < 4? chess::piece::ROOK: chess::piece::BISHOP);
+            const int secondary_piece_type = (j < 4? chess::piece_type::ROOK: chess::piece_type::BISHOP);
 
             for (int k=1; k<=min_distance[j]; k++) {
                 const int attacking_piece = board.board_[square + k*sliding_offsets[j]];
@@ -361,11 +407,11 @@ namespace BoardUtils {
                 // if blocked by attacking side piece
 
                 const bool is_secondary = attacking_piece_type == secondary_piece_type;
-                const bool is_queen = attacking_piece_type == chess::piece::QUEEN;
+                const bool is_queen = attacking_piece_type == chess::piece_type::QUEEN;
                 // enemy piece blocks
-                if (attacking_piece_type != chess::piece::EMPTY && !(is_secondary || is_queen)) break;
+                if (attacking_piece_type != chess::piece_type::EMPTY && !(is_secondary || is_queen)) break;
                 // friendly piece blocks
-                if (attacking_piece_type != chess::piece::EMPTY && Piece::color_(attacking_piece) != attacking_color) break;
+                if (attacking_piece_type != chess::piece_type::EMPTY && Piece::color_(attacking_piece) != attacking_color) break;
                 if ((is_secondary || is_queen) && Piece::color_(attacking_piece) == attacking_color) {
                     return true;
                 }

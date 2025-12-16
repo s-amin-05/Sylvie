@@ -6,7 +6,7 @@
 Move::Move():
     starting_square_(chess::square::EMPTY),
     target_square_(chess::square::EMPTY),
-    promotion_piece_(chess::piece::EMPTY),
+    promotion_piece_(chess::piece_type::EMPTY),
     is_castling_(false),
     is_capture_(false),
     is_en_passant_(false)
@@ -46,7 +46,7 @@ std::string Move::get_move_notation() const {
         return chess::move::NO_MOVE;
     }
     std::string move_notation = Square::square_notation(starting_square_) + Square::square_notation(target_square_);
-    if (Piece::type_(promotion_piece_) != chess::piece::EMPTY) {
+    if (Piece::type_(promotion_piece_) != chess::piece_type::EMPTY) {
         move_notation += std::tolower(Piece::piece_notation(promotion_piece_));
     }
     return move_notation;

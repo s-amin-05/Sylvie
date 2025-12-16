@@ -26,6 +26,10 @@ namespace MoveUtils {
 //     int get_piece_list_type(Piece &piece);
 // }
 
+namespace PieceCountUtils {
+    void increment_piece_count(Board &board, int piece, int increment);
+}
+
 namespace BoardUtils {
     bool is_square_attacked(const Board &board, int square, int attacking_color);
 }

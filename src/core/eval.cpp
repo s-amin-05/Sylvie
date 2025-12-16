@@ -11,7 +11,7 @@ namespace Evaluation {
         for (int sq = 0; sq < 64; ++sq) {
             const auto& piece = board.board_[sq];
 
-            if (piece == chess::piece::EMPTY) continue;
+            if (piece == chess::piece_type::EMPTY) continue;
 
             int piece_type = Piece::type_(piece);
             int value = get_piece_material_value(piece_type);

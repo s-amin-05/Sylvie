@@ -13,7 +13,7 @@ namespace chess{
     const std::string starting_pos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 }
 
-namespace chess::piece{
+namespace chess::piece_type{
     const int EMPTY = 0U;
     const int KING = 1U;
     const int QUEEN = 2U;
@@ -21,6 +21,22 @@ namespace chess::piece{
     const int BISHOP = 4U;
     const int KNIGHT = 5U;
     const int PAWN = 6U;
+}
+
+namespace chess::piece {
+    const int EMPTY = 0U;
+    const int BLACK_KING = 1U;
+    const int BLACK_QUEEN = 2U;
+    const int BLACK_ROOK = 3U;
+    const int BLACK_BISHOP = 4U;
+    const int BLACK_KNIGHT = 5U;
+    const int BLACK_PAWN = 6U;
+    const int WHITE_KING = 9U;
+    const int WHITE_QUEEN = 10U;
+    const int WHITE_ROOK = 11U;
+    const int WHITE_BISHOP = 12U;
+    const int WHITE_KNIGHT = 13U;
+    const int WHITE_PAWN = 14U;
 };
 
 namespace chess::piecelists {
