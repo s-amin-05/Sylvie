@@ -49,7 +49,7 @@ int Searcher::minmax_search(const int depth, Board &board) {
     return max_evaluation;
 }
 
-int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
+int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board, int ply) {
     // count nodes searched
     nodes_searched_++;
 
@@ -64,7 +64,7 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
 
     if (move_generator.legal_moves_.empty()) {
         if (move_generator.is_in_check(board, board.turn_)) {
-            return -chess::evaluation::INF + depth;
+            return -chess::evaluation::INF + ply;
         }
         return 0;
     }
@@ -73,11 +73,13 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board) {
 
     for (Move move: move_generator.legal_moves_) {
         board.make_move(move, false);
-        int evaluation = -alpha_beta_pruning(depth-1, -beta, -alpha, board);
+        int evaluation = -alpha_beta_pruning(depth-1, -beta, -alpha, board, ply + 1);
         board.unmake_move();
 
-        beta = std::min(evaluation, beta + depth);
-        alpha = std::max(evaluation, alpha - depth);
+        if (evaluation >= beta) {
+            return beta;
+        }
+        alpha = std::max(evaluation, alpha);
 
     }
     return alpha;
@@ -96,7 +98,7 @@ void Searcher::search_best_move(const int depth, Board &board) {
 
         board.make_move(move, false);
 
-        int move_eval = -alpha_beta_pruning(depth-1, -chess::evaluation::INF, chess::evaluation::INF, board);
+        int move_eval = -alpha_beta_pruning(depth-1, -chess::evaluation::INF, chess::evaluation::INF, board, 1);
 
         board.unmake_move();
 

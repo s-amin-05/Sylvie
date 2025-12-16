@@ -11,7 +11,7 @@ class Searcher {
 
     int minmax_search(int depth, Board &board);
 
-    int alpha_beta_pruning(int depth, int alpha, int beta, Board &board);
+    int alpha_beta_pruning(int depth, int alpha, int beta, Board &board, int ply);
 
     public:
     Searcher();
