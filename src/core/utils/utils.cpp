@@ -434,18 +434,19 @@ namespace SearchUtils {
         }
 
         int victim_value = 0;
+        int endgame_phase = Evaluation::get_endgame_phase(board);
         if (move.is_en_passant_) {
             victim_value = chess::evaluation::PAWN;
         } else {
             int victim_square = board.board_[move.target_square_];
             int victim_type = Piece::type_(victim_square);
             int victim_color = Piece::color_(victim_square);
-            victim_value = Evaluation::get_piece_material_value(victim_type) + Evaluation::get_position_bonus(victim_type, move.target_square_, victim_color);
+            victim_value = Evaluation::get_piece_material_value(victim_type) + Evaluation::get_position_bonus(victim_type, move.target_square_, victim_color, endgame_phase);
         }
         int aggressor_square = board.board_[move.starting_square_];
         int aggressor_type = Piece::type_(aggressor_square);
         int aggressor_color = Piece::color_(aggressor_square);
-        int aggressor_value = Evaluation::get_piece_material_value(aggressor_type) + Evaluation::get_position_bonus(aggressor_type, move.starting_square_, aggressor_color);
+        int aggressor_value = Evaluation::get_piece_material_value(aggressor_type) + Evaluation::get_position_bonus(aggressor_type, move.starting_square_, aggressor_color, endgame_phase);
 
         return 100000 + (victim_value * 1000) - aggressor_value;
     }

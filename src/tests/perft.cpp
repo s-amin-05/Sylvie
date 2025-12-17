@@ -192,7 +192,7 @@ void run_search_benchmark(const std::string& test_name, const std::string& fen, 
 }
 
 void run_search_test_suite() {
-    int search_depth = 5;
+    int search_depth = 6;
 
     for (const auto& test : tests) {
         run_search_benchmark(test.name, test.fen, search_depth);
@@ -205,23 +205,21 @@ void run_search_test_suite() {
 int main() {
     {
 
-        // run_search_test_suite();
-        run_perft_test_suite();
-        // Board board = Board(tests[0].fen);
-        //
-        // std::string moves = "d2d4 g8f6 c2c4 e7e5 d4e5 f6g4 g1f3 b8c6 c1g5 f7f6 e5f6 g7f6 g5h4 f8b4 b1d2 c6e5 e2e3 e8g8 f1e2 e5g6 d1b3 c7c5 h4g3 d8a5 a2a3 f6f5 e1g1 b4d2 f3d2 a5d2 a1d1 d2e2 b3c3 e2d1 f1d1 h7h6 g3d6";
-        // std::vector<std::string> moveListStr = Utils::split(moves, ' ');
-        // for (auto move: moveListStr) {
-        //     Move mv = Move(move);
-        //
-        //     board.make_move(mv, true);
-        //     if (mv.is_castling_) {
-        //         std::cout << "Castling" << std::endl;
-        //     }
-        //
-        // }
-        // board.print_board();
-        // perft_divide(1, board);
+        run_search_test_suite();
+        // run_perft_test_suite();
+        // auto board = Board("8/3q4/2k4P/8/8/4K3/8/8 w - - 2 2");
+        // Move m1 = Move("e3e4");
+        // Move m2 = Move("d7f7");
+        // Move m3 = Move("e4e3");
+        // board.make_move(m1, true);
+        // board.make_move(m2, true);
+        // board.make_move(m3, true);
+        // // Evaluation::evaluate(board);
+        // auto sr = Searcher();
+        // sr.search_best_move(6, board);
+        // std::cout << "Best Move: " << sr.get_best_move().get_move_notation() << std::endl;
+        // std::cout << "Evaluation: " <<sr.get_best_evaluation() << std::endl;
+
 
 
     }

@@ -217,8 +217,6 @@ namespace chess::evaluation {
     constexpr int QUEEN = 900;
     constexpr int KING = 20000;
 
-
-
     const std::vector<int> PIECE_VALUES = {
         0,
         KING,
@@ -229,12 +227,28 @@ namespace chess::evaluation {
         PAWN
     };
 
+    const std::vector<int> CENTER_MANHATTAN_DISTANCE = {
+        6, 5, 4, 3, 3, 4, 5, 6,
+        5, 4, 3, 2, 2, 3, 4, 5,
+        4, 3, 2, 1, 1, 2, 3, 4,
+        3, 2, 1, 0, 0, 1, 2, 3,
+        3, 2, 1, 0, 0, 1, 2, 3,
+        4, 3, 2, 1, 1, 2, 3, 4,
+        5, 4, 3, 2, 2, 3, 4, 5,
+        6, 5, 4, 3, 3, 4, 5, 6
+      };
+
+    const int ENDGAME_WEIGHT_QUEEN = 45;
+    const int ENDGAME_WEIGHT_ROOK = 20;
+    const int ENDGAME_WEIGHT_BISHOP = 10;
+    const int ENDGAME_WEIGHT_KNIGHT = 10;
+    const int ENDGAME_START_WEIGHT = 2 * ENDGAME_WEIGHT_ROOK + 2 * ENDGAME_WEIGHT_BISHOP + 2 * ENDGAME_WEIGHT_KNIGHT + ENDGAME_WEIGHT_QUEEN;
 }
 
 namespace chess::piece_sq_table {
 
 
-    const std::vector<int> PAWN = {
+    const std::vector<int> PAWN_MG = {
         0,  0,  0,  0,  0,  0,  0,  0,
         50, 50, 50, 50, 50, 50, 50, 50,
         10, 10, 20, 30, 30, 20, 10, 10,
@@ -243,6 +257,17 @@ namespace chess::piece_sq_table {
         5, -5,-10,  0,  0,-10, -5,  5,
         5, 10, 10,-20,-20, 10, 10,  5,
         0,  0,  0,  0,  0,  0,  0,  0
+    };
+
+    const std::vector<int> PAWN_EG = {
+        0,   0,   0,   0,   0,   0,   0,   0,  // Rank 8 (Promotion - Piece usually becomes Q, so 0)
+        80,  80,  80,  80,  80,  80,  80,  80,  // Rank 7 (One step away! Huge value)
+        50,  50,  50,  50,  50,  50,  50,  50,  // Rank 6 (Threatening)
+        30,  30,  30,  30,  30,  30,  30,  30,  // Rank 5 (Crossed halfway)
+        20,  20,  20,  20,  20,  20,  20,  20,  // Rank 4
+        10,  10,  10,  10,  10,  10,  10,  10,  // Rank 3
+         0,   0,   0,   0,   0,   0,   0,   0,  // Rank 2 (Starting square)
+         0,   0,   0,   0,   0,   0,   0,   0
     };
 
     const std::vector<int> KNIGHT = {
@@ -312,13 +337,23 @@ namespace chess::piece_sq_table {
     };
 
 
-    const std::vector<std::vector<int>> PIECE_SQUARE_TABLE = {
+    const std::vector<std::vector<int>> PIECE_SQUARE_TABLE_MG = {
         {}, // temp, will update to better looking code
         KING_MIDGAME,
         QUEEN,
         ROOK,
         BISHOP,
         KNIGHT,
-        PAWN
+        PAWN_MG
+    };
+
+    const std::vector<std::vector<int>> PIECE_SQUARE_TABLE_EG = {
+        {}, // temp, will update to better looking code
+        KING_ENDGAME,
+        QUEEN,
+        ROOK,
+        BISHOP,
+        KNIGHT,
+        PAWN_EG
     };
 }
