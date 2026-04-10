@@ -10,6 +10,8 @@ add_library(core
         board/piece.cpp
         board/square.cpp
         board/move.cpp
+        board/square.cpp
+        board/piece.cpp
         utils/utils.cpp
         utils/logger.cpp
 

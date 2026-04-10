@@ -11,7 +11,7 @@ class UCI {
 public:
     UCI();
 
-    void handle_input(std::string &input);
+    void handle_input(const std::string &input);
 
     void handle_uci();
 

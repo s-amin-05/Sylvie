@@ -13,14 +13,30 @@ namespace chess{
     const std::string starting_pos_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 }
 
-namespace chess::piece{
-    const int EMPTY = 0;
-    const int KING = 1;
-    const int QUEEN = 2;
-    const int ROOK = 3;
-    const int BISHOP = 4;
-    const int KNIGHT = 5;
-    const int PAWN = 6;
+namespace chess::piece_type{
+    const int EMPTY = 0U;
+    const int KING = 1U;
+    const int QUEEN = 2U;
+    const int ROOK = 3U;
+    const int BISHOP = 4U;
+    const int KNIGHT = 5U;
+    const int PAWN = 6U;
+}
+
+namespace chess::piece {
+    const int EMPTY = 0U;
+    const int BLACK_KING = 1U;
+    const int BLACK_QUEEN = 2U;
+    const int BLACK_ROOK = 3U;
+    const int BLACK_BISHOP = 4U;
+    const int BLACK_KNIGHT = 5U;
+    const int BLACK_PAWN = 6U;
+    const int WHITE_KING = 9U;
+    const int WHITE_QUEEN = 10U;
+    const int WHITE_ROOK = 11U;
+    const int WHITE_BISHOP = 12U;
+    const int WHITE_KNIGHT = 13U;
+    const int WHITE_PAWN = 14U;
 };
 
 namespace chess::piecelists {
@@ -145,8 +161,8 @@ namespace chess::square {
 }
 
 namespace chess::color{
-    const bool WHITE = true;
-    const bool BLACK = false;
+    const int WHITE = 1U;
+    const int BLACK = 0U;
 };
 
 namespace chess::move {
@@ -182,6 +198,11 @@ namespace bitmask::castling {
     const int WHITE_QUEEN = 8U;
 }
 
+namespace bitmask::piece {
+    constexpr int PIECE_COLOR = 8U;
+    constexpr int PIECE_TYPE = 7U;
+}
+
 namespace chess::debug {
     const std::string line_seperator = "--------********--------\n";
 }
@@ -196,19 +217,38 @@ namespace chess::evaluation {
     constexpr int QUEEN = 900;
     constexpr int KING = 20000;
 
-    const std::unordered_map<int, int> PIECE_VALUE_MAP = {
-        {piece::PAWN, PAWN},
-        {piece::KNIGHT, KNIGHT},
-        {piece::BISHOP, BISHOP},
-        {piece::ROOK, ROOK},
-        {piece::QUEEN, QUEEN}
+    const std::vector<int> PIECE_VALUES = {
+        0,
+        KING,
+        QUEEN,
+        ROOK,
+        BISHOP,
+        KNIGHT,
+        PAWN
     };
+
+    const std::vector<int> CENTER_MANHATTAN_DISTANCE = {
+        6, 5, 4, 3, 3, 4, 5, 6,
+        5, 4, 3, 2, 2, 3, 4, 5,
+        4, 3, 2, 1, 1, 2, 3, 4,
+        3, 2, 1, 0, 0, 1, 2, 3,
+        3, 2, 1, 0, 0, 1, 2, 3,
+        4, 3, 2, 1, 1, 2, 3, 4,
+        5, 4, 3, 2, 2, 3, 4, 5,
+        6, 5, 4, 3, 3, 4, 5, 6
+      };
+
+    const int ENDGAME_WEIGHT_QUEEN = 45;
+    const int ENDGAME_WEIGHT_ROOK = 20;
+    const int ENDGAME_WEIGHT_BISHOP = 10;
+    const int ENDGAME_WEIGHT_KNIGHT = 10;
+    const int ENDGAME_START_WEIGHT = 2 * ENDGAME_WEIGHT_ROOK + 2 * ENDGAME_WEIGHT_BISHOP + 2 * ENDGAME_WEIGHT_KNIGHT + ENDGAME_WEIGHT_QUEEN;
 }
 
 namespace chess::piece_sq_table {
 
 
-    const std::vector<int> PAWN = {
+    const std::vector<int> PAWN_MG = {
         0,  0,  0,  0,  0,  0,  0,  0,
         50, 50, 50, 50, 50, 50, 50, 50,
         10, 10, 20, 30, 30, 20, 10, 10,
@@ -217,6 +257,17 @@ namespace chess::piece_sq_table {
         5, -5,-10,  0,  0,-10, -5,  5,
         5, 10, 10,-20,-20, 10, 10,  5,
         0,  0,  0,  0,  0,  0,  0,  0
+    };
+
+    const std::vector<int> PAWN_EG = {
+        0,   0,   0,   0,   0,   0,   0,   0,  // Rank 8 (Promotion - Piece usually becomes Q, so 0)
+        80,  80,  80,  80,  80,  80,  80,  80,  // Rank 7 (One step away! Huge value)
+        50,  50,  50,  50,  50,  50,  50,  50,  // Rank 6 (Threatening)
+        30,  30,  30,  30,  30,  30,  30,  30,  // Rank 5 (Crossed halfway)
+        20,  20,  20,  20,  20,  20,  20,  20,  // Rank 4
+        10,  10,  10,  10,  10,  10,  10,  10,  // Rank 3
+         0,   0,   0,   0,   0,   0,   0,   0,  // Rank 2 (Starting square)
+         0,   0,   0,   0,   0,   0,   0,   0
     };
 
     const std::vector<int> KNIGHT = {
@@ -285,11 +336,24 @@ namespace chess::piece_sq_table {
         -50,-30,-30,-30,-30,-30,-30,-50
     };
 
-    const std::unordered_map<int, std::vector<int>> PIECE_TABLE_MAP = {
-        {piece::PAWN, PAWN},
-        {piece::KNIGHT, KNIGHT},
-        {piece::BISHOP, BISHOP},
-        {piece::ROOK, ROOK},
-        {piece::QUEEN, QUEEN}
+
+    const std::vector<std::vector<int>> PIECE_SQUARE_TABLE_MG = {
+        {}, // temp, will update to better looking code
+        KING_MIDGAME,
+        QUEEN,
+        ROOK,
+        BISHOP,
+        KNIGHT,
+        PAWN_MG
+    };
+
+    const std::vector<std::vector<int>> PIECE_SQUARE_TABLE_EG = {
+        {}, // temp, will update to better looking code
+        KING_ENDGAME,
+        QUEEN,
+        ROOK,
+        BISHOP,
+        KNIGHT,
+        PAWN_EG
     };
 }

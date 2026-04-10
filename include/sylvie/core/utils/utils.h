@@ -15,19 +15,23 @@ namespace Utils {
 }
 
 namespace MoveUtils {
-    Move set_move_flags(Move &move, Board &board);
-    bool is_double_pawn_push(Move &move, Board &board);
+    Move set_move_flags(Move &move, const Board &board);
+    bool is_double_pawn_push(const Move &move, const Board &board);
 }
 
-namespace PieceListUtils {
-    void add_piece_to_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts);
-    void remove_piece_from_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts);
-    void update_piece_list(Piece piece, Square starting_square, Square target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board);
-    int get_piece_list_type(Piece &piece);
+// namespace PieceListUtils {
+//     void add_piece_to_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts);
+//     void remove_piece_from_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts);
+//     void update_piece_list(Piece piece, Square starting_square, Square target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board);
+//     int get_piece_list_type(Piece &piece);
+// }
+
+namespace PieceCountUtils {
+    void increment_piece_count(Board &board, int piece, int increment);
 }
 
 namespace BoardUtils {
-    bool is_square_attacked(Board &board, Square square, bool attacking_color);
+    bool is_square_attacked(const Board &board, int square, int attacking_color);
 }
 // To be used later in the projet
 // namespace BitUtils {
@@ -57,3 +61,6 @@ namespace BoardUtils {
 //     }
 // }
 
+namespace  SearchUtils {
+    void order_moves(std::vector<Move> &move_list, const Board &board);
+}

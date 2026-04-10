@@ -6,13 +6,14 @@
 Move::Move():
     starting_square_(chess::square::EMPTY),
     target_square_(chess::square::EMPTY),
-    promotion_piece_(chess::piece::EMPTY),
+    promotion_piece_(chess::piece_type::EMPTY),
     is_castling_(false),
     is_capture_(false),
     is_en_passant_(false)
 {}
 
-Move::Move(Square starting_square, Square target_square, Piece promotion_piece, bool is_castling, bool is_capture, bool is_en_passant):
+Move::Move(const int starting_square, const int target_square, const int promotion_piece,
+           const bool is_castling, const bool is_capture, const bool is_en_passant):
     starting_square_(starting_square),
     target_square_(target_square),
     promotion_piece_(promotion_piece),
@@ -21,32 +22,32 @@ Move::Move(Square starting_square, Square target_square, Piece promotion_piece, 
     is_en_passant_(is_en_passant)
 {}
 
-Move::Move(std::string move_notation): Move() {
+Move::Move(const std::string &move_notation): Move() {
     if (move_notation.length() < 4 || move_notation.length() > 5) {
         throw std::invalid_argument("Invalid move notation length");
     }
 
 
-    starting_square_ = Square(move_notation.substr(0, 2));
-    target_square_ = Square(move_notation.substr(2, 2));
+    starting_square_ = Square::get_square_from_notation(move_notation.substr(0, 2));
+    target_square_ = Square::get_square_from_notation(move_notation.substr(2, 2));
 
     // promotion
     if (move_notation.length() == 5) {
-        if (target_square_.rank_ == 7) {
-            promotion_piece_ = Piece(std::toupper(move_notation[4]));
+        if (Square::rank_(target_square_) == 7) {
+            promotion_piece_ = Piece::get_piece_from_notation(std::toupper(move_notation[4]));
         }else {
-            promotion_piece_ = Piece(move_notation[4]);
+            promotion_piece_ = Piece::get_piece_from_notation(move_notation[4]);
         }
     }
 }
 
 std::string Move::get_move_notation() const {
-    if (starting_square_.square_ == chess::square::EMPTY && target_square_.square_ == chess::square::EMPTY) {
+    if (starting_square_ == chess::square::EMPTY && target_square_ == chess::square::EMPTY) {
         return chess::move::NO_MOVE;
     }
-    std::string move_notation = starting_square_.get_square_notation() + target_square_.get_square_notation();
-    if (promotion_piece_.piece_type_ != chess::piece::EMPTY) {
-        move_notation += std::tolower(promotion_piece_.get_piece_notation());
+    std::string move_notation = Square::square_notation(starting_square_) + Square::square_notation(target_square_);
+    if (Piece::type_(promotion_piece_) != chess::piece_type::EMPTY) {
+        move_notation += std::tolower(Piece::piece_notation(promotion_piece_));
     }
     return move_notation;
 }

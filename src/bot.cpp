@@ -2,25 +2,26 @@
 #include <iostream>
 
 #include <search.h>
+#include <utils.h>
 
 Engine::Engine() {
      debug_flag_ = false;
      time_increment_black_ = time_increment_white_ = time_remaining_black_ = time_remaining_white_ = 0;
      move_generator_ = MoveGenerator();
      // TODO: add iterative deepening
-     depth_ = 4;
+     depth_ = 6;
  }
 
-void Engine::print_engine_info() {
+void Engine::print_engine_info() const {
      std::cout << "id name " << name_ << std::endl;
      std::cout << "id author " << author_ << std::endl;
 }
 
-void Engine::set_debug_flag(bool flag) {
+void Engine::set_debug_flag(const bool flag) {
      debug_flag_ = flag;
  }
 
-bool Engine::get_debug_flag() {
+bool Engine::get_debug_flag() const {
      return debug_flag_;
  }
 
@@ -39,7 +40,8 @@ void Engine::setup_board(const std::string &fen_string) {
 }
 
 void Engine::make_move(Move &move) {
-    board_.make_move(move);
+    // MoveUtils::set_move_flags(move, board_);
+    board_.make_move(move, true);
 }
 
 void Engine::start_search() {
@@ -68,6 +70,7 @@ void Engine::search_loop() {
     if (searcher_.stop_search_)
         std::cout << "info string search stopped early\n";
     std::cout << "bestmove " << searcher_.get_best_move().get_move_notation() << std::endl;
+    std::cout << "info evaluation " << searcher_.get_best_evaluation() / 100.0f << std::endl;
 }
 
 
