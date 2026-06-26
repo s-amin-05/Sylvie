@@ -48,6 +48,12 @@ public:
 
     // for setting up endgame weight;
     std::vector<int> piece_count_;
+
+    // piece-lists
+    std::vector<std::vector<int>> piece_lists_;
+
+    int piece_index_board_[64];
+
     // // bitboards :)
     // // ordering of bitboards same as piece lists
     // u64 piece_bb_[12];

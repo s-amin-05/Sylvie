@@ -19,12 +19,12 @@ namespace MoveUtils {
     bool is_double_pawn_push(const Move &move, const Board &board);
 }
 
-// namespace PieceListUtils {
-//     void add_piece_to_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts);
-//     void remove_piece_from_piece_list(Piece piece, Square square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board, std::vector<int> &piece_counts);
-//     void update_piece_list(Piece piece, Square starting_square, Square target_square, std::vector<std::vector<Square>> &piece_lists, int *piece_index_board);
-//     int get_piece_list_type(Piece &piece);
-// }
+namespace PieceListUtils {
+    int get_piece_list_type(int &piece);
+    void add_piece_to_piece_list(int piece, int square, std::vector<std::vector<int>> &piece_lists, int piece_index_board[], std::vector<int> &piece_counts);
+    void remove_piece_from_piece_list(int piece, int square, std::vector<std::vector<int>> &piece_lists, int piece_index_board[], std::vector<int> &piece_counts);
+    void update_piece_list(int piece, int starting_square, int target_square, std::vector<std::vector<int>> &piece_lists, int piece_index_board[]);
+}
 
 namespace PieceCountUtils {
     void increment_piece_count(Board &board, int piece, int increment);
