@@ -1,18 +1,6 @@
 #include <square.h>
 #include <constants.h>
 
-int Square::rank_(const int square) {
-    return square >> 3;
-}
-
-int Square::file_(const int square) {
-    return square & 7;
-}
-
-int Square::square_(int file, int rank) {
-    return rank << 3 | file;
-}
-
 
 int Square::get_square_from_notation(const std::string &square_notation) {
     if (square_notation == "00" || square_notation.size() != 2) {
