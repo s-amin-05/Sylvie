@@ -31,7 +31,6 @@ Board::Board(const std::string &position_fen):
     fullmove_number_(1),
     repetition_count_(0),
     halfmove_count_(0),
-    piece_lists_(12),
     piece_index_board_{-1},
 
     piece_count_(12, 0),
@@ -45,15 +44,6 @@ Board::Board(const std::string &position_fen):
         board_[sq] = chess::piece_type::EMPTY;
     }
 
-    for (int i=0; i < 12; i++) {
-        using namespace chess::piecelists;
-        if (i == WHITE_KING || i == BLACK_KING) piece_lists_[i].reserve(max_count::KINGS);
-        else if (i == WHITE_QUEEN || i == BLACK_QUEEN) piece_lists_[i].reserve(max_count::QUEENS);
-        else if (i == WHITE_ROOK || i == BLACK_ROOK) piece_lists_[i].reserve(max_count::ROOKS);
-        else if (i == WHITE_BISHOP || i == BLACK_BISHOP) piece_lists_[i].reserve(max_count::BISHOPS);
-        else if (i == WHITE_KNIGHT || i == BLACK_KNIGHT) piece_lists_[i].reserve(max_count::KNIGHTS);
-        else if (i == WHITE_PAWN || i == BLACK_PAWN) piece_lists_[i].reserve(max_count::PAWNS);
-    }
 
     setup_using_fen();
 

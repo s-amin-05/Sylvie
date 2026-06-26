@@ -204,7 +204,7 @@ namespace MoveUtils {
 
 
 namespace PieceListUtils {
-    void add_piece_to_piece_list(int piece, const int square, std::vector<std::vector<int>> &piece_lists,int piece_index_board[], std::vector<int> &piece_counts) {
+    void add_piece_to_piece_list(int piece, const int square, int piece_lists[][16],int piece_index_board[], std::vector<int> &piece_counts) {
         const int piece_list_type = get_piece_list_type(piece);
         const int count = piece_counts[piece_list_type];
         // if (count >= piece_lists[piece_list_type].size()) {
@@ -216,7 +216,7 @@ namespace PieceListUtils {
         piece_counts[piece_list_type]++;
     }
 
-    void remove_piece_from_piece_list(int piece, int square, std::vector<std::vector<int>> &piece_lists, int piece_index_board[], std::vector<int> &piece_counts) {
+    void remove_piece_from_piece_list(int piece, int square, int piece_lists[][16], int piece_index_board[], std::vector<int> &piece_counts) {
         const int piece_list_type = get_piece_list_type(piece);
         // if (piece_counts[piece_list_type] <= 0) {
         //     std::cerr << "ERROR: Removing piece from empty list for type " << piece_list_type << "\n";
@@ -234,7 +234,7 @@ namespace PieceListUtils {
         piece_index_board[square] = -1;
     }
 
-    void update_piece_list(int piece, const int starting_square, const int target_square, std::vector<std::vector<int>> &piece_lists, int piece_index_board[]) {
+    void update_piece_list(int piece, const int starting_square, const int target_square, int piece_lists[][16], int piece_index_board[]) {
         const int piece_list_type = get_piece_list_type(piece);
         int index = piece_index_board[starting_square];
         piece_lists[piece_list_type][index] = target_square;

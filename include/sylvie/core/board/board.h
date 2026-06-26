@@ -50,7 +50,7 @@ public:
     std::vector<int> piece_count_;
 
     // piece-lists
-    std::vector<std::vector<int>> piece_lists_;
+    int piece_lists_[12][16];
 
     int piece_index_board_[64];
 
