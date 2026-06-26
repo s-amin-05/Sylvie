@@ -6,14 +6,14 @@
 #include <utils/logger.h>
 
 
-using IrreversibleState = struct IrreversibleState {
-    u8 castling_rights;
+struct IrreversibleState {
+    Move move; // Storing the move here so we don't need a separate move_stack
+    int castling_rights;
     int enpassant_target;
-    int repetition_count;
     int halfmove_count;
+    int repetition_count;
     int captured_piece;
 };
-
 // piece-lists are used for generating bitboards later
 // added count here for efficient removal of pieces
 
@@ -28,9 +28,11 @@ public:
      x1xx - king side for white
      1xxx - queen side for white
      */
+    IrreversibleState irreversible_history_[2048];
+    Move move_history_[2048];
+    int history_ply_ = 0;
+
     u8 castling_rights_;
-    std::stack<Move> move_stack_;
-    std::stack<IrreversibleState> irreversible_state_stack_;
     int enpassant_target_;
     int board_[64];
     int ply_count_;

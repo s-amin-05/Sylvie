@@ -70,7 +70,7 @@ void Logger::log_board_to_file(Board &board, const Move &move, const bool detail
 
         if (detailed) {
             // move stack (each move in detail)
-            log_move_stack_to_file(board.move_stack_);
+            // log_move_stack_to_file(board.move_stack_);
 
             // board state (irreversible stack)
             // log_irreversible_state_stack_to_file(board.irreversible_state_stack_);

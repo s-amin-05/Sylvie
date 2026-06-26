@@ -138,7 +138,6 @@ void Board::make_move(Move &move, const bool uci_flag) {
     state.halfmove_count = halfmove_count_;
     state.repetition_count = repetition_count_;
 
-
     // SET Move flags for special cases based on board state
     if (uci_flag) MoveUtils::set_move_flags(move, *this);
 
@@ -159,37 +158,27 @@ void Board::make_move(Move &move, const bool uci_flag) {
     int moving_piece_type = Piece::type_(moving_piece);
     int moving_piece_color = Piece::color_(moving_piece);
 
-    // special cases for promotion, enpassants & castling
-    // note that is_capture_, etc will be set in utils by user
-    // and in movgen by engine
-
     // pawn moves
-
     if (move.is_en_passant_) {
         // remove the captured pawn
         if (moving_piece_color == chess::color::WHITE) {
             captured_square = target_square - 8;
             captured_piece_ = board_[captured_square];
-
-        }else {
+        } else {
             captured_square = target_square + 8;
             captured_piece_ = board_[captured_square];
         }
-
-    }else if (MoveUtils::is_double_pawn_push(move, *this)){
-
+    } else if (MoveUtils::is_double_pawn_push(move, *this)) {
         if (moving_piece_color == chess::color::WHITE) {
             enpassant_target_ = target_square - 8;
-        }else {
+        } else {
             enpassant_target_ = target_square + 8;
         }
     }
 
-
     // king moves
     if (moving_piece_type == chess::piece_type::KING) {
         // castling rights
-        // if the king moves, castling rights will be lost for him
         castling_rights_ &= moving_piece_color == chess::color::WHITE ? ~(bitmask::castling::WHITE_KING | bitmask::castling::WHITE_QUEEN) : ~(bitmask::castling::BLACK_KING | bitmask::castling::BLACK_QUEEN);
 
         if (move.is_castling_) {
@@ -221,15 +210,15 @@ void Board::make_move(Move &move, const bool uci_flag) {
         }
         if (moving_piece_color == chess::color::WHITE) white_king_square_ = target_square;
         else black_king_square_ = target_square;
-    }else if (moving_piece_type == chess::piece_type::ROOK) {
 
+    } else if (moving_piece_type == chess::piece_type::ROOK) {
         if (starting_square == chess::square::A1 && moving_piece_color == chess::color::WHITE) {
             castling_rights_ &= ~bitmask::castling::WHITE_QUEEN;
-        }else if (starting_square == chess::square::H1 && moving_piece_color == chess::color::WHITE) {
+        } else if (starting_square == chess::square::H1 && moving_piece_color == chess::color::WHITE) {
             castling_rights_ &= ~bitmask::castling::WHITE_KING;
-        }else if (starting_square == chess::square::A8 && moving_piece_color == chess::color::BLACK) {
+        } else if (starting_square == chess::square::A8 && moving_piece_color == chess::color::BLACK) {
             castling_rights_ &= ~bitmask::castling::BLACK_QUEEN;
-        }else if (starting_square == chess::square::H8 && moving_piece_color == chess::color::BLACK) {
+        } else if (starting_square == chess::square::H8 && moving_piece_color == chess::color::BLACK) {
             castling_rights_ &= ~bitmask::castling::BLACK_KING;
         }
     }
@@ -238,22 +227,23 @@ void Board::make_move(Move &move, const bool uci_flag) {
     // update castling rights if rooks get captured
     if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::A1) {
         castling_rights_ &= ~bitmask::castling::WHITE_QUEEN;
-    }else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::H1) {
+    } else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::H1) {
         castling_rights_ &= ~bitmask::castling::WHITE_KING;
-    }else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::A8) {
+    } else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::A8) {
         castling_rights_ &= ~bitmask::castling::BLACK_QUEEN;
-    }else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::H8) {
+    } else if (captured_piece_type == chess::piece_type::ROOK && target_square == chess::square::H8) {
         castling_rights_ &= ~bitmask::castling::BLACK_KING;
     }
-
-    // PieceCountUtils::increment_piece_count(*this, captured_piece_, -1);
 
     // make the move on the board finally
 
     // captured piece is set down because we need it for unmaking move
     state.captured_piece = captured_piece_;
-    irreversible_state_stack_.push(state);
-    move_stack_.push(move);
+
+    // FAST ARRAY PUSH (Replaces std::stack)
+    irreversible_history_[history_ply_] = state;
+    move_history_[history_ply_] = move;
+    history_ply_++;
 
     PieceListUtils::remove_piece_from_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_count_);
     board_[starting_square] = chess::piece_type::EMPTY;
@@ -262,42 +252,29 @@ void Board::make_move(Move &move, const bool uci_flag) {
         PieceListUtils::remove_piece_from_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_count_);
         board_[captured_square] = chess::piece_type::EMPTY;
     }
+
     // handle promotions here
     if (move.promotion_piece_ != chess::piece_type::EMPTY) {
-
-        // PieceCountUtils::increment_piece_count(*this, moving_piece, -1);
-        // PieceCountUtils::increment_piece_count(*this, move.promotion_piece_, 1);
         PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_count_);
         board_[target_square] = move.promotion_piece_;
     } else {
         PieceListUtils::add_piece_to_piece_list(moving_piece, target_square, piece_lists_, piece_index_board_, piece_count_);
         board_[target_square] = moving_piece;
     }
-
-    // log board state
-    // logger_.log_to_file("[MOVE " + move.get_move_notation() + "]");
-    // logger_.log_board_to_file(*this, move, true);
-
-
-    // validations
-    // validate_piece_index_board(*this);
-
 }
 
 void Board::unmake_move() {
     // Prevent unmaking if there are no moves in history
-    if (move_stack_.empty() || irreversible_state_stack_.empty()) {
+    if (history_ply_ <= 0) {
         return;
     }
 
-    Move move = move_stack_.top();
-    move_stack_.pop();
-
-    IrreversibleState state = irreversible_state_stack_.top();
-    irreversible_state_stack_.pop();
+    // FAST ARRAY POP (Replaces std::stack)
+    history_ply_--;
+    Move move = move_history_[history_ply_];
+    IrreversibleState state = irreversible_history_[history_ply_];
 
     // 1. Revert incremental updates (turns and counters)
-    // If the turn is currently WHITE, it means BLACK just moved, triggering the fullmove increment
     if (turn_ == chess::color::WHITE) {
         fullmove_number_--;
     }
@@ -311,9 +288,9 @@ void Board::unmake_move() {
     halfmove_count_ = state.halfmove_count;
     repetition_count_ = state.repetition_count;
 
-    // Safely restore the internal captured_piece_ tracker to the prior turn's state
-    if (!irreversible_state_stack_.empty()) {
-        captured_piece_ = irreversible_state_stack_.top().captured_piece;
+    // Safely restore the internal captured_piece_ tracker to the PRIOR turn's state
+    if (history_ply_ > 0) {
+        captured_piece_ = irreversible_history_[history_ply_ - 1].captured_piece;
     } else {
         captured_piece_ = chess::piece_type::EMPTY;
     }
@@ -325,7 +302,6 @@ void Board::unmake_move() {
     // 3. Handle moving piece and promotions
     int moving_piece;
     if (move.promotion_piece_ != chess::piece_type::EMPTY) {
-        // If it was a promotion, the piece that actually moved was a pawn
         moving_piece = Piece::piece_(chess::piece_type::PAWN, moving_piece_color);
         PieceListUtils::remove_piece_from_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_count_);
     } else {

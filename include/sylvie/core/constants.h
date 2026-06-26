@@ -198,6 +198,17 @@ namespace bitmask::castling {
     const int WHITE_QUEEN = 8U;
 }
 
+constexpr int CASTLING_RIGHTS_MASKS[64] = {
+    13, 15, 15, 15, 12, 15, 15, 14, // Rank 1: A1 (13), E1 (12), H1 (14)
+    15, 15, 15, 15, 15, 15, 15, 15, // Rank 2
+    15, 15, 15, 15, 15, 15, 15, 15, // Rank 3
+    15, 15, 15, 15, 15, 15, 15, 15, // Rank 4
+    15, 15, 15, 15, 15, 15, 15, 15, // Rank 5
+    15, 15, 15, 15, 15, 15, 15, 15, // Rank 6
+    15, 15, 15, 15, 15, 15, 15, 15, // Rank 7
+    7,  15, 15, 15, 3,  15, 15, 11  // Rank 8: A8 (7), E8 (3), H8 (11)
+};
+
 namespace bitmask::piece {
     constexpr int PIECE_COLOR = 8U;
     constexpr int PIECE_TYPE = 7U;
