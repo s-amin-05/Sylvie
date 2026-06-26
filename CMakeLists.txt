@@ -8,7 +8,12 @@ set(EngineName "sylvie")
 
 cmake_minimum_required(VERSION 3.15)
 project(${EngineName} VERSION 1.0)
-add_executable(${EngineName} src/main.cpp)
+add_executable(${EngineName} src/main.cpp
+        src/bot.cpp
+        src/uci.cpp
+        include/sylvie/bot.h
+        include/sylvie/uci.h
+)
 
 # add executable for custom gui (maybe)
 
@@ -35,10 +40,12 @@ target_link_libraries(${EngineName} PUBLIC core)
  # Tests
 add_executable(tests
     src/tests/perft.cpp
+    src/bot.cpp
+    src/uci.cpp
 )
 
 target_include_directories(tests PUBLIC
-    ${CMAKE_SOURCE_DIR}/include/${EngineName}/tests/
+    ${CMAKE_SOURCE_DIR}/include/${EngineName}/
 )
 
 target_link_libraries(tests PRIVATE core)
