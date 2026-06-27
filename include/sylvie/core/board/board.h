@@ -58,9 +58,9 @@ public:
 
     // // bitboards :)
     // // ordering of bitboards same as piece lists
-    // u64 piece_bb_[12];
-    // u64 occupancy_white_;
-    // u64 occupancy_black_;
+    u64 piece_bitboard_[12];
+    u64 occupancy_white_;
+    u64 occupancy_black_;
     //
     // // bitboards for squares attacked
     // u64 squares_attacked_piece_[12];

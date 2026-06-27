@@ -20,7 +20,7 @@ namespace MoveUtils {
 }
 
 namespace PieceListUtils {
-    int get_piece_list_type(int &piece);
+    int get_piece_list_type(int piece);
     void add_piece_to_piece_list(int piece, int square, int piece_lists[][16], int piece_index_board[], std::vector<int> &piece_counts);
     void remove_piece_from_piece_list(int piece, int square, int piece_lists[][16], int piece_index_board[], std::vector<int> &piece_counts);
     void update_piece_list(int piece, int starting_square, int target_square, int piece_lists[][16], int piece_index_board[]);
@@ -63,4 +63,11 @@ namespace BoardUtils {
 
 namespace  SearchUtils {
     void order_moves(std::vector<Move> &move_list, const Board &board);
+}
+
+namespace BitboardUtils {
+    // void update_bitboard_from_move(Board &board, Move &move);
+    void add_piece_to_bb(Board &board, int piece, int square);
+    void remove_piece_from_bb(Board &board, int piece, int square);
+    void update_piece_in_bb(Board &board, int piece, int starting_square, int target_square);
 }

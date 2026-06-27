@@ -242,7 +242,7 @@ namespace PieceListUtils {
         piece_index_board[starting_square] = -1;
     }
 
-    int get_piece_list_type(int &piece) {
+    int get_piece_list_type(int piece) {
         return Piece::type_(piece) - 1 + (Piece::color_(piece) == chess::color::WHITE ? 0 : 6);
     }
 
@@ -449,4 +449,43 @@ namespace SearchUtils {
             return score_mvv_lva(a, board) > score_mvv_lva(b, board);
         });
     }
+}
+
+namespace BitboardUtils {
+    // void update_bitboard_from_move(Board &board, Move &move) {
+    //     int moving_piece = board.board_[move.starting_square_];
+    //     int moving_piece_type =
+    //     int captured_piece;
+    //
+    //     if (move.is_en_passant_) {
+    //         captured_piece = Piece::piece_(chess::piece_type::PAWN, )
+    //     }
+    // }
+    void add_piece_to_bb(Board &board, int piece, int square) {
+        int bb_index = PieceListUtils::get_piece_list_type(piece);
+        u64 bit = 1ULL << square;
+        board.piece_bitboard_[bb_index] |= bit;
+
+        if (Piece::color_(piece) == chess::color::WHITE)
+            board.occupancy_white_ |= bit;
+        else
+            board.occupancy_black_ |= bit;
+    }
+
+    void remove_piece_from_bb(Board &board, int piece, int square) {
+        int bb_index = PieceListUtils::get_piece_list_type(piece);
+        u64 bit = 1ULL << square;
+        board.piece_bitboard_[bb_index] &= ~bit;
+
+        if (Piece::color_(piece) == chess::color::WHITE)
+            board.occupancy_white_ &= ~bit;
+        else
+            board.occupancy_black_ &= ~bit;
+    }
+
+    void update_piece_in_bb(Board &board, int piece, int starting_square, int target_square) {
+        // int piece_type = Piece::type_(piece);
+        // int piece_color = Piece::color_(piece);
+    }
+
 }
