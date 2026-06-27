@@ -165,6 +165,17 @@ namespace chess::color{
     const int BLACK = 0U;
 };
 
+namespace bitmask::file {
+    const u64 A = 0x8080808080808080;
+    const u64 B = 0x4040404040404040;
+    const u64 C = 0x2020202020202020;
+    const u64 D = 0x1010101010101010;
+    const u64 E = 0x0808080808080808;
+    const u64 F = 0x0404040404040404;
+    const u64 G = 0x0202020202020202;
+    const u64 H = 0x0101010101010101;
+}
+
 namespace chess::move {
     const std::string NO_MOVE = "0000";
 }

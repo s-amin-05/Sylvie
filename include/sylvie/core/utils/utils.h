@@ -66,6 +66,7 @@ namespace  SearchUtils {
 }
 
 namespace BitboardUtils {
+    void compute_attack_tables(Board &board);
     // void update_bitboard_from_move(Board &board, Move &move);
     void add_piece_to_bb(Board &board, int piece, int square);
     void remove_piece_from_bb(Board &board, int piece, int square);

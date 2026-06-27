@@ -123,7 +123,8 @@ void MoveGenerator::generate_sliding_piece_moves(const Board &board, const int &
     // if the piece is not of the current player, we can't move
     if (moving_piece_color != board.turn_) return;
     // minimum distance to captures or edge
-    std::vector<int> min_distance_squares(8);
+    // std::vector<int> min_distance_squares(8);
+    int min_distance_squares[8];
 
     // setting min_distance to board edge
     min_distance_squares[0] = 7 - Square::rank_(square);

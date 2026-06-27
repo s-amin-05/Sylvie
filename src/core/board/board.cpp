@@ -32,6 +32,7 @@ Board::Board(const std::string &position_fen):
     repetition_count_(0),
     halfmove_count_(0),
     piece_index_board_{-1},
+    piece_bitboard_{0ULL},
     piece_count_(12, 0),
     captured_piece_(chess::piece_type::EMPTY),
     logger_("board.log")
@@ -43,7 +44,7 @@ Board::Board(const std::string &position_fen):
         board_[sq] = chess::piece_type::EMPTY;
     }
 
-
+    // BitboardUtils::compute_attack_tables(*this);
     setup_using_fen();
 
     logger_.log_to_file("[BOARD INITIALIZED]");
@@ -409,4 +410,48 @@ void Board::print_board() const {
         }
         std::cout<<std::endl;
     }
+}
+
+void print_single_bitboard(u64 bb, const std::string &name) {
+    std::cout << "\n=== " << name << " ===\n\n";
+
+    for (int rank = 7; rank >= 0; rank--) {
+        std::cout << rank + 1 << "  ";
+
+        for (int file = 0; file < 8; file++) {
+            int square = rank * 8 + file;
+
+            if (bb & (1ULL << square))
+                std::cout << "1 ";
+            else
+                std::cout << ". ";
+        }
+
+        std::cout << '\n';
+    }
+
+    std::cout << "\n   a b c d e f g h\n";
+    std::cout << "\nHex : 0x"
+              << std::hex << std::setw(16) << std::setfill('0') << bb
+              << std::dec << "\n";
+}
+
+void Board::print_bitboards() const {
+    static const char *names[12] = {
+        "White King",
+        "White Queens",
+        "White Rooks",
+        "White Bishops",
+        "White Knights",
+        "White Pawns",
+        "Black King",
+        "Black Queens",
+        "Black Rooks",
+        "Black Bishops",
+        "Black Knights",
+        "Black Pawns"
+    };
+
+    for (int i = 0; i < 12; i++)
+        print_single_bitboard(piece_bitboard_[i], names[i]);
 }

@@ -4,6 +4,9 @@
 #include <stack>
 #include <string>
 #include <utils/logger.h>
+#include <iostream>
+#include <iomanip>
+#include <cstdint>
 
 
 struct IrreversibleState {
@@ -56,12 +59,18 @@ public:
 
     int piece_index_board_[64];
 
-    // // bitboards :)
-    // // ordering of bitboards same as piece lists
+    // bitboards :)
+    // ordering of bitboards same as piece lists
     u64 piece_bitboard_[12];
     u64 occupancy_white_;
     u64 occupancy_black_;
-    //
+
+    // bitboard precomputed attack tables
+    // pawns, knights and kings
+    u64 pawn_attacks[2][64];
+    u64 knight_attacks[64];
+    u64 king_attacks[64];
+
     // // bitboards for squares attacked
     // u64 squares_attacked_piece_[12];
     // u64 squares_attacked_white_;
@@ -83,6 +92,8 @@ public:
     void setup_using_fen();
 
     void print_board() const;
+
+    void print_bitboards() const;
 
 };
 

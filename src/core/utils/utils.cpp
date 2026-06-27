@@ -484,8 +484,61 @@ namespace BitboardUtils {
     }
 
     void update_piece_in_bb(Board &board, int piece, int starting_square, int target_square) {
-        // int piece_type = Piece::type_(piece);
-        // int piece_color = Piece::color_(piece);
+        int bb_index = PieceListUtils::get_piece_list_type(piece);
+        u64 starting_bit = 1ULL << starting_square;
+        u64 target_bit = 1ULL << target_square;
+        board.piece_bitboard_[bb_index] ^= starting_bit | target_bit;
+
+        if (Piece::color_(piece) == chess::color::WHITE)
+            board.occupancy_white_ ^= starting_bit | target_bit;
+        else
+            board.occupancy_black_ ^= starting_bit | target_bit;
+
+
     }
 
-}
+    void compute_attack_tables(Board &board) {
+
+    }
+
+    u64 compute_pawn_attacks(int square, int color) {
+        using namespace movegen::direction_offset;
+        u64 attacks = 0;
+
+        u64 bitboard = 1ULL << square;
+
+        if (color == chess::color::WHITE) {
+            // north west
+            if (!(bitboard & bitmask::file::A))
+                attacks |= bitboard << NORTH_WEST;
+            // north east
+            if (!(bitboard & bitmask::file::H))
+                attacks |= bitboard << NORTH_EAST;
+        } else {
+            // south west
+            if (!(bitboard & bitmask::file::A))
+                attacks |= bitboard << SOUTH_WEST;
+            // south east
+            if (!(bitboard & bitmask::file::H))
+                attacks |= bitboard << SOUTH_EAST;
+        }
+
+        return attacks;
+    }
+
+    u64 compute_knight_attacks(int square) {
+        using namespace movegen::knight_offset;
+        u64 attacks = 0;
+
+        u64 bitboard = 0;
+        bitboard = 1ULL << square;
+
+        return attacks;
+    }
+
+    u64 compute_king_attacks(int square) {
+        u64 attacks = 0;
+        return attacks;
+    }
+
+} // namespace BitboardUtils

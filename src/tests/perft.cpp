@@ -206,7 +206,9 @@ int main() {
     {
 
         // run_search_test_suite();
-        run_perft_test_suite();
+        // run_perft_test_suite();
+        auto board = Board();
+        board.print_bitboards();
         // auto board = Board("8/3q4/2k4P/8/8/4K3/8/8 w - - 2 2");
         // Move m1 = Move("e3e4");
         // Move m2 = Move("d7f7");
