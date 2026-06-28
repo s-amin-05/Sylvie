@@ -299,73 +299,119 @@ namespace BoardUtils {
     bool is_square_attacked(const Board &board, const int square, const int attacking_color) {
         int file = Square::file_(square);
         int rank = Square::rank_(square);
-        // check for pawns
-        int pawn_attack_offset[4] = {
-            movegen::direction_offset::NORTH_EAST,
-            movegen::direction_offset::NORTH_WEST,
-            movegen::direction_offset::SOUTH_EAST,
-            movegen::direction_offset::SOUTH_WEST
-        };
-        if (file == chess::file::A) {
-            pawn_attack_offset[1] = pawn_attack_offset[3] = 0;
-        }else if (file == chess::file::H) {
-            pawn_attack_offset[0] = pawn_attack_offset[2] = 0;
+
+        int defending_color;
+
+        u64 friendly_bb, enemy_bb;
+        u64 friendly_pawns, enemy_pawns;
+        u64 friendly_knights, enemy_knights;
+        u64 friendly_king, enemy_king;
+
+        if (attacking_color == chess::color::WHITE) {
+            defending_color = chess::color::BLACK;
+
+            enemy_bb = board.occupancy_white_;
+            friendly_bb = board.occupancy_black_;
+
+            enemy_pawns = board.piece_bitboard_[chess::piecelists::WHITE_PAWN];
+            friendly_pawns = board.piece_bitboard_[chess::piecelists::BLACK_PAWN];
+
+            enemy_knights = board.piece_bitboard_[chess::piecelists::WHITE_KNIGHT];
+            friendly_knights = board.piece_bitboard_[chess::piecelists::BLACK_KNIGHT];
+
+            enemy_king = board.piece_bitboard_[chess::piecelists::WHITE_KING];
+            friendly_king = board.piece_bitboard_[chess::piecelists::BLACK_KING];
+
+        } else {
+            defending_color = chess::color::WHITE;
+
+            enemy_bb = board.occupancy_black_;
+            friendly_bb = board.occupancy_white_;
+
+            enemy_pawns = board.piece_bitboard_[chess::piecelists::BLACK_PAWN];
+            friendly_pawns = board.piece_bitboard_[chess::piecelists::WHITE_PAWN];
+
+            enemy_knights = board.piece_bitboard_[chess::piecelists::BLACK_KNIGHT];
+            friendly_knights = board.piece_bitboard_[chess::piecelists::WHITE_KNIGHT];
+
+            enemy_king = board.piece_bitboard_[chess::piecelists::BLACK_KING];
+            friendly_king = board.piece_bitboard_[chess::piecelists::WHITE_KING];
+
         }
 
-        for (int i=(attacking_color==chess::color::BLACK? 0: 2); i<(attacking_color==chess::color::BLACK? 2: 4); i++) {
-            if (pawn_attack_offset[i] == 0) continue;
-            int attacking_piece = board.board_[square + pawn_attack_offset[i]];
-            if (Piece::type_(attacking_piece) == chess::piece_type::PAWN && Piece::color_(attacking_piece) == attacking_color) {
-                return true;
-            }
-        }
+        // check for pawns
+        // int pawn_attack_offset[4] = {
+        //     movegen::direction_offset::NORTH_EAST,
+        //     movegen::direction_offset::NORTH_WEST,
+        //     movegen::direction_offset::SOUTH_EAST,
+        //     movegen::direction_offset::SOUTH_WEST
+        // };
+        // if (file == chess::file::A) {
+        //     pawn_attack_offset[1] = pawn_attack_offset[3] = 0;
+        // }else if (file == chess::file::H) {
+        //     pawn_attack_offset[0] = pawn_attack_offset[2] = 0;
+        // }
+        //
+        // for (int i=(attacking_color==chess::color::BLACK? 0: 2); i<(attacking_color==chess::color::BLACK? 2: 4); i++) {
+        //     if (pawn_attack_offset[i] == 0) continue;
+        //     int attacking_piece = board.board_[square + pawn_attack_offset[i]];
+        //     if (Piece::type_(attacking_piece) == chess::piece_type::PAWN && Piece::color_(attacking_piece) == attacking_color) {
+        //         return true;
+        //     }
+        // }
+
+        if (board.pawn_attacks[defending_color][square] & enemy_pawns) return true;
+        if (board.knight_attacks[square] & enemy_knights) return true;
+        if (board.king_attacks[square] & enemy_king) return true;
 
 
         // check for knight
-        constexpr int knight_offsets[8] = {6, -10, 15, -17, 17, -15, 10, -6};
-        int i = 0, n=8;
-        if (file == chess::file::B) {
-            i += 2;
-        }else if (file == chess::file::A) {
-            i += 4;
-        }
-        if (file == chess::file::G) {
-            n-= 2;
-        }else if (file == chess::file::H) {
-            n-= 4;
-        }
-        for (int j=i; j<n; j++) {
-            if (!knight_offsets[j]) continue;
-            if (square + knight_offsets[j] >= 64 || square + knight_offsets[j] < 0) continue;
-            int attacking_piece = board.board_[square + knight_offsets[j]];
-            if (Piece::type_(attacking_piece) == chess::piece_type::KNIGHT && Piece::color_(attacking_piece) == attacking_color) {
-                return true;
-            }
-        }
+        // constexpr int knight_offsets[8] = {6, -10, 15, -17, 17, -15, 10, -6};
+        // int i = 0, n=8;
+        // if (file == chess::file::B) {
+        //     i += 2;
+        // }else if (file == chess::file::A) {
+        //     i += 4;
+        // }
+        // if (file == chess::file::G) {
+        //     n-= 2;
+        // }else if (file == chess::file::H) {
+        //     n-= 4;
+        // }
+        // for (int j=i; j<n; j++) {
+        //     if (!knight_offsets[j]) continue;
+        //     if (square + knight_offsets[j] >= 64 || square + knight_offsets[j] < 0) continue;
+        //     int attacking_piece = board.board_[square + knight_offsets[j]];
+        //     if (Piece::type_(attacking_piece) == chess::piece_type::KNIGHT && Piece::color_(attacking_piece) == attacking_color) {
+        //         return true;
+        //     }
+        // }
+
 
         // check for king
-        constexpr int king_offsets[8] = {
-            movegen::direction_offset::NORTH_WEST,
-            movegen::direction_offset::WEST,
-            movegen::direction_offset::SOUTH_WEST,
-            movegen::direction_offset::NORTH,
-            movegen::direction_offset::SOUTH,
-            movegen::direction_offset::NORTH_EAST,
-            movegen::direction_offset::EAST,
-            movegen::direction_offset::SOUTH_EAST
-        };
+        // constexpr int king_offsets[8] = {
+        //     movegen::direction_offset::NORTH_WEST,
+        //     movegen::direction_offset::WEST,
+        //     movegen::direction_offset::SOUTH_WEST,
+        //     movegen::direction_offset::NORTH,
+        //     movegen::direction_offset::SOUTH,
+        //     movegen::direction_offset::NORTH_EAST,
+        //     movegen::direction_offset::EAST,
+        //     movegen::direction_offset::SOUTH_EAST
+        // };
+        //
+        // i = 0, n=8;
+        // if (file == chess::file::A) i += 3;
+        // if (file == chess::file::H) n -= 3;
+        // for (int j=i; j<n; j++) {
+        //     if (!king_offsets[j]) continue;
+        //     if (square + king_offsets[j] >= 64 || square + king_offsets[j] < 0) continue;
+        //     int attacking_piece = board.board_[square + king_offsets[j]];
+        //     if (Piece::type_(attacking_piece) == chess::piece_type::KING && Piece::color_(attacking_piece) == attacking_color) {
+        //         return true;
+        //     }
+        // }
 
-        i = 0, n=8;
-        if (file == chess::file::A) i += 3;
-        if (file == chess::file::H) n -= 3;
-        for (int j=i; j<n; j++) {
-            if (!king_offsets[j]) continue;
-            if (square + king_offsets[j] >= 64 || square + king_offsets[j] < 0) continue;
-            int attacking_piece = board.board_[square + king_offsets[j]];
-            if (Piece::type_(attacking_piece) == chess::piece_type::KING && Piece::color_(attacking_piece) == attacking_color) {
-                return true;
-            }
-        }
 
         // check for sliding pieces
         constexpr int sliding_offsets[8] = {
@@ -534,14 +580,14 @@ namespace BitboardUtils {
 
         attacks |= (bitboard & ~bitmask::file::A) << NO_NO_WE;
         attacks |= (bitboard & ~bitmask::file::H) << NO_NO_EA;
-        attacks |= (bitboard & ~(bitmask::file::A | bitmask::file::B) << NO_WE_WE);
-        attacks |= (bitboard & ~(bitmask::file::G | bitmask::file::H) << NO_EA_EA);
+        attacks |= (bitboard & ~(bitmask::file::A | bitmask::file::B)) << NO_WE_WE;
+        attacks |= (bitboard & ~(bitmask::file::G | bitmask::file::H)) << NO_EA_EA;
 
         // South
         attacks |= (bitboard & ~bitmask::file::H) >> -SO_SO_EA;
         attacks |= (bitboard & ~bitmask::file::A) >> -SO_SO_WE;
-        attacks |= (bitboard & ~(bitmask::file::G | bitmask::file::H) >> -SO_EA_EA);
-        attacks |= (bitboard & ~(bitmask::file::A | bitmask::file::B) >> -SO_WE_WE);
+        attacks |= (bitboard & ~(bitmask::file::G | bitmask::file::H)) >> -SO_EA_EA;
+        attacks |= (bitboard & ~(bitmask::file::A | bitmask::file::B)) >> -SO_WE_WE;
 
         return attacks;
     }
