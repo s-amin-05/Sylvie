@@ -502,6 +502,8 @@ namespace BitboardUtils {
         for (int sq=0; sq<64; sq++) {
             board.pawn_attacks[chess::color::WHITE][sq] = compute_pawn_attacks(sq, chess::color::WHITE);
             board.pawn_attacks[chess::color::BLACK][sq] = compute_pawn_attacks(sq, chess::color::BLACK);
+            board.knight_attacks[sq] = compute_knight_attacks(sq);
+            board.king_attacks[sq] = compute_king_attacks(sq);
         }
     }
 
@@ -513,11 +515,12 @@ namespace BitboardUtils {
 
         if (color == chess::color::WHITE) {
             // Mask the origin square first, THEN shift
-            attacks |= ((bitboard & ~bitmask::file::A) << NORTH_WEST);
-            attacks |= ((bitboard & ~bitmask::file::H) << NORTH_EAST);
+            attacks |= (bitboard & ~bitmask::file::A) << NORTH_WEST;
+            attacks |= (bitboard & ~bitmask::file::H) << NORTH_EAST;
         } else {
-            attacks |= ((bitboard & ~bitmask::file::A) >> NORTH_EAST); // SW
-            attacks |= ((bitboard & ~bitmask::file::H) >> NORTH_WEST); // SE
+            // south
+            attacks |= (bitboard & ~bitmask::file::A) >> -SOUTH_WEST;
+            attacks |= (bitboard & ~bitmask::file::H) >> -SOUTH_EAST;
         }
 
         return attacks;
@@ -527,14 +530,39 @@ namespace BitboardUtils {
         using namespace movegen::knight_offset;
         u64 attacks = 0;
 
-        u64 bitboard = 0;
-        bitboard = 1ULL << square;
+        u64 bitboard = 1ULL << square;
+
+        attacks |= (bitboard & ~bitmask::file::A) << NO_NO_WE;
+        attacks |= (bitboard & ~bitmask::file::H) << NO_NO_EA;
+        attacks |= (bitboard & ~(bitmask::file::A | bitmask::file::B) << NO_WE_WE);
+        attacks |= (bitboard & ~(bitmask::file::G | bitmask::file::H) << NO_EA_EA);
+
+        // South
+        attacks |= (bitboard & ~bitmask::file::H) >> -SO_SO_EA;
+        attacks |= (bitboard & ~bitmask::file::A) >> -SO_SO_WE;
+        attacks |= (bitboard & ~(bitmask::file::G | bitmask::file::H) >> -SO_EA_EA);
+        attacks |= (bitboard & ~(bitmask::file::A | bitmask::file::B) >> -SO_WE_WE);
 
         return attacks;
     }
 
     u64 compute_king_attacks(int square) {
+        using namespace movegen::direction_offset;
         u64 attacks = 0;
+
+        u64 bitboard = 1ULL << square;
+
+        attacks |= bitboard << NORTH;
+        attacks |= (bitboard & ~bitmask::file::A) << NORTH_WEST;
+        attacks |= (bitboard & ~bitmask::file::H) << EAST;
+        attacks |= (bitboard & ~bitmask::file::H) << NORTH_EAST;
+
+        // South
+        attacks |= bitboard >> -SOUTH;
+        attacks |= (bitboard & ~bitmask::file::H) >> -SOUTH_EAST;
+        attacks |= (bitboard & ~bitmask::file::A) >> -WEST;
+        attacks |= (bitboard & ~bitmask::file::A) >> -SOUTH_WEST;
+
         return attacks;
     }
 
