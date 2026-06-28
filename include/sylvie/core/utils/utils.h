@@ -66,9 +66,14 @@ namespace  SearchUtils {
 }
 
 namespace BitboardUtils {
+    void print_single_bitboard(u64 bb, const std::string &name);
+
+
     void compute_attack_tables(Board &board);
+    u64 compute_pawn_attacks(int square, int color);
     // void update_bitboard_from_move(Board &board, Move &move);
     void add_piece_to_bb(Board &board, int piece, int square);
     void remove_piece_from_bb(Board &board, int piece, int square);
     void update_piece_in_bb(Board &board, int piece, int starting_square, int target_square);
+
 }

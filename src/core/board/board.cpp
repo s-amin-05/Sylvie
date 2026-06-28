@@ -43,8 +43,10 @@ Board::Board(const std::string &position_fen):
     for (int sq = 0; sq < 64; sq++) {
         board_[sq] = chess::piece_type::EMPTY;
     }
+    occupancy_white_ = 0ULL;
+    occupancy_black_ = 0ULL;
 
-    // BitboardUtils::compute_attack_tables(*this);
+    BitboardUtils::compute_attack_tables(*this);
     setup_using_fen();
 
     logger_.log_to_file("[BOARD INITIALIZED]");
@@ -412,29 +414,6 @@ void Board::print_board() const {
     }
 }
 
-void print_single_bitboard(u64 bb, const std::string &name) {
-    std::cout << "\n=== " << name << " ===\n\n";
-
-    for (int rank = 7; rank >= 0; rank--) {
-        std::cout << rank + 1 << "  ";
-
-        for (int file = 0; file < 8; file++) {
-            int square = rank * 8 + file;
-
-            if (bb & (1ULL << square))
-                std::cout << "1 ";
-            else
-                std::cout << ". ";
-        }
-
-        std::cout << '\n';
-    }
-
-    std::cout << "\n   a b c d e f g h\n";
-    std::cout << "\nHex : 0x"
-              << std::hex << std::setw(16) << std::setfill('0') << bb
-              << std::dec << "\n";
-}
 
 void Board::print_bitboards() const {
     static const char *names[12] = {
@@ -453,5 +432,8 @@ void Board::print_bitboards() const {
     };
 
     for (int i = 0; i < 12; i++)
-        print_single_bitboard(piece_bitboard_[i], names[i]);
+        BitboardUtils::print_single_bitboard(piece_bitboard_[i], names[i]);
+
+    BitboardUtils::print_single_bitboard(occupancy_white_, "White Pieces");
+    BitboardUtils::print_single_bitboard(occupancy_black_, "Black Pieces");
 }

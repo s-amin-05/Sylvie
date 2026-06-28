@@ -499,6 +499,10 @@ namespace BitboardUtils {
 
     void compute_attack_tables(Board &board) {
 
+        for (int sq=0; sq<64; sq++) {
+            board.pawn_attacks[chess::color::WHITE][sq] = compute_pawn_attacks(sq, chess::color::WHITE);
+            board.pawn_attacks[chess::color::BLACK][sq] = compute_pawn_attacks(sq, chess::color::BLACK);
+        }
     }
 
     u64 compute_pawn_attacks(int square, int color) {
@@ -508,19 +512,12 @@ namespace BitboardUtils {
         u64 bitboard = 1ULL << square;
 
         if (color == chess::color::WHITE) {
-            // north west
-            if (!(bitboard & bitmask::file::A))
-                attacks |= bitboard << NORTH_WEST;
-            // north east
-            if (!(bitboard & bitmask::file::H))
-                attacks |= bitboard << NORTH_EAST;
+            // Mask the origin square first, THEN shift
+            attacks |= ((bitboard & ~bitmask::file::A) << NORTH_WEST);
+            attacks |= ((bitboard & ~bitmask::file::H) << NORTH_EAST);
         } else {
-            // south west
-            if (!(bitboard & bitmask::file::A))
-                attacks |= bitboard << SOUTH_WEST;
-            // south east
-            if (!(bitboard & bitmask::file::H))
-                attacks |= bitboard << SOUTH_EAST;
+            attacks |= ((bitboard & ~bitmask::file::A) >> NORTH_EAST); // SW
+            attacks |= ((bitboard & ~bitmask::file::H) >> NORTH_WEST); // SE
         }
 
         return attacks;
@@ -540,5 +537,30 @@ namespace BitboardUtils {
         u64 attacks = 0;
         return attacks;
     }
+
+    void print_single_bitboard(u64 bb, const std::string &name) {
+        std::cout << "\n=== " << name << " ===\n\n";
+
+        for (int rank = 7; rank >= 0; rank--) {
+            std::cout << rank + 1 << "  ";
+
+            for (int file = 0; file < 8; file++) {
+                int square = rank * 8 + file;
+
+                if (bb & (1ULL << square))
+                    std::cout << "1 ";
+                else
+                    std::cout << ". ";
+            }
+
+            std::cout << '\n';
+        }
+
+        std::cout << "\n   a b c d e f g h\n";
+        std::cout << "\nHex : 0x"
+                  << std::hex << std::setw(16) << std::setfill('0') << bb
+                  << std::dec << "\n";
+    }
+
 
 } // namespace BitboardUtils
