@@ -38,42 +38,74 @@ bool MoveGenerator::is_in_check(const Board &board, int in_check_color) {
 
 
 void MoveGenerator::generate_all_pseudo_legal_moves(Board &board) {
-    int black_offset = board.turn_ == chess::color::BLACK? 6: 0;
+    // 1. Grab the correct bitboards based on whose turn it is
+    u64 pawns, knights, bishops, rooks, queens, kings;
 
-    // generate pawn moves
-    int pawn_index = chess::piecelists::WHITE_PAWN + black_offset;
-    for (int i=0; i<board.piece_count_[pawn_index]; i++) {
-        generate_pawn_moves(board, board.piece_lists_[pawn_index][i]);
+    if (board.turn_ == chess::color::WHITE) {
+        pawns   = board.piece_bitboard_[chess::piecelists::WHITE_PAWN];
+        knights = board.piece_bitboard_[chess::piecelists::WHITE_KNIGHT];
+        bishops = board.piece_bitboard_[chess::piecelists::WHITE_BISHOP];
+        rooks   = board.piece_bitboard_[chess::piecelists::WHITE_ROOK];
+        queens  = board.piece_bitboard_[chess::piecelists::WHITE_QUEEN];
+        kings   = board.piece_bitboard_[chess::piecelists::WHITE_KING];
+    } else {
+        pawns   = board.piece_bitboard_[chess::piecelists::BLACK_PAWN];
+        knights = board.piece_bitboard_[chess::piecelists::BLACK_KNIGHT];
+        bishops = board.piece_bitboard_[chess::piecelists::BLACK_BISHOP];
+        rooks   = board.piece_bitboard_[chess::piecelists::BLACK_ROOK];
+        queens  = board.piece_bitboard_[chess::piecelists::BLACK_QUEEN];
+        kings   = board.piece_bitboard_[chess::piecelists::BLACK_KING];
     }
 
-    // generate knight moves
-    int knight_index = chess::piecelists::WHITE_KNIGHT + black_offset;
-    for (int i=0; i<board.piece_count_[knight_index]; i++) {
-        generate_knight_moves(board, board.piece_lists_[knight_index][i]);
+    // 2. Iterate through each bitboard using compiler intrinsics
+
+    // Generate Pawn Moves
+    u64 bb = pawns;
+    while (bb) {
+        int sq = __builtin_ctzll(bb); // Hardware instruction: Find index of lowest set bit (0-63)
+        generate_pawn_moves(board, sq);
+        bb &= bb - 1;                 // Clear the lowest set bit to move to the next piece
     }
 
-    // generate sliding moves
-    int bishop_index = chess::piecelists::WHITE_BISHOP + black_offset;
-    for (int i=0; i<board.piece_count_[bishop_index]; i++) {
-        generate_sliding_piece_moves(board, board.piece_lists_[bishop_index][i]);
+    // Generate Knight Moves
+    bb = knights;
+    while (bb) {
+        int sq = __builtin_ctzll(bb);
+        generate_knight_moves(board, sq);
+        bb &= bb - 1;
     }
 
-    int rook_index = chess::piecelists::WHITE_ROOK + black_offset;
-    for (int i=0; i<board.piece_count_[rook_index]; i++) {
-        generate_sliding_piece_moves(board, board.piece_lists_[rook_index][i]);
+    // Generate Bishop Moves (Sliding)
+    bb = bishops;
+    while (bb) {
+        int sq = __builtin_ctzll(bb);
+        generate_sliding_piece_moves(board, sq);
+        bb &= bb - 1;
     }
 
-    int queen_index = chess::piecelists::WHITE_QUEEN + black_offset;
-    for (int i=0; i<board.piece_count_[queen_index]; i++) {
-        generate_sliding_piece_moves(board, board.piece_lists_[queen_index][i]);
+    // Generate Rook Moves (Sliding)
+    bb = rooks;
+    while (bb) {
+        int sq = __builtin_ctzll(bb);
+        generate_sliding_piece_moves(board, sq);
+        bb &= bb - 1;
     }
 
-    // generate king moves
-    int king_index = chess::piecelists::WHITE_KING + black_offset;
-    for (int i=0; i<board.piece_count_[king_index]; i++) {
-        generate_king_moves(board, board.piece_lists_[king_index][i]);
+    // Generate Queen Moves (Sliding)
+    bb = queens;
+    while (bb) {
+        int sq = __builtin_ctzll(bb);
+        generate_sliding_piece_moves(board, sq);
+        bb &= bb - 1;
     }
 
+    // Generate King Moves
+    bb = kings;
+    while (bb) {
+        int sq = __builtin_ctzll(bb);
+        generate_king_moves(board, sq);
+        bb &= bb - 1;
+    }
 }
 
 

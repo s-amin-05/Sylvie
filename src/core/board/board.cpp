@@ -31,9 +31,9 @@ Board::Board(const std::string &position_fen):
     fullmove_number_(1),
     repetition_count_(0),
     halfmove_count_(0),
-    piece_index_board_{-1},
+    // piece_index_board_{-1},
     piece_bitboard_{0ULL},
-    piece_count_(12, 0),
+    // piece_count_(12, 0),
     captured_piece_(chess::piece_type::EMPTY),
     logger_("board.log")
 {
@@ -78,7 +78,7 @@ void Board::setup_using_fen() {
                     black_king_square_ = square;
 
                 BitboardUtils::add_piece_to_bb(*this, piece, square);
-                PieceListUtils::add_piece_to_piece_list(piece, square, piece_lists_, piece_index_board_, piece_count_);
+                // PieceListUtils::add_piece_to_piece_list(piece, square, piece_lists_, piece_index_board_, piece_count_);
 
                 // PieceCountUtils::increment_piece_count(*this, piece, 1);
                 board_[square] = piece;
@@ -210,7 +210,7 @@ void Board::make_move(Move &move, const bool uci_flag) {
                 BitboardUtils::remove_piece_from_bb(*this, piece, castling_rook_start_square);
                 BitboardUtils::add_piece_to_bb(*this, piece, castling_rook_end_square);
 
-                PieceListUtils::update_piece_list(board_[castling_rook_start_square], castling_rook_start_square, castling_rook_end_square, piece_lists_, piece_index_board_);
+                // PieceListUtils::update_piece_list(board_[castling_rook_start_square], castling_rook_start_square, castling_rook_end_square, piece_lists_, piece_index_board_);
                 board_[castling_rook_start_square] = chess::piece_type::EMPTY;
                 board_[castling_rook_end_square] = Piece::piece_(chess::piece_type::ROOK, moving_piece_color);
             }
@@ -253,23 +253,23 @@ void Board::make_move(Move &move, const bool uci_flag) {
     history_ply_++;
 
     BitboardUtils::remove_piece_from_bb(*this, moving_piece, starting_square);
-    PieceListUtils::remove_piece_from_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_count_);
+    // PieceListUtils::remove_piece_from_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_count_);
     board_[starting_square] = chess::piece_type::EMPTY;
 
     if (captured_square != chess::square::EMPTY) {
         BitboardUtils::remove_piece_from_bb(*this, captured_piece_, captured_square);
-        PieceListUtils::remove_piece_from_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_count_);
+        // PieceListUtils::remove_piece_from_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_count_);
         board_[captured_square] = chess::piece_type::EMPTY;
     }
 
     // handle promotions here
     if (move.promotion_piece_ != chess::piece_type::EMPTY) {
         BitboardUtils::add_piece_to_bb(*this, move.promotion_piece_, target_square);
-        PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_count_);
+        // PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_count_);
         board_[target_square] = move.promotion_piece_;
     } else {
         BitboardUtils::add_piece_to_bb(*this, moving_piece, target_square);
-        PieceListUtils::add_piece_to_piece_list(moving_piece, target_square, piece_lists_, piece_index_board_, piece_count_);
+        // PieceListUtils::add_piece_to_piece_list(moving_piece, target_square, piece_lists_, piece_index_board_, piece_count_);
         board_[target_square] = moving_piece;
     }
 }
@@ -315,11 +315,11 @@ void Board::unmake_move() {
     if (move.promotion_piece_ != chess::piece_type::EMPTY) {
         moving_piece = Piece::piece_(chess::piece_type::PAWN, moving_piece_color);
         BitboardUtils::remove_piece_from_bb(*this, move.promotion_piece_, target_square);
-        PieceListUtils::remove_piece_from_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_count_);
+        // PieceListUtils::remove_piece_from_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_count_);
     } else {
         moving_piece = board_[target_square];
         BitboardUtils::remove_piece_from_bb(*this, moving_piece, target_square);
-        PieceListUtils::remove_piece_from_piece_list(moving_piece, target_square, piece_lists_, piece_index_board_, piece_count_);
+        // PieceListUtils::remove_piece_from_piece_list(moving_piece, target_square, piece_lists_, piece_index_board_, piece_count_);
     }
 
     // Temporarily clear the target square
@@ -327,7 +327,7 @@ void Board::unmake_move() {
 
     // 4. Move the piece back to its starting square
     BitboardUtils::add_piece_to_bb(*this, moving_piece, starting_square);
-    PieceListUtils::add_piece_to_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_count_);
+    // PieceListUtils::add_piece_to_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_count_);
     board_[starting_square] = moving_piece;
 
     // 5. King moves & Castling Reversals
@@ -368,7 +368,7 @@ void Board::unmake_move() {
                 BitboardUtils::remove_piece_from_bb(*this, piece, castling_rook_end_square);
                 BitboardUtils::add_piece_to_bb(*this, piece, castling_rook_start_square);
 
-                PieceListUtils::update_piece_list(board_[castling_rook_end_square], castling_rook_end_square, castling_rook_start_square, piece_lists_, piece_index_board_);
+                // PieceListUtils::update_piece_list(board_[castling_rook_end_square], castling_rook_end_square, castling_rook_start_square, piece_lists_, piece_index_board_);
                 board_[castling_rook_end_square] = chess::piece_type::EMPTY;
                 board_[castling_rook_start_square] = Piece::piece_(chess::piece_type::ROOK, moving_piece_color);
             }
@@ -390,7 +390,7 @@ void Board::unmake_move() {
 
         // Add the captured piece stored in the local state variable back to the board
         BitboardUtils::add_piece_to_bb(*this, state.captured_piece, captured_square);
-        PieceListUtils::add_piece_to_piece_list(state.captured_piece, captured_square, piece_lists_, piece_index_board_, piece_count_);
+        // PieceListUtils::add_piece_to_piece_list(state.captured_piece, captured_square, piece_lists_, piece_index_board_, piece_count_);
         board_[captured_square] = state.captured_piece;
     }
 }
