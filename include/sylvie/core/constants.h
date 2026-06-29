@@ -225,6 +225,14 @@ namespace bitmask::piece {
     constexpr int PIECE_TYPE = 7U;
 }
 
+namespace bitboards {
+    const u64 BISHOP_MAGICS[64] = {0};
+    const int BISHOP_RELEVANT_BITS[64] = {0};
+
+    const u64 ROOK_MAGICS[64] = {0};
+    const int ROOK_RELEVANT_BITS[64] = {0};
+}
+
 namespace chess::debug {
     const std::string line_seperator = "--------********--------\n";
 }

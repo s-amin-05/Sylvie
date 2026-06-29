@@ -498,15 +498,7 @@ namespace SearchUtils {
 }
 
 namespace BitboardUtils {
-    // void update_bitboard_from_move(Board &board, Move &move) {
-    //     int moving_piece = board.board_[move.starting_square_];
-    //     int moving_piece_type =
-    //     int captured_piece;
-    //
-    //     if (move.is_en_passant_) {
-    //         captured_piece = Piece::piece_(chess::piece_type::PAWN, )
-    //     }
-    // }
+
     void add_piece_to_bb(Board &board, int piece, int square) {
         int bb_index = PieceListUtils::get_piece_list_type(piece);
         u64 bit = 1ULL << square;
@@ -611,6 +603,155 @@ namespace BitboardUtils {
 
         return attacks;
     }
+
+    void compute_bishop_magic_bitboards(Board &board) {
+        for (int sq = 0; sq < 64; sq++) {
+            board.bishop_masks[sq] = mask_bishop_attacks(sq);
+            u64 mask = board.bishop_masks[sq];
+
+            int bit_count = bitboards::BISHOP_RELEVANT_BITS[sq];
+            int shift = 64 - bit_count;
+
+            // The Carry-Rippler trick to iterate over all subsets of the mask
+            u64 blockers = 0;
+            do {
+                // 1. Hash the blocker configuration to get the table index
+                int index = (blockers * bitboards::BISHOP_MAGICS[sq]) >> shift;
+
+                // 2. Store the correct attack bitboard at that index
+                board.bishop_attack_table[sq][index] = raycast_bishop_attacks(sq, blockers);
+
+                // 3. Move to the next permutation
+                blockers = (blockers - mask) & mask;
+            } while (blockers);
+        }
+    }
+
+
+    u64 mask_bishop_attacks(int square) {
+        u64 attacks = 0;
+        int tr = Square::rank_(square);
+        int tf = Square::file_(square);
+
+        for (int r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++) attacks |= (1ULL << (r * 8 + f));
+        for (int r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) attacks |= (1ULL << (r * 8 + f));
+        for (int r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) attacks |= (1ULL << (r * 8 + f));
+        for (int r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) attacks |= (1ULL << (r * 8 + f));
+
+        return attacks;
+    }
+
+    u64 raycast_bishop_attacks(int square, u64 blockers) {
+        u64 attacks = 0;
+        int tr = Square::rank_(square);
+        int tf = Square::file_(square);
+
+        for (int r = tr + 1, f = tf + 1; r <= 7 && f <= 7; r++, f++) {
+            attacks |= (1ULL << (r * 8 + f));
+            if (blockers & (1ULL << (r * 8 + f))) break; // Stop if we hit a blocker
+        }
+        for (int r = tr + 1, f = tf - 1; r <= 7 && f >= 0; r++, f--) {
+            attacks |= (1ULL << (r * 8 + f));
+            if (blockers & (1ULL << (r * 8 + f))) break;
+        }
+        for (int r = tr - 1, f = tf + 1; r >= 0 && f <= 7; r--, f++) {
+            attacks |= (1ULL << (r * 8 + f));
+            if (blockers & (1ULL << (r * 8 + f))) break;
+        }
+        for (int r = tr - 1, f = tf - 1; r >= 0 && f >= 0; r--, f--) {
+            attacks |= (1ULL << (r * 8 + f));
+            if (blockers & (1ULL << (r * 8 + f))) break;
+        }
+
+        return attacks;
+    }
+
+    inline u64 get_bishop_attacks(Board &board, int square, u64 occupancy) {
+        // 1. Strip away irrelevant pieces (like edges or pieces not on the diagonal)
+        u64 blockers = occupancy & board.bishop_masks[square];
+
+        // 2. Multiply by the magic number and shift to get the index
+        int index = (blockers * bitboards::BISHOP_MAGICS[square]) >> (64 - bitboards::BISHOP_RELEVANT_BITS[square]);
+
+        // 3. Return the precalculated bitboard
+        return board.bishop_attack_table[square][index];
+    }
+
+    void compute_rook_magic_bitboards(Board &board) {
+        for (int sq = 0; sq < 64; sq++) {
+            board.rook_masks[sq] = mask_rook_attacks(sq);
+            u64 mask = board.rook_masks[sq];
+
+            int bit_count = bitboards::ROOK_RELEVANT_BITS[sq];
+            int shift = 64 - bit_count;
+
+            // The Carry-Rippler trick to iterate over all subsets of the mask
+            u64 blockers = 0;
+            do {
+                // 1. Hash the blocker configuration to get the table index
+                int index = (blockers * bitboards::ROOK_MAGICS[sq]) >> shift;
+
+                // 2. Store the correct attack bitboard at that index
+                board.rook_attack_table[sq][index] = raycast_rook_attacks(sq, blockers);
+
+                // 3. Move to the next permutation of blockers
+                blockers = (blockers - mask) & mask;
+            } while (blockers);
+        }
+    }
+
+    u64 mask_rook_attacks(int square) {
+        u64 attacks = 0;
+        int tr = Square::rank_(square);
+        int tf = Square::file_(square);
+
+        // Raycast North, South, East, West (Stop BEFORE the outer edges: ranks 0/7, files 0/7)
+        for (int r = tr + 1; r <= 6; r++) attacks |= (1ULL << (r * 8 + tf)); // North
+        for (int r = tr - 1; r >= 1; r--) attacks |= (1ULL << (r * 8 + tf)); // South
+        for (int f = tf + 1; f <= 6; f++) attacks |= (1ULL << (tr * 8 + f)); // East
+        for (int f = tf - 1; f >= 1; f--) attacks |= (1ULL << (tr * 8 + f)); // West
+
+        return attacks;
+    }
+
+    u64 raycast_rook_attacks(int square, u64 blockers) {
+        u64 attacks = 0;
+        int tr = Square::rank_(square);
+        int tf = Square::file_(square);
+
+        // Raycast North, South, East, West (Go ALL the way to the edge this time)
+        for (int r = tr + 1; r <= 7; r++) {
+            attacks |= (1ULL << (r * 8 + tf));
+            if (blockers & (1ULL << (r * 8 + tf))) break; // Stop after hitting blocker
+        }
+        for (int r = tr - 1; r >= 0; r--) {
+            attacks |= (1ULL << (r * 8 + tf));
+            if (blockers & (1ULL << (r * 8 + tf))) break;
+        }
+        for (int f = tf + 1; f <= 7; f++) {
+            attacks |= (1ULL << (tr * 8 + f));
+            if (blockers & (1ULL << (tr * 8 + f))) break;
+        }
+        for (int f = tf - 1; f >= 0; f--) {
+            attacks |= (1ULL << (tr * 8 + f));
+            if (blockers & (1ULL << (tr * 8 + f))) break;
+        }
+
+        return attacks;
+    }
+
+
+    inline u64 get_rook_attacks(Board &board, int square, u64 occupancy) {
+        // 1. Strip away irrelevant pieces
+        u64 blockers = occupancy & board.rook_masks[square];
+
+        // 2. Multiply by the magic number and shift to get the index
+        int index = (blockers * bitboards::ROOK_MAGICS[square]) >> (64 - bitboards::ROOK_RELEVANT_BITS[square]);
+
+        // 3. Return the precalculated bitboard
+        return board.rook_attack_table[square][index];
+    }
+
 
     void print_single_bitboard(u64 bb, const std::string &name) {
         std::cout << "\n=== " << name << " ===\n\n";

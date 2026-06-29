@@ -71,10 +71,14 @@ public:
     u64 knight_attacks[64];
     u64 king_attacks[64];
 
-    // // bitboards for squares attacked
-    // u64 squares_attacked_piece_[12];
-    // u64 squares_attacked_white_;
-    // u64 squares_attacked_black_;
+    // magic bitboards
+    // bishops and rooks (queen = bishop + rook)
+    u64 bishop_masks[64];
+    u64 bishop_attack_table[64][512];
+
+    u64 rook_masks[64];
+    u64 rook_attack_table[64][4096];
+
 
     Logger logger_;
 
