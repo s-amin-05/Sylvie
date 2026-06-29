@@ -63,7 +63,7 @@ void MoveGenerator::generate_all_pseudo_legal_moves(Board &board) {
     u64 bb = pawns;
     while (bb) {
         int sq = __builtin_ctzll(bb); // Hardware instruction: Find index of lowest set bit (0-63)
-        generate_pawn_moves(board, sq);
+        generate_pawn_moves_bb(board, sq);
         bb &= bb - 1;                 // Clear the lowest set bit to move to the next piece
     }
 
@@ -71,7 +71,7 @@ void MoveGenerator::generate_all_pseudo_legal_moves(Board &board) {
     bb = knights;
     while (bb) {
         int sq = __builtin_ctzll(bb);
-        generate_knight_moves(board, sq);
+        generate_knight_moves_bb(board, sq);
         bb &= bb - 1;
     }
 
@@ -103,7 +103,7 @@ void MoveGenerator::generate_all_pseudo_legal_moves(Board &board) {
     bb = kings;
     while (bb) {
         int sq = __builtin_ctzll(bb);
-        generate_king_moves(board, sq);
+        generate_king_moves_bb(board, sq);
         bb &= bb - 1;
     }
 }
@@ -137,7 +137,7 @@ void MoveGenerator::generate_pseudo_moves(Board &board, int square) {
 
 
 // assume the function is called for the correct piece
-void MoveGenerator::generate_sliding_piece_moves(const Board &board, const int &square) {
+void MoveGenerator::generate_sliding_piece_moves(const Board &board, int square) {
     // counterclockwise from North (first 4 - Rooks, next 4 - Bishops)
     constexpr int direction_offsets[8] = {
         movegen::direction_offset::NORTH,
@@ -211,7 +211,183 @@ void MoveGenerator::generate_sliding_piece_moves(const Board &board, const int &
 
 }
 
-void MoveGenerator::generate_knight_moves(const Board &board, int &square) {
+void MoveGenerator::generate_knight_moves_bb(const Board &board, int square) {
+    using namespace chess;
+    u64 enemy_bb, friendly_bb;
+
+    if (board.turn_ == color::WHITE) {
+        enemy_bb = board.occupancy_black_;
+        friendly_bb = board.occupancy_white_;
+    } else {
+        enemy_bb = board.occupancy_white_;
+        friendly_bb = board.occupancy_black_;
+    }
+
+    u64 attack_mask = board.knight_attacks[square] & ~friendly_bb;
+
+    while (attack_mask) {
+        int target_square = __builtin_ctzll(attack_mask);
+
+        // check for captures
+        bool is_capture = (enemy_bb & (1ULL << target_square)) != 0ULL;
+
+        auto move = Move(square, target_square, piece::EMPTY, false, is_capture, false );
+        knight_moves_.emplace_back(move);
+        pseudo_legal_moves_.emplace_back(move);
+        nonking_moves.emplace_back(move);
+
+        attack_mask &= attack_mask - 1;
+
+    }
+}
+
+void MoveGenerator::generate_pawn_moves_bb(const Board &board, int square) {
+    using namespace chess;
+
+    u64 enemy_bb = (board.turn_ == color::WHITE) ? board.occupancy_black_ : board.occupancy_white_;
+    u64 occupancy = board.occupancy_white_ | board.occupancy_black_;
+
+    u64 pawn = 1ULL << square;
+    u64 pushes = 0ULL;
+
+    // 1. Captures (Look up precomputed diagonal attacks, AND with enemy pieces)
+    u64 captures = board.pawn_attacks[board.turn_][square] & enemy_bb;
+    u64 ep_capture = 0ULL;
+
+    int promotion_rank = (board.turn_ == color::WHITE) ? 7 : 0; // 0-indexed ranks
+
+    // 2. En Passant
+    if (board.enpassant_target_ != square::EMPTY) {
+        u64 ep_bb = 1ULL << board.enpassant_target_;
+        if (board.pawn_attacks[board.turn_][square] & ep_bb) {
+            ep_capture = ep_bb;
+        }
+    }
+
+    // 3. Pushes (Bitshift the pawn, AND with empty squares)
+    if (board.turn_ == color::WHITE) {
+        pushes = (pawn << 8) & ~occupancy; // Single push
+        if (pushes && Square::rank_(square) == 1) { // If on start rank and single push is valid
+            pushes |= (pawn << 16) & ~occupancy; // Double push
+        }
+    } else {
+        pushes = (pawn >> 8) & ~occupancy; // Single push
+        if (pushes && Square::rank_(square) == 6) {
+            pushes |= (pawn >> 16) & ~occupancy; // Double push
+        }
+    }
+
+    // Combine all valid pawn destinations into one bitboard
+    u64 valid_moves = pushes | captures | ep_capture;
+
+    // 4. Iterate through all targets and extract the moves
+    while (valid_moves) {
+        int target_square = __builtin_ctzll(valid_moves);
+
+        bool is_ep = (ep_capture & (1ULL << target_square)) != 0ULL;
+        bool is_capture = (captures & (1ULL << target_square)) != 0ULL || is_ep;
+
+        // Handle Promotions
+        if (Square::rank_(target_square) == promotion_rank) {
+            int promotion_pieces[] = {piece_type::QUEEN, piece_type::ROOK, piece_type::BISHOP, piece_type::KNIGHT};
+            for (int p_type : promotion_pieces) {
+                int promoted_piece = Piece::piece_(p_type, board.turn_);
+                auto move = Move(square, target_square, promoted_piece, false, is_capture, is_ep);
+                pawn_moves_.emplace_back(move);
+                pseudo_legal_moves_.emplace_back(move);
+                nonking_moves.emplace_back(move);
+            }
+        } else {
+            auto move = Move(square, target_square, piece_type::EMPTY, false, is_capture, is_ep);
+            pawn_moves_.emplace_back(move);
+            pseudo_legal_moves_.emplace_back(move);
+            nonking_moves.emplace_back(move);
+        }
+
+        // Clear the lowest set bit
+        valid_moves &= valid_moves - 1;
+    }
+}
+
+void MoveGenerator::generate_king_moves_bb(const Board &board, int square) {
+    using namespace chess;
+    u64 enemy_bb, friendly_bb;
+
+    int moving_piece_color = board.turn_;
+    int opp_color = (moving_piece_color == color::WHITE) ? color::BLACK : color::WHITE;
+
+    if (moving_piece_color == color::WHITE) {
+        enemy_bb = board.occupancy_black_;
+        friendly_bb = board.occupancy_white_;
+    } else {
+        enemy_bb = board.occupancy_white_;
+        friendly_bb = board.occupancy_black_;
+    }
+
+    u64 occupancy = friendly_bb | enemy_bb;
+
+    // 1. Normal King Moves using precomputed bitboards
+    u64 attack_mask = board.king_attacks[square] & ~friendly_bb;
+
+    while (attack_mask) {
+        int target_square = __builtin_ctzll(attack_mask);
+
+        // Check if the target square contains an enemy piece
+        bool is_capture = (enemy_bb & (1ULL << target_square)) != 0ULL;
+
+        auto move = Move(square, target_square, piece_type::EMPTY, false, is_capture, false);
+        king_moves_.emplace_back(move);
+        pseudo_legal_moves_.emplace_back(move);
+
+        // Clear the lowest set bit
+        attack_mask &= attack_mask - 1;
+    }
+
+    // 2. Castling Logic using bitwise occupancy checks
+    int kingside_bitmask = (moving_piece_color == color::WHITE) ? bitmask::castling::WHITE_KING : bitmask::castling::BLACK_KING;
+    int queenside_bitmask = (moving_piece_color == color::WHITE) ? bitmask::castling::WHITE_QUEEN : bitmask::castling::BLACK_QUEEN;
+
+    bool is_kingside = (board.castling_rights_ & kingside_bitmask);
+    bool is_queenside = (board.castling_rights_ & queenside_bitmask);
+    int rank = (moving_piece_color == color::WHITE) ? 0 : 7;
+
+    bool king_in_check = BoardUtils::is_square_attacked(board, square, opp_color);
+
+    if (is_kingside && !king_in_check) {
+        int f = Square::square_(file::F, rank);
+        int g = Square::square_(file::G, rank);
+
+        // Check for occupancy instantly using a bitmask
+        u64 mask = (1ULL << f) | (1ULL << g);
+        if ((occupancy & mask) == 0ULL) {
+            if (!BoardUtils::is_square_attacked(board, f, opp_color) &&
+                !BoardUtils::is_square_attacked(board, g, opp_color)) {
+                auto move = Move(square, g, piece_type::EMPTY, true, false, false);
+                king_moves_.emplace_back(move);
+                pseudo_legal_moves_.emplace_back(move);
+            }
+        }
+    }
+
+    if (is_queenside && !king_in_check) {
+        int b = Square::square_(file::B, rank);
+        int c = Square::square_(file::C, rank);
+        int d = Square::square_(file::D, rank);
+
+        // Check for occupancy instantly using a bitmask
+        u64 mask = (1ULL << b) | (1ULL << c) | (1ULL << d);
+        if ((occupancy & mask) == 0ULL) {
+            if (!BoardUtils::is_square_attacked(board, c, opp_color) &&
+                !BoardUtils::is_square_attacked(board, d, opp_color)) {
+                auto move = Move(square, c, piece_type::EMPTY, true, false, false);
+                king_moves_.emplace_back(move);
+                pseudo_legal_moves_.emplace_back(move);
+            }
+        }
+    }
+}
+
+void MoveGenerator::generate_knight_moves(const Board &board, int square) {
 
     const int moving_piece = board.board_[square];
     const int moving_piece_type = Piece::type_(moving_piece);
@@ -240,21 +416,6 @@ void MoveGenerator::generate_knight_moves(const Board &board, int &square) {
         direction_offsets[4] = direction_offsets[7] = 0;
     }
 
-    // // north side
-    // if (Square::rank_(square) == 6 || Square::rank_(square) == 7) {
-    //     direction_offsets[1] = direction_offsets[6] = 0;
-    // }
-    // if (Square::rank_(square) == 7) {
-    //     direction_offsets[0] = direction_offsets[7] = 0;
-    // }
-    //
-    // // south side
-    // if (Square::rank_(square) == 0 || Square::rank_(square) == 1) {
-    //     direction_offsets[3] = direction_offsets[4] = 0;
-    // }
-    // if (Square::rank_(square) == 0) {
-    //     direction_offsets[2] = direction_offsets[5] = 0;
-    // }
 
     // loop over all directions
     for (int i = 0; i < 8; i++) {
@@ -280,7 +441,7 @@ void MoveGenerator::generate_knight_moves(const Board &board, int &square) {
     }
 }
 
-void MoveGenerator::generate_pawn_moves(const Board &board, int &square) {
+void MoveGenerator::generate_pawn_moves(const Board &board, int square) {
     const int moving_piece = board.board_[square];
     const int moving_piece_type = Piece::type_(moving_piece);
     const int moving_piece_color = Piece::color_(moving_piece);
@@ -398,7 +559,7 @@ void MoveGenerator::generate_pawn_moves(const Board &board, int &square) {
 
 }
 
-void MoveGenerator::generate_king_moves(const Board &board, int &square) {
+void MoveGenerator::generate_king_moves(const Board &board, int square) {
     int moving_piece = board.board_[square];
     const int moving_piece_type = Piece::type_(moving_piece);
     const int moving_piece_color = Piece::color_(moving_piece);

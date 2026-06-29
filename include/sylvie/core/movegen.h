@@ -26,13 +26,18 @@ class MoveGenerator {
     // call the function for the piece
     void generate_pseudo_moves(Board &board, int square);
 
-    void generate_sliding_piece_moves(const Board &board, const int &square);
+    void generate_sliding_piece_moves(const Board &board, int square);
 
-    void generate_pawn_moves(const Board &board, int &square);
+    void generate_pawn_moves(const Board &board, int square);
 
-    void generate_king_moves(const Board &board, int &square);
+    void generate_king_moves(const Board &board, int square);
 
-    void generate_knight_moves(const Board &board, int &square);
+    void generate_knight_moves(const Board &board, int square);
+
+    // Bitboard movegen
+    void generate_knight_moves_bb(const Board &board, int square);
+    void generate_pawn_moves_bb(const Board &board, int square);
+    void generate_king_moves_bb(const Board &board, int square);
 
     bool is_in_check(const Board &board, int in_check_color);
 };
