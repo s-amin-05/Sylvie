@@ -25,10 +25,11 @@ int Searcher::minmax_search(const int depth, Board &board) {
         return Evaluation::evaluate(board);
     }
 
+    MoveList list;
     auto move_generator = MoveGenerator();
-    move_generator.generate_legal_moves(board);
+    move_generator.generate_legal_moves(board, list);
 
-    if (move_generator.legal_moves_.empty()) {
+    if (list.empty()) {
         if (move_generator.is_in_check(board, board.turn_)) {
             return -chess::evaluation::INF;
         }
@@ -37,7 +38,7 @@ int Searcher::minmax_search(const int depth, Board &board) {
 
     int max_evaluation = -chess::evaluation::INF;
 
-    for (Move move: move_generator.legal_moves_) {
+    for (Move move: list) {
         board.make_move(move, false);
 
         int evaluation = -minmax_search(depth-1, board);
@@ -59,19 +60,21 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board, i
         return Evaluation::evaluate(board);
     }
 
+    MoveList list;
     auto move_generator = MoveGenerator();
-    move_generator.generate_legal_moves(board);
+    move_generator.generate_legal_moves(board, list);
 
-    if (move_generator.legal_moves_.empty()) {
+
+    if (list.empty()) {
         if (move_generator.is_in_check(board, board.turn_)) {
             return -chess::evaluation::INF + ply;
         }
         return 0;
     }
 
-    SearchUtils::order_moves(move_generator.legal_moves_, board);
+    SearchUtils::order_moves(list, board);
 
-    for (Move move: move_generator.legal_moves_) {
+    for (Move move: list) {
         board.make_move(move, false);
         int evaluation = -alpha_beta_pruning(depth-1, -beta, -alpha, board, ply + 1);
         board.unmake_move();
@@ -86,15 +89,18 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board, i
 }
 
 void Searcher::search_best_move(const int depth, Board &board) {
+
+    MoveList list;
     auto move_generator = MoveGenerator();
-    move_generator.generate_legal_moves(board);
-    SearchUtils::order_moves(move_generator.legal_moves_, board);
+    move_generator.generate_legal_moves(board, list);
+
+    SearchUtils::order_moves(list, board);
 
     best_evaluation_ = -chess::evaluation::INF;
-    best_move_ = move_generator.legal_moves_[0];
+    best_move_ = list[0];
     nodes_searched_ = 0;
 
-    for (auto move: move_generator.legal_moves_) {
+    for (auto move: list) {
 
         board.make_move(move, false);
 

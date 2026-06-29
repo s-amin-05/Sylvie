@@ -2,12 +2,8 @@
 #include <constants.h>
 #include <iostream>
 #include <movegen.h>
-
 #include <bot.h>
-
-#include "eval.h"
 #include "search.h"
-#include "utils.h"
 #define ANSI_RESET  "\033[0m"
 #define ANSI_RED    "\033[31m"
 #define ANSI_GREEN  "\033[32m"
@@ -17,16 +13,17 @@ u64 perft(int depth, Board &board) {
     if (depth == 0)
         return 1ULL;
 
-    MoveGenerator generator = MoveGenerator();
-    generator.generate_legal_moves(board);
+    MoveList list;
+    MoveGenerator generator;
+    generator.generate_legal_moves(board, list);
 
     // BULK COUNTING
     if (depth == 1) {
-        return generator.legal_moves_.size();
+        return list.size();
     }
 
     u64 nodes = 0ULL;
-    for (auto move: generator.legal_moves_) {
+    for (auto move: list) {
         // std::cout << "Making... " <<move.get_move_notation() << std::endl;
         board.make_move(move, false);
         nodes += perft(depth - 1, board);
@@ -42,12 +39,12 @@ u64 perft_pseudo(int depth, Board &board) {
     if (depth == 0)
         return 1ULL;
 
-
-    MoveGenerator generator = MoveGenerator();
-    generator.generate_all_pseudo_legal_moves(board);
+    MoveList list;
+    MoveGenerator generator;
+    generator.generate_all_pseudo_legal_moves(board, list);
     // std::vector<Move> moves = generator.legal_moves_;
 
-    for (auto move: generator.pseudo_legal_moves_) {
+    for (auto move: list) {
         // std::cout << "Making... " <<move.get_move_notation() << std::endl;
         board.make_move(move, false);
         if (!generator.is_in_check(board, !board.turn_))
@@ -60,11 +57,12 @@ u64 perft_pseudo(int depth, Board &board) {
 void perft_divide(int depth, Board &board) {
     u64 total_nodes = 0ULL;
 
-    MoveGenerator generator = MoveGenerator();
-    generator.generate_legal_moves(board);
+    MoveList list;
+    MoveGenerator generator;
+    generator.generate_legal_moves(board, list);
     // std::vector<Move> moves = generator.legal_moves_;
 
-    for (auto move: generator.legal_moves_) {
+    for (auto move: list) {
         // board.make_move(move);
         board.make_move(move, false);
         u64 nodes = perft(depth - 1, board);
@@ -209,22 +207,6 @@ int main() {
 
         // run_search_test_suite();
         run_perft_test_suite();
-        // auto board = Board();
-        // board.print_bitboards();
-        // BitboardUtils::print_single_bitboard(board.pawn_attacks[1][chess::square::A2], "fuck it");
-        // auto board = Board("8/3q4/2k4P/8/8/4K3/8/8 w - - 2 2");
-        // Move m1 = Move("e3e4");
-        // Move m2 = Move("d7f7");
-        // Move m3 = Move("e4e3");
-        // board.make_move(m1, true);
-        // board.make_move(m2, true);
-        // board.make_move(m3, true);
-        // // Evaluation::evaluate(board);
-        // auto sr = Searcher();
-        // sr.search_best_move(6, board);
-        // std::cout << "Best Move: " << sr.get_best_move().get_move_notation() << std::endl;
-        // std::cout << "Evaluation: " <<sr.get_best_evaluation() << std::endl;
-
 
 
     }

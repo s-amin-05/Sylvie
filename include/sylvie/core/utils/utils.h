@@ -5,6 +5,9 @@
 #include <board.h>
 using u8=uint8_t;
 
+// forward ref
+struct MoveList;
+
 namespace Utils {
     std::vector<std::string> split(const std::string& s, char delim);
     std::string trim(const std::string& s);
@@ -33,36 +36,11 @@ namespace PieceCountUtils {
 namespace BoardUtils {
     bool is_square_attacked(const Board &board, int square, int attacking_color);
 }
-// To be used later in the projet
-// namespace BitUtils {
-//     // Safe conversion to u8
-//     constexpr u8 to_u8(auto value) {
-//         return static_cast<u8>(static_cast<unsigned>(value) & 0xFFU);
-//     }
-//     // Safe bitwise OR
-//     constexpr u8 bit_or(auto a, auto b) {
-//         return to_u8(to_u8(a) | to_u8(b));
-//     }
-//     // Safe left shift
-//     constexpr u8 shift_left(auto value, unsigned shift) {
-//         return to_u8(to_u8(value) << shift);
-//     }
-//     // Safe right shift
-//     constexpr u8 shift_right(auto value, unsigned shift) {
-//         return to_u8(to_u8(value) >> shift);
-//     }
-//     // Safe bitwise AND
-//     constexpr u8 bit_and(auto a, auto b) {
-//         return to_u8(to_u8(a) & to_u8(b));
-//     }
-//     // Safe bitwise XOR
-//     constexpr u8 bit_xor(auto a, auto b) {
-//         return to_u8(to_u8(a) ^ to_u8(b));
-//     }
-// }
 
-namespace  SearchUtils {
-    void order_moves(std::vector<Move> &move_list, const Board &board);
+
+namespace SearchUtils {
+    int score_mvv_lva(const Move& move, const Board& board);
+    void order_moves(MoveList &move_list, const Board &board);
 }
 
 namespace BitboardUtils {

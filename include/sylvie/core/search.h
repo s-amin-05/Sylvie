@@ -2,6 +2,7 @@
 #include <board.h>
 #include <atomic>
 #include <thread>
+#include <movegen.h>
 
 
 class Searcher {

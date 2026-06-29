@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <utils.h>
-
+#include <movegen.h>
 #include "eval.h"
 
 namespace Utils {
@@ -376,7 +376,7 @@ namespace SearchUtils {
         return 100000 + (victim_value * 1000) - aggressor_value;
     }
 
-    void order_moves(std::vector<Move> &move_list, const Board &board) {
+    void order_moves(MoveList &move_list, const Board &board) {
         std::sort(move_list.begin(), move_list.end(), [&board](const Move &a, const Move &b) {
             return score_mvv_lva(a, board) > score_mvv_lva(b, board);
         });
@@ -552,7 +552,7 @@ namespace BitboardUtils {
         return attacks;
     }
 
-    inline u64 get_bishop_attacks(const Board &board, int square) {
+    u64 get_bishop_attacks(const Board &board, int square) {
         u64 occupancy = board.occupancy_black_ | board.occupancy_white_;
         // 1. Strip away irrelevant pieces (like edges or pieces not on the diagonal)
         u64 blockers = occupancy & board.bishop_masks[square];
@@ -628,7 +628,7 @@ namespace BitboardUtils {
     }
 
 
-    inline u64 get_rook_attacks(const Board &board, int square) {
+    u64 get_rook_attacks(const Board &board, int square) {
         u64 occupancy = board.occupancy_black_ | board.occupancy_white_;
         // 1. Strip away irrelevant pieces
         u64 blockers = occupancy & board.rook_masks[square];
