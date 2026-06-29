@@ -297,165 +297,51 @@ namespace PieceListUtils {
 namespace BoardUtils {
 
     bool is_square_attacked(const Board &board, const int square, const int attacking_color) {
-        int file = Square::file_(square);
-        int rank = Square::rank_(square);
 
         int defending_color;
 
-        u64 friendly_bb, enemy_bb;
-        u64 friendly_pawns, enemy_pawns;
-        u64 friendly_knights, enemy_knights;
-        u64 friendly_king, enemy_king;
+        u64 enemy_pawns;
+        u64 enemy_knights;
+        u64 enemy_king;
+        u64 enemy_bishops;
+        u64 enemy_rooks;
+        u64 enemy_queens;
+
 
         if (attacking_color == chess::color::WHITE) {
             defending_color = chess::color::BLACK;
 
-            enemy_bb = board.occupancy_white_;
-            friendly_bb = board.occupancy_black_;
-
             enemy_pawns = board.piece_bitboard_[chess::piecelists::WHITE_PAWN];
-            friendly_pawns = board.piece_bitboard_[chess::piecelists::BLACK_PAWN];
-
             enemy_knights = board.piece_bitboard_[chess::piecelists::WHITE_KNIGHT];
-            friendly_knights = board.piece_bitboard_[chess::piecelists::BLACK_KNIGHT];
-
             enemy_king = board.piece_bitboard_[chess::piecelists::WHITE_KING];
-            friendly_king = board.piece_bitboard_[chess::piecelists::BLACK_KING];
+            enemy_bishops = board.piece_bitboard_[chess::piecelists::WHITE_BISHOP];
+            enemy_rooks = board.piece_bitboard_[chess::piecelists::WHITE_ROOK];
+            enemy_queens = board.piece_bitboard_[chess::piecelists::WHITE_QUEEN];
 
         } else {
             defending_color = chess::color::WHITE;
 
-            enemy_bb = board.occupancy_black_;
-            friendly_bb = board.occupancy_white_;
-
             enemy_pawns = board.piece_bitboard_[chess::piecelists::BLACK_PAWN];
-            friendly_pawns = board.piece_bitboard_[chess::piecelists::WHITE_PAWN];
-
             enemy_knights = board.piece_bitboard_[chess::piecelists::BLACK_KNIGHT];
-            friendly_knights = board.piece_bitboard_[chess::piecelists::WHITE_KNIGHT];
-
             enemy_king = board.piece_bitboard_[chess::piecelists::BLACK_KING];
-            friendly_king = board.piece_bitboard_[chess::piecelists::WHITE_KING];
+            enemy_bishops = board.piece_bitboard_[chess::piecelists::BLACK_BISHOP];
+            enemy_rooks = board.piece_bitboard_[chess::piecelists::BLACK_ROOK];
+            enemy_queens = board.piece_bitboard_[chess::piecelists::BLACK_QUEEN];
 
         }
 
-        // check for pawns
-        // int pawn_attack_offset[4] = {
-        //     movegen::direction_offset::NORTH_EAST,
-        //     movegen::direction_offset::NORTH_WEST,
-        //     movegen::direction_offset::SOUTH_EAST,
-        //     movegen::direction_offset::SOUTH_WEST
-        // };
-        // if (file == chess::file::A) {
-        //     pawn_attack_offset[1] = pawn_attack_offset[3] = 0;
-        // }else if (file == chess::file::H) {
-        //     pawn_attack_offset[0] = pawn_attack_offset[2] = 0;
-        // }
-        //
-        // for (int i=(attacking_color==chess::color::BLACK? 0: 2); i<(attacking_color==chess::color::BLACK? 2: 4); i++) {
-        //     if (pawn_attack_offset[i] == 0) continue;
-        //     int attacking_piece = board.board_[square + pawn_attack_offset[i]];
-        //     if (Piece::type_(attacking_piece) == chess::piece_type::PAWN && Piece::color_(attacking_piece) == attacking_color) {
-        //         return true;
-        //     }
-        // }
+
 
         if (board.pawn_attacks[defending_color][square] & enemy_pawns) return true;
         if (board.knight_attacks[square] & enemy_knights) return true;
         if (board.king_attacks[square] & enemy_king) return true;
 
+        // bishops, rooks, queens
+        u64 bishop_attacks = BitboardUtils::get_bishop_attacks(board, square);
+        u64 rook_attacks = BitboardUtils::get_rook_attacks(board, square);
 
-        // check for knight
-        // constexpr int knight_offsets[8] = {6, -10, 15, -17, 17, -15, 10, -6};
-        // int i = 0, n=8;
-        // if (file == chess::file::B) {
-        //     i += 2;
-        // }else if (file == chess::file::A) {
-        //     i += 4;
-        // }
-        // if (file == chess::file::G) {
-        //     n-= 2;
-        // }else if (file == chess::file::H) {
-        //     n-= 4;
-        // }
-        // for (int j=i; j<n; j++) {
-        //     if (!knight_offsets[j]) continue;
-        //     if (square + knight_offsets[j] >= 64 || square + knight_offsets[j] < 0) continue;
-        //     int attacking_piece = board.board_[square + knight_offsets[j]];
-        //     if (Piece::type_(attacking_piece) == chess::piece_type::KNIGHT && Piece::color_(attacking_piece) == attacking_color) {
-        //         return true;
-        //     }
-        // }
-
-
-        // check for king
-        // constexpr int king_offsets[8] = {
-        //     movegen::direction_offset::NORTH_WEST,
-        //     movegen::direction_offset::WEST,
-        //     movegen::direction_offset::SOUTH_WEST,
-        //     movegen::direction_offset::NORTH,
-        //     movegen::direction_offset::SOUTH,
-        //     movegen::direction_offset::NORTH_EAST,
-        //     movegen::direction_offset::EAST,
-        //     movegen::direction_offset::SOUTH_EAST
-        // };
-        //
-        // i = 0, n=8;
-        // if (file == chess::file::A) i += 3;
-        // if (file == chess::file::H) n -= 3;
-        // for (int j=i; j<n; j++) {
-        //     if (!king_offsets[j]) continue;
-        //     if (square + king_offsets[j] >= 64 || square + king_offsets[j] < 0) continue;
-        //     int attacking_piece = board.board_[square + king_offsets[j]];
-        //     if (Piece::type_(attacking_piece) == chess::piece_type::KING && Piece::color_(attacking_piece) == attacking_color) {
-        //         return true;
-        //     }
-        // }
-
-
-        // check for sliding pieces
-        constexpr int sliding_offsets[8] = {
-            movegen::direction_offset::NORTH,
-            movegen::direction_offset::WEST,
-            movegen::direction_offset::SOUTH,
-            movegen::direction_offset::EAST,
-            movegen::direction_offset::NORTH_WEST,
-            movegen::direction_offset::SOUTH_WEST,
-            movegen::direction_offset::SOUTH_EAST,
-            movegen::direction_offset::NORTH_EAST
-        };
-
-        int min_distance[8] = {
-            7 - rank,
-            file,
-            rank,
-            7 - file,
-            std::min(7 - rank, file),
-            std::min(rank, file),
-            std::min(rank, 7 - file),
-            std::min(7 - rank, 7 - file)
-        };
-
-        for (int j=0; j<8; j++) {
-            const int secondary_piece_type = (j < 4? chess::piece_type::ROOK: chess::piece_type::BISHOP);
-
-            for (int k=1; k<=min_distance[j]; k++) {
-                const int attacking_piece = board.board_[square + k*sliding_offsets[j]];
-                const int attacking_piece_type = Piece::type_(attacking_piece);
-                // if blocked by friendly piece no need to check the remaining
-                // if blocked by attacking side piece
-
-                const bool is_secondary = attacking_piece_type == secondary_piece_type;
-                const bool is_queen = attacking_piece_type == chess::piece_type::QUEEN;
-                // enemy piece blocks
-                if (attacking_piece_type != chess::piece_type::EMPTY && !(is_secondary || is_queen)) break;
-                // friendly piece blocks
-                if (attacking_piece_type != chess::piece_type::EMPTY && Piece::color_(attacking_piece) != attacking_color) break;
-                if ((is_secondary || is_queen) && Piece::color_(attacking_piece) == attacking_color) {
-                    return true;
-                }
-            }
-        }
+        if (bishop_attacks & (enemy_bishops | enemy_queens)) return true;
+        if (rook_attacks & (enemy_rooks | enemy_queens)) return true;
 
         // if not attacked by anything
         return false;
@@ -666,7 +552,8 @@ namespace BitboardUtils {
         return attacks;
     }
 
-    inline u64 get_bishop_attacks(Board &board, int square, u64 occupancy) {
+    inline u64 get_bishop_attacks(const Board &board, int square) {
+        u64 occupancy = board.occupancy_black_ | board.occupancy_white_;
         // 1. Strip away irrelevant pieces (like edges or pieces not on the diagonal)
         u64 blockers = occupancy & board.bishop_masks[square];
 
@@ -741,7 +628,8 @@ namespace BitboardUtils {
     }
 
 
-    inline u64 get_rook_attacks(Board &board, int square, u64 occupancy) {
+    inline u64 get_rook_attacks(const Board &board, int square) {
+        u64 occupancy = board.occupancy_black_ | board.occupancy_white_;
         // 1. Strip away irrelevant pieces
         u64 blockers = occupancy & board.rook_masks[square];
 

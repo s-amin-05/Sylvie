@@ -47,6 +47,9 @@ Board::Board(const std::string &position_fen):
     occupancy_black_ = 0ULL;
 
     BitboardUtils::compute_attack_tables(*this);
+    BitboardUtils::compute_bishop_magic_bitboards(*this);
+    BitboardUtils::compute_rook_magic_bitboards(*this);
+
     setup_using_fen();
 
     logger_.log_to_file("[BOARD INITIALIZED]");

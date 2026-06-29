@@ -79,11 +79,11 @@ namespace BitboardUtils {
 
     u64 mask_bishop_attacks(int square);
     u64 raycast_bishop_attacks(int square, u64 blockers);
-    u64 get_bishop_attacks(Board &board, int square, u64 occupancy);
+    u64 get_bishop_attacks(const Board &board, int square);
 
     u64 mask_rook_attacks(int square);
     u64 raycast_rook_attacks(int square, u64 blockers);
-    u64 get_rook_attacks(Board &board, int square, u64 occupancy);
+    u64 get_rook_attacks(const Board &board, int square);
 
     // void update_bitboard_from_move(Board &board, Move &move);
     void add_piece_to_bb(Board &board, int piece, int square);
