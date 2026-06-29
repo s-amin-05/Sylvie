@@ -52,12 +52,12 @@ public:
     int black_king_square_;
 
     // for setting up endgame weight;
-    std::vector<int> piece_count_;
+    // std::vector<int> piece_count_;
 
     // piece-lists
-    int piece_lists_[12][16];
+    // int piece_lists_[12][16];
 
-    int piece_index_board_[64];
+    // int piece_index_board_[64];
 
     // bitboards :)
     // ordering of bitboards same as piece lists

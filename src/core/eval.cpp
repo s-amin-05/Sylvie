@@ -51,10 +51,22 @@ namespace Evaluation {
         using namespace chess::evaluation;
         int weight_sum = 0;
 
-        weight_sum += (board.piece_count_[chess::piecelists::WHITE_QUEEN] + board.piece_count_[chess::piecelists::BLACK_QUEEN]) * ENDGAME_WEIGHT_QUEEN;
-        weight_sum += (board.piece_count_[chess::piecelists::WHITE_ROOK] + board.piece_count_[chess::piecelists::BLACK_ROOK]) * ENDGAME_WEIGHT_ROOK;
-        weight_sum += (board.piece_count_[chess::piecelists::WHITE_BISHOP] + board.piece_count_[chess::piecelists::BLACK_BISHOP]) * ENDGAME_WEIGHT_BISHOP;
-        weight_sum += (board.piece_count_[chess::piecelists::WHITE_KNIGHT] + board.piece_count_[chess::piecelists::BLACK_KNIGHT]) * ENDGAME_WEIGHT_KNIGHT;
+        int white_queen_count  = __builtin_popcountll(board.piece_bitboard_[chess::piecelists::WHITE_QUEEN]);
+        int black_queen_count  = __builtin_popcountll(board.piece_bitboard_[chess::piecelists::BLACK_QUEEN]);
+
+        int white_rook_count   = __builtin_popcountll(board.piece_bitboard_[chess::piecelists::WHITE_ROOK]);
+        int black_rook_count   = __builtin_popcountll(board.piece_bitboard_[chess::piecelists::BLACK_ROOK]);
+
+        int white_bishop_count = __builtin_popcountll(board.piece_bitboard_[chess::piecelists::WHITE_BISHOP]);
+        int black_bishop_count = __builtin_popcountll(board.piece_bitboard_[chess::piecelists::BLACK_BISHOP]);
+
+        int white_knight_count = __builtin_popcountll(board.piece_bitboard_[chess::piecelists::WHITE_KNIGHT]);
+        int black_knight_count = __builtin_popcountll(board.piece_bitboard_[chess::piecelists::BLACK_KNIGHT]);
+
+        weight_sum += (white_queen_count + black_queen_count) * ENDGAME_WEIGHT_QUEEN;
+        weight_sum += (white_rook_count + black_rook_count) * ENDGAME_WEIGHT_ROOK;
+        weight_sum += (white_bishop_count + black_bishop_count) * ENDGAME_WEIGHT_BISHOP;
+        weight_sum += (white_knight_count + black_knight_count) * ENDGAME_WEIGHT_KNIGHT;
 
         // Ensure we don't divide by zero, though unlikely with constants
 

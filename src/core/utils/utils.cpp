@@ -248,51 +248,51 @@ namespace PieceListUtils {
 
 }
 
-namespace PieceCountUtils {
-    void increment_piece_count(Board &board, int piece, int increment) {
-        switch (piece) {
-            case chess::piece::WHITE_KING:
-                board.piece_count_[chess::piecelists::WHITE_KING] += increment;
-                break;
-            case chess::piece::BLACK_KING:
-                board.piece_count_[chess::piecelists::BLACK_KING] += increment;
-                break;
-            case chess::piece::WHITE_QUEEN:
-                board.piece_count_[chess::piecelists::WHITE_QUEEN] += increment;
-                break;
-            case chess::piece::BLACK_QUEEN:
-                board.piece_count_[chess::piecelists::BLACK_QUEEN] += increment;
-                break;
-            case chess::piece::WHITE_ROOK:
-                board.piece_count_[chess::piecelists::WHITE_ROOK] += increment;
-                break;
-            case chess::piece::BLACK_ROOK:
-                board.piece_count_[chess::piecelists::BLACK_ROOK] += increment;
-                break;
-            case chess::piece::WHITE_BISHOP:
-                board.piece_count_[chess::piecelists::WHITE_BISHOP] += increment;
-                break;
-            case chess::piece::BLACK_BISHOP:
-                board.piece_count_[chess::piecelists::BLACK_BISHOP] += increment;
-                break;
-            case chess::piece::WHITE_KNIGHT:
-                board.piece_count_[chess::piecelists::WHITE_KNIGHT] += increment;
-                break;
-            case chess::piece::BLACK_KNIGHT:
-                board.piece_count_[chess::piecelists::BLACK_KNIGHT] += increment;
-                break;
-            case chess::piece::WHITE_PAWN:
-                board.piece_count_[chess::piecelists::WHITE_PAWN] += increment;
-                break;
-            case chess::piece::BLACK_PAWN:
-                board.piece_count_[chess::piecelists::BLACK_PAWN] += increment;
-                break;
-            default:
-                break;
-
-        }
-    }
-}
+// namespace PieceCountUtils {
+//     void increment_piece_count(Board &board, int piece, int increment) {
+//         switch (piece) {
+//             case chess::piece::WHITE_KING:
+//                 board.piece_count_[chess::piecelists::WHITE_KING] += increment;
+//                 break;
+//             case chess::piece::BLACK_KING:
+//                 board.piece_count_[chess::piecelists::BLACK_KING] += increment;
+//                 break;
+//             case chess::piece::WHITE_QUEEN:
+//                 board.piece_count_[chess::piecelists::WHITE_QUEEN] += increment;
+//                 break;
+//             case chess::piece::BLACK_QUEEN:
+//                 board.piece_count_[chess::piecelists::BLACK_QUEEN] += increment;
+//                 break;
+//             case chess::piece::WHITE_ROOK:
+//                 board.piece_count_[chess::piecelists::WHITE_ROOK] += increment;
+//                 break;
+//             case chess::piece::BLACK_ROOK:
+//                 board.piece_count_[chess::piecelists::BLACK_ROOK] += increment;
+//                 break;
+//             case chess::piece::WHITE_BISHOP:
+//                 board.piece_count_[chess::piecelists::WHITE_BISHOP] += increment;
+//                 break;
+//             case chess::piece::BLACK_BISHOP:
+//                 board.piece_count_[chess::piecelists::BLACK_BISHOP] += increment;
+//                 break;
+//             case chess::piece::WHITE_KNIGHT:
+//                 board.piece_count_[chess::piecelists::WHITE_KNIGHT] += increment;
+//                 break;
+//             case chess::piece::BLACK_KNIGHT:
+//                 board.piece_count_[chess::piecelists::BLACK_KNIGHT] += increment;
+//                 break;
+//             case chess::piece::WHITE_PAWN:
+//                 board.piece_count_[chess::piecelists::WHITE_PAWN] += increment;
+//                 break;
+//             case chess::piece::BLACK_PAWN:
+//                 board.piece_count_[chess::piecelists::BLACK_PAWN] += increment;
+//                 break;
+//             default:
+//                 break;
+//
+//         }
+//     }
+// }
 
 namespace BoardUtils {
 

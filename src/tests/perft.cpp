@@ -14,16 +14,18 @@
 #define ANSI_BOLD   "\033[1m"
 
 u64 perft(int depth, Board &board) {
-    u64 nodes = 0ULL;
-
     if (depth == 0)
         return 1ULL;
 
-
     MoveGenerator generator = MoveGenerator();
     generator.generate_legal_moves(board);
-    // std::vector<Move> moves = generator.legal_moves_;
 
+    // BULK COUNTING
+    if (depth == 1) {
+        return generator.legal_moves_.size();
+    }
+
+    u64 nodes = 0ULL;
     for (auto move: generator.legal_moves_) {
         // std::cout << "Making... " <<move.get_move_notation() << std::endl;
         board.make_move(move, false);

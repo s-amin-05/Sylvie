@@ -400,8 +400,8 @@ void Board::reset_board() {
     for (int sq=0; sq < 64; sq++) {
         board_[sq] = chess::piece_type::EMPTY;
     }
-    piece_count_.clear();
-    piece_count_.resize(12, 0);
+    // piece_count_.clear();
+    // piece_count_.resize(12, 0);
     // setup_using_fen();
 }
 
