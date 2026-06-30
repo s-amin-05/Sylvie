@@ -79,6 +79,7 @@ public:
     u64 rook_masks[64];
     u64 rook_attack_table[64][4096];
 
+    u64 ray_between[64][64];
 
     Logger logger_;
 

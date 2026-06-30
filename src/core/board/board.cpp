@@ -49,6 +49,7 @@ Board::Board(const std::string &position_fen):
     BitboardUtils::compute_attack_tables(*this);
     BitboardUtils::compute_bishop_magic_bitboards(*this);
     BitboardUtils::compute_rook_magic_bitboards(*this);
+    BitboardUtils::init_between_squares(*this);
 
     setup_using_fen();
 

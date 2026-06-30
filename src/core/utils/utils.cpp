@@ -564,6 +564,17 @@ namespace BitboardUtils {
         return board.bishop_attack_table[square][index];
     }
 
+    u64 get_bishop_attacks(const Board &board, int square, u64 occupancy) {
+        // 1. Strip away irrelevant pieces (like edges or pieces not on the diagonal)
+        u64 blockers = occupancy & board.bishop_masks[square];
+
+        // 2. Multiply by the magic number and shift to get the index
+        int index = (blockers * bitboards::BISHOP_MAGICS[square]) >> (64 - bitboards::BISHOP_RELEVANT_BITS[square]);
+
+        // 3. Return the precalculated bitboard
+        return board.bishop_attack_table[square][index];
+    }
+
     void compute_rook_magic_bitboards(Board &board) {
         for (int sq = 0; sq < 64; sq++) {
             board.rook_masks[sq] = mask_rook_attacks(sq);
@@ -638,6 +649,44 @@ namespace BitboardUtils {
 
         // 3. Return the precalculated bitboard
         return board.rook_attack_table[square][index];
+    }
+
+    u64 get_rook_attacks(const Board &board, int square, u64 occupancy) {
+        // 1. Strip away irrelevant pieces
+        u64 blockers = occupancy & board.rook_masks[square];
+
+        // 2. Multiply by the magic number and shift to get the index
+        int index = (blockers * bitboards::ROOK_MAGICS[square]) >> (64 - bitboards::ROOK_RELEVANT_BITS[square]);
+
+        // 3. Return the precalculated bitboard
+        return board.rook_attack_table[square][index];
+    }
+
+    void init_between_squares(Board &board) {
+        // Clear the table
+        for (int i = 0; i < 64; ++i) {
+            for (int j = 0; j < 64; ++j) {
+                board.ray_between[i][j] = 0ULL;
+            }
+        }
+
+        for (int sq1 = 0; sq1 < 64; ++sq1) {
+            for (int sq2 = 0; sq2 < 64; ++sq2) {
+                if (sq1 == sq2) continue;
+
+                // We test this by seeing if an empty-board rook attack from sq1 hits sq2
+                if (raycast_rook_attacks(sq1, 0ULL) & (1ULL << sq2)) {
+                    // MAGIC BITBOARD TRICK:
+                    // The intersection of their attacks (with each other acting as the only blocker)
+                    // perfectly isolates the squares directly between them!
+                    board.ray_between[sq1][sq2] = raycast_rook_attacks(sq1, 1ULL << sq2) & raycast_rook_attacks(sq2, 1ULL << sq1);
+                }
+                // Check if they are aligned on a Bishop ray (Diagonal)
+                else if (raycast_bishop_attacks(sq1, 0ULL) & (1ULL << sq2)) {
+                    board.ray_between[sq1][sq2] = raycast_bishop_attacks(sq1, 1ULL << sq2) & raycast_bishop_attacks(sq2, 1ULL << sq1);
+                }
+            }
+        }
     }
 
 
