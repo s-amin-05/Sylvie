@@ -202,15 +202,20 @@ void run_search_test_suite() {
 
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     {
+        if (argc < 2) {
+            run_perft_test_suite();
+            return 0;
+        }
 
-        // run_search_test_suite();
-        run_perft_test_suite();
 
-
+        std::string test = argv[1];
+        if (test == "perft")
+            run_perft_test_suite();
+        else if (test == "search")
+            run_search_test_suite();
     }
-
 
     return 0;
 }
