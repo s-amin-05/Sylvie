@@ -24,6 +24,7 @@ void UCI::handle_input(const std::string &input) {
     uci_handler["go"] = [this](){handle_go();};
     uci_handler["stop"] = [this](){handle_stop();};
     uci_handler["quit"] = [this](){handle_quit();};
+    uci_handler["setoptions"] = [this](){handle_engine_options();};
 
     auto it = uci_handler.find(command_type_);
     if (it != uci_handler.end()) {
@@ -107,4 +108,11 @@ void UCI::handle_quit() {
     exit(0);
 }
 
+void UCI::handle_engine_options() {
+    std::string option_name = Utils::get_arg_after_keyword(args_, "name");
+    std::string option_value = Utils::get_arg_after_keyword(args_, "value");
+
+    engine_.update_engine_options(option_name, option_value);
+
+}
 

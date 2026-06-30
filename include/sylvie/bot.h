@@ -14,7 +14,9 @@ class Engine {
     // put it in search
     MoveGenerator move_generator_;
     Searcher searcher_;
-    int depth_;
+
+    // options
+    std::unordered_map<std::string, int> options_;
 
 
 
@@ -46,6 +48,6 @@ public:
 
     void set_times(int time_remaining_white, int time_remaining_black, int time_increment_white, int time_increment_black);
 
-
+    void update_engine_options(std::string &option_name, std::string &option_value);
 
 };

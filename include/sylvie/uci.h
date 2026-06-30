@@ -26,4 +26,6 @@ public:
     void handle_stop();
 
     void handle_quit();
+
+    void handle_engine_options();
 };

@@ -5,11 +5,12 @@
 #include <utils.h>
 
 Engine::Engine() {
-     debug_flag_ = false;
-     time_increment_black_ = time_increment_white_ = time_remaining_black_ = time_remaining_white_ = 0;
-     move_generator_ = MoveGenerator();
-     // TODO: add iterative deepening
-     depth_ = 6;
+    debug_flag_ = false;
+    time_increment_black_ = time_increment_white_ = time_remaining_black_ = time_remaining_white_ = 0;
+    move_generator_ = MoveGenerator();
+    // TODO: add iterative deepening
+    options_["depth"] = 6;
+
  }
 
 void Engine::print_engine_info() const {
@@ -65,7 +66,7 @@ void Engine::stop_search() {
 }
 
 void Engine::search_loop() {
-    searcher_.search_best_move(depth_, board_);
+    searcher_.search_best_move(options_["depth"], board_);
 
     if (searcher_.stop_search_)
         std::cout << "info string search stopped early\n";
@@ -86,6 +87,11 @@ void Engine::set_times(int time_remaining_white, int time_remaining_black, int t
     time_increment_black_ = time_increment_black;
 }
 
+void Engine::update_engine_options(std::string &option_name, std::string &option_value) {
+    if (options_.find(option_name) != options_.end()) {
+        options_[option_name] = stoi(option_value);
+    }
+}
 
 
 
