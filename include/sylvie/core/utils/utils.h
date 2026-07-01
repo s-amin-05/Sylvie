@@ -74,3 +74,9 @@ namespace BitboardUtils {
     void update_piece_in_bb(Board &board, int piece, int starting_square, int target_square);
 
 }
+
+namespace ZobristUtils {
+
+    void init_zobrist(Board &board);
+    void generate_hash(Board& board);
+}

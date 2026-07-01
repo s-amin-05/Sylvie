@@ -17,6 +17,14 @@ struct IrreversibleState {
     int repetition_count;
     int captured_piece;
 };
+
+struct Zobrist {
+    // [piece 0-14][square 0-63]
+    u64 piece_keys[15][64];
+    u64 castling_keys[16];
+    u64 enpassant_keys[8];
+    u64 side_key;
+};
 // piece-lists are used for generating bitboards later
 // added count here for efficient removal of pieces
 
@@ -80,6 +88,9 @@ public:
     u64 rook_attack_table[64][4096];
 
     u64 ray_between[64][64];
+
+    Zobrist zobrist_keys;
+    u64 hash_;
 
     Logger logger_;
 

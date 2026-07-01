@@ -4,6 +4,7 @@
 #include <utils.h>
 #include <movegen.h>
 #include "eval.h"
+#include <random>
 
 namespace Utils {
     std::vector<std::string> split(const std::string &s, const char delim) {
@@ -715,4 +716,54 @@ namespace BitboardUtils {
     }
 
 
-} // namespace BitboardUtils
+}
+
+
+
+namespace ZobristUtils {
+
+    void init_zobrist(Board &board) {
+        std::mt19937_64 rng(1070372ULL); // Arbitrary seed
+
+        for (int p = 0; p < 15; p++) {
+            for (int sq = 0; sq < 64; sq++) {
+                board.zobrist_keys.piece_keys[p][sq] = rng();
+            }
+        }
+
+
+        for (int i = 0; i < 16; i++) board.zobrist_keys.castling_keys[i] = rng();
+        for (int i = 0; i < 8; i++) board.zobrist_keys.enpassant_keys[i] = rng();
+
+        board.zobrist_keys.side_key = rng();
+    }
+
+    void generate_hash(Board& board) {
+        uint64_t hash = 0ULL;
+
+        // 1. Loop through all pieces and XOR them in
+        for (int sq = 0; sq < 64; sq++) {
+            int piece = board.board_[sq];
+
+            if (piece != chess::piece::EMPTY) {
+                hash ^= board.zobrist_keys.piece_keys[piece][sq];
+            }
+        }
+
+        // 2. XOR side to move
+        if (board.turn_ == chess::color::BLACK) {
+            hash ^= board.zobrist_keys.side_key;
+        }
+
+        // 3. XOR castling rights (assuming board.castling_ is a 4-bit integer)
+        hash ^= board.zobrist_keys.castling_keys[board.castling_rights_];
+
+        // 4. XOR en passant file
+        if (board.enpassant_target_ != chess::square::EMPTY) {
+            int file = Square::file_(board.enpassant_target_);
+            hash ^= board.zobrist_keys.enpassant_keys[file];
+        }
+
+        board.hash_ = hash;
+    }
+}

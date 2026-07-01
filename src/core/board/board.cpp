@@ -4,6 +4,7 @@
 #include <square.h>
 #include <board.h>
 #include <logger.h>
+#include <random>
 
 Board::Board(): Board(chess::starting_pos_fen) {}
 
@@ -23,6 +24,7 @@ Board::Board(): Board(chess::starting_pos_fen) {}
 //     }
 // }
 
+
 Board::Board(const std::string &position_fen):
     turn_(chess::color::WHITE),
     castling_rights_(0xF),
@@ -35,6 +37,7 @@ Board::Board(const std::string &position_fen):
     piece_bitboard_{0ULL},
     // piece_count_(12, 0),
     captured_piece_(chess::piece_type::EMPTY),
+    hash_(0ULL),
     logger_("board.log")
 {
     board_fen_ = position_fen;
@@ -50,8 +53,11 @@ Board::Board(const std::string &position_fen):
     BitboardUtils::compute_bishop_magic_bitboards(*this);
     BitboardUtils::compute_rook_magic_bitboards(*this);
     BitboardUtils::init_between_squares(*this);
+    ZobristUtils::init_zobrist(*this);
 
     setup_using_fen();
+
+    ZobristUtils::generate_hash(*this);
 
     logger_.log_to_file("[BOARD INITIALIZED]");
     logger_.log_board_to_file(*this, Move("0000"), false);
@@ -132,6 +138,7 @@ void Board::make_move(Move &move, const bool uci_flag) {
     // assuming the generated/uci-given move is correct
 
     // incremental updates
+    hash_ ^= zobrist_keys.side_key;
     turn_ = (turn_ == chess::color::WHITE) ? chess::color::BLACK : chess::color::WHITE;
     ply_count_++;
     if (turn_ == chess::color::WHITE) {
@@ -188,6 +195,7 @@ void Board::make_move(Move &move, const bool uci_flag) {
         // castling rights
         castling_rights_ &= moving_piece_color == chess::color::WHITE ? ~(bitmask::castling::WHITE_KING | bitmask::castling::WHITE_QUEEN) : ~(bitmask::castling::BLACK_KING | bitmask::castling::BLACK_QUEEN);
 
+
         if (move.is_castling_) {
             switch (target_square) {
                 case chess::square::G1:
@@ -211,6 +219,10 @@ void Board::make_move(Move &move, const bool uci_flag) {
             }
             if (castling_rook_start_square != chess::square::EMPTY && castling_rook_end_square != chess::square::EMPTY) {
                 int piece = Piece::piece_(chess::piece_type::ROOK, moving_piece_color);
+
+                hash_ ^= zobrist_keys.piece_keys[piece][castling_rook_start_square];
+                hash_ ^= zobrist_keys.piece_keys[piece][castling_rook_end_square];
+
                 BitboardUtils::remove_piece_from_bb(*this, piece, castling_rook_start_square);
                 BitboardUtils::add_piece_to_bb(*this, piece, castling_rook_end_square);
 
@@ -232,6 +244,8 @@ void Board::make_move(Move &move, const bool uci_flag) {
         } else if (starting_square == chess::square::H8 && moving_piece_color == chess::color::BLACK) {
             castling_rights_ &= ~bitmask::castling::BLACK_KING;
         }
+
+
     }
 
     int captured_piece_type = Piece::type_(captured_piece_);
@@ -246,6 +260,20 @@ void Board::make_move(Move &move, const bool uci_flag) {
         castling_rights_ &= ~bitmask::castling::BLACK_KING;
     }
 
+    hash_ ^= zobrist_keys.castling_keys[state.castling_rights]; // Remove old state
+    hash_ ^= zobrist_keys.castling_keys[castling_rights_];
+
+    // 1. Remove the old EP file if one existed
+    if (state.enpassant_target != chess::square::EMPTY) {
+        int old_file = Square::file_(state.enpassant_target);
+        hash_ ^= zobrist_keys.enpassant_keys[old_file];
+    }
+
+    // 2. Add the new EP file if a double pawn push just happened
+    if (enpassant_target_ != chess::square::EMPTY) {
+        int new_file = Square::file_(enpassant_target_);
+        hash_ ^= zobrist_keys.enpassant_keys[new_file];
+    }
     // make the move on the board finally
 
     // captured piece is set down because we need it for unmaking move
@@ -256,11 +284,14 @@ void Board::make_move(Move &move, const bool uci_flag) {
     move_history_[history_ply_] = move;
     history_ply_++;
 
+    hash_ ^= zobrist_keys.piece_keys[moving_piece][starting_square];
+
     BitboardUtils::remove_piece_from_bb(*this, moving_piece, starting_square);
     // PieceListUtils::remove_piece_from_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_count_);
     board_[starting_square] = chess::piece_type::EMPTY;
 
     if (captured_square != chess::square::EMPTY) {
+        hash_ ^= zobrist_keys.piece_keys[captured_piece_][captured_square];
         BitboardUtils::remove_piece_from_bb(*this, captured_piece_, captured_square);
         // PieceListUtils::remove_piece_from_piece_list(captured_piece_, captured_square, piece_lists_, piece_index_board_, piece_count_);
         board_[captured_square] = chess::piece_type::EMPTY;
@@ -268,10 +299,12 @@ void Board::make_move(Move &move, const bool uci_flag) {
 
     // handle promotions here
     if (move.promotion_piece_ != chess::piece_type::EMPTY) {
+        hash_ ^= zobrist_keys.piece_keys[move.promotion_piece_][target_square];
         BitboardUtils::add_piece_to_bb(*this, move.promotion_piece_, target_square);
         // PieceListUtils::add_piece_to_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_count_);
         board_[target_square] = move.promotion_piece_;
     } else {
+        hash_ ^= zobrist_keys.piece_keys[moving_piece][target_square];
         BitboardUtils::add_piece_to_bb(*this, moving_piece, target_square);
         // PieceListUtils::add_piece_to_piece_list(moving_piece, target_square, piece_lists_, piece_index_board_, piece_count_);
         board_[target_square] = moving_piece;
@@ -289,6 +322,9 @@ void Board::unmake_move() {
     Move move = move_history_[history_ply_];
     IrreversibleState state = irreversible_history_[history_ply_];
 
+    // --- ZOBRIST: Revert Side to Move ---
+    hash_ ^= zobrist_keys.side_key;
+
     // 1. Revert incremental updates (turns and counters)
     if (turn_ == chess::color::WHITE) {
         fullmove_number_--;
@@ -296,6 +332,18 @@ void Board::unmake_move() {
 
     turn_ = (turn_ == chess::color::WHITE) ? chess::color::BLACK : chess::color::WHITE;
     ply_count_--;
+
+    // --- ZOBRIST: Revert Castling Rights ---
+    hash_ ^= zobrist_keys.castling_keys[castling_rights_];       // Remove current state
+    hash_ ^= zobrist_keys.castling_keys[state.castling_rights];  // Restore old state
+
+    // --- ZOBRIST: Revert En Passant Target ---
+    if (enpassant_target_ != chess::square::EMPTY) {
+        hash_ ^= zobrist_keys.enpassant_keys[Square::file_(enpassant_target_)];
+    }
+    if (state.enpassant_target != chess::square::EMPTY) {
+        hash_ ^= zobrist_keys.enpassant_keys[Square::file_(state.enpassant_target)];
+    }
 
     // 2. Restore irreversible state variables
     castling_rights_ = state.castling_rights;
@@ -318,20 +366,23 @@ void Board::unmake_move() {
     int moving_piece;
     if (move.promotion_piece_ != chess::piece_type::EMPTY) {
         moving_piece = Piece::piece_(chess::piece_type::PAWN, moving_piece_color);
+
+        // BUG FIX: Remove the PROMOTED piece from the hash at the target square, not a pawn
+        hash_ ^= zobrist_keys.piece_keys[move.promotion_piece_][target_square];
+
         BitboardUtils::remove_piece_from_bb(*this, move.promotion_piece_, target_square);
-        // PieceListUtils::remove_piece_from_piece_list(move.promotion_piece_, target_square, piece_lists_, piece_index_board_, piece_count_);
     } else {
         moving_piece = board_[target_square];
+        hash_ ^= zobrist_keys.piece_keys[moving_piece][target_square];
         BitboardUtils::remove_piece_from_bb(*this, moving_piece, target_square);
-        // PieceListUtils::remove_piece_from_piece_list(moving_piece, target_square, piece_lists_, piece_index_board_, piece_count_);
     }
 
     // Temporarily clear the target square
     board_[target_square] = chess::piece_type::EMPTY;
 
     // 4. Move the piece back to its starting square
+    hash_ ^= zobrist_keys.piece_keys[moving_piece][starting_square];
     BitboardUtils::add_piece_to_bb(*this, moving_piece, starting_square);
-    // PieceListUtils::add_piece_to_piece_list(moving_piece, starting_square, piece_lists_, piece_index_board_, piece_count_);
     board_[starting_square] = moving_piece;
 
     // 5. King moves & Castling Reversals
@@ -369,10 +420,13 @@ void Board::unmake_move() {
 
             if (castling_rook_start_square != chess::square::EMPTY && castling_rook_end_square != chess::square::EMPTY) {
                 int piece = Piece::piece_(chess::piece_type::ROOK, moving_piece_color);
+
+                hash_ ^= zobrist_keys.piece_keys[piece][castling_rook_end_square];
+                hash_ ^= zobrist_keys.piece_keys[piece][castling_rook_start_square];
+
                 BitboardUtils::remove_piece_from_bb(*this, piece, castling_rook_end_square);
                 BitboardUtils::add_piece_to_bb(*this, piece, castling_rook_start_square);
 
-                // PieceListUtils::update_piece_list(board_[castling_rook_end_square], castling_rook_end_square, castling_rook_start_square, piece_lists_, piece_index_board_);
                 board_[castling_rook_end_square] = chess::piece_type::EMPTY;
                 board_[castling_rook_start_square] = Piece::piece_(chess::piece_type::ROOK, moving_piece_color);
             }
@@ -393,11 +447,12 @@ void Board::unmake_move() {
         }
 
         // Add the captured piece stored in the local state variable back to the board
+        hash_ ^= zobrist_keys.piece_keys[state.captured_piece][captured_square];
         BitboardUtils::add_piece_to_bb(*this, state.captured_piece, captured_square);
-        // PieceListUtils::add_piece_to_piece_list(state.captured_piece, captured_square, piece_lists_, piece_index_board_, piece_count_);
         board_[captured_square] = state.captured_piece;
     }
 }
+
 
 void Board::reset_board() {
     // board_fen_ = chess::starting_pos_fen;
