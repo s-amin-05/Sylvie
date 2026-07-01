@@ -25,8 +25,7 @@ struct Zobrist {
     u64 enpassant_keys[8];
     u64 side_key;
 };
-// piece-lists are used for generating bitboards later
-// added count here for efficient removal of pieces
+
 
 // Board class handles the complete state of the game
 class Board{

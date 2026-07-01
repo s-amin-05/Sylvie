@@ -10,6 +10,9 @@ Engine::Engine() {
     move_generator_ = MoveGenerator();
     // TODO: add iterative deepening
     options_["depth"] = 6;
+    options_["hash"] = 64;
+
+    searcher_.resize_transposition_table(options_["hash"]);
 
  }
 
@@ -91,6 +94,7 @@ void Engine::update_engine_options(std::string &option_name, std::string &option
     if (options_.find(option_name) != options_.end()) {
         options_[option_name] = stoi(option_value);
     }
+    searcher_.resize_transposition_table(options_["hash"]);
 }
 
 

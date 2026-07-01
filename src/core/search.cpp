@@ -11,6 +11,7 @@ Searcher::Searcher() {
     best_move_ = Move();
     best_evaluation_ = 0;
     nodes_searched_ = 0ULL;
+    table_.allocate(128);
 }
 
 
@@ -72,7 +73,7 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board, i
         return 0;
     }
 
-    SearchUtils::order_moves(list, board);
+    SearchUtils::order_moves(list, board, Move());
 
     for (Move move: list) {
         board.make_move(move, false);
@@ -88,30 +89,95 @@ int Searcher::alpha_beta_pruning(int depth, int alpha, int beta, Board &board, i
     return alpha;
 }
 
-void Searcher::search_best_move(const int depth, Board &board) {
+int Searcher::alpha_beta_pruning_tt(int depth, int alpha, int beta, Board &board, int ply) {
+    // count nodes searched
+    nodes_searched_++;
+
+    if (stop_search_) return Evaluation::evaluate(board);
+
+    if (depth == 0) {
+        return Evaluation::evaluate(board);
+    }
+
+    // 1. TT PROBE
+    int tt_score = 0;
+    Move tt_move; // Assuming 0 is an empty/null move
+
+    // Assuming tt_ is a member variable of Searcher
+    if (table_.probe(board.hash_, depth, alpha, beta, tt_score, tt_move)) {
+        // Adjust mate scores from absolute (table) to relative (current search)
+        if (tt_score > chess::evaluation::INF - 100) tt_score -= ply;
+        if (tt_score < -chess::evaluation::INF + 100) tt_score += ply;
+        return tt_score;
+    }
 
     MoveList list;
     auto move_generator = MoveGenerator();
     move_generator.generate_legal_moves(board, list);
 
-    SearchUtils::order_moves(list, board);
+    if (list.empty()) {
+        if (move_generator.is_in_check(board, board.turn_)) {
+            return -chess::evaluation::INF + ply;
+        }
+        return 0;
+    }
 
-    best_evaluation_ = -chess::evaluation::INF;
-    best_move_ = list[0];
-    nodes_searched_ = 0;
+    // 2. MOVE ORDERING (Pass the TT move)
+    SearchUtils::order_moves(list, board, tt_move);
 
-    for (auto move: list) {
+    uint8_t tt_flag = TT_ALPHA; // Default to fail-low (upper bound)
+    Move best_move;
 
+    for (Move move: list) {
         board.make_move(move, false);
-
-        int move_eval = -alpha_beta_pruning(depth-1, -chess::evaluation::INF, chess::evaluation::INF, board, 1);
-
+        int evaluation = -alpha_beta_pruning_tt(depth - 1, -beta, -alpha, board, ply + 1);
         board.unmake_move();
 
-        if (move_eval > best_evaluation_) {
-            best_evaluation_ = move_eval;
-            best_move_ = move;
+        if (stop_search_) return 0; // Prevent garbage stores if time runs out mid-search
+
+        // 3. BETA CUTOFF (Fail-High / Lower Bound)
+        if (evaluation >= beta) {
+            int store_score = beta;
+            // Adjust mate scores from relative (current search) to absolute (table)
+            if (store_score > chess::evaluation::INF - 100) store_score += ply;
+            if (store_score < -chess::evaluation::INF + 100) store_score -= ply;
+
+            // Assuming your Move class can be converted to an integer
+            table_.store(board.hash_, depth, store_score, TT_BETA, move);
+            return beta;
         }
+
+        // 4. FOUND A BETTER MOVE (Exact Bound)
+        if (evaluation > alpha) {
+            alpha = evaluation;
+            tt_flag = TT_EXACT;
+            best_move = move;
+        }
+    }
+
+    // 5. STORE EXACT OR ALPHA
+    int store_score = alpha;
+    // Adjust mate scores before storing
+    if (store_score > chess::evaluation::INF - 100) store_score += ply;
+    if (store_score < -chess::evaluation::INF + 100) store_score -= ply;
+
+    table_.store(board.hash_, depth, store_score, tt_flag, best_move);
+
+    return alpha;
+}
+
+void Searcher::search_best_move(const int depth, Board &board) {
+
+    nodes_searched_ = 0;
+
+    // Let the TT search handle everything, including the root!
+    best_evaluation_ = alpha_beta_pruning_tt(depth, -chess::evaluation::INF, chess::evaluation::INF, board, 0);
+
+    // We can retrieve the best move directly from the TT for the root position
+    int tt_score;
+    Move tt_move;
+    if (table_.probe(board.hash_, depth, -chess::evaluation::INF, chess::evaluation::INF, tt_score, tt_move)) {
+        best_move_ = tt_move;
     }
 }
 
@@ -125,6 +191,10 @@ int Searcher::get_best_evaluation() const {
 
 u64 Searcher::get_nodes_searched() const {
     return nodes_searched_;
+}
+
+void Searcher::resize_transposition_table(int size_mb) {
+    table_.allocate(size_mb);
 }
 
 // void Searcher::set_stop_search_flag(bool flag) {

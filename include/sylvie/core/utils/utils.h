@@ -40,7 +40,7 @@ namespace BoardUtils {
 
 namespace SearchUtils {
     int score_mvv_lva(const Move& move, const Board& board);
-    void order_moves(MoveList &move_list, const Board &board);
+    void order_moves(MoveList &move_list, const Board &board, Move tt_move);
 }
 
 namespace BitboardUtils {
@@ -80,3 +80,35 @@ namespace ZobristUtils {
     void init_zobrist(Board &board);
     void generate_hash(Board& board);
 }
+
+enum TTFlag : u8 {
+    TT_EXACT = 0, // Exact evaluation (principal variation node)
+    TT_ALPHA = 1, // Upper bound (fail-low node)
+    TT_BETA  = 2  // Lower bound (fail-high node)
+};
+
+// Align to 32 bytes for optimal memory access
+struct alignas(32) TTEntry {
+    Move best_move;
+    uint64_t key;       // The full 64-bit Zobrist hash to handle collisions
+    int16_t  score;     // The evaluation score
+    uint8_t  depth;     // Depth to which this position was searched
+    uint8_t  flag;      // TT_EXACT, TT_ALPHA, or TT_BETA
+};
+
+class TranspositionTable {
+private:
+    std::vector<TTEntry> table;
+    size_t num_entries;
+
+public:
+    // Size in Megabytes (e.g., 64, 128, 256)
+    void allocate(int size_mb);
+
+    void clear();
+
+    bool probe(uint64_t hash, int depth, int alpha, int beta, int& return_score, Move& return_move);
+
+    void store(uint64_t hash, int depth, int score, int flag, Move best_move);
+};
+

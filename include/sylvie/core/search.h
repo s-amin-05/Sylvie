@@ -9,10 +9,13 @@ class Searcher {
     Move best_move_;
     int best_evaluation_;
     u64 nodes_searched_;
+    TranspositionTable table_;
 
     int minmax_search(int depth, Board &board);
 
     int alpha_beta_pruning(int depth, int alpha, int beta, Board &board, int ply);
+
+    int alpha_beta_pruning_tt(int depth, int alpha, int beta, Board &board, int ply);
 
     public:
     Searcher();
@@ -31,6 +34,7 @@ class Searcher {
 
     u64 get_nodes_searched() const;
 
+    void resize_transposition_table(int size_mb);
     // void set_stop_search_flag(bool flag);
 
 

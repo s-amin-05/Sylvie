@@ -353,8 +353,8 @@ namespace BoardUtils {
 
 
 namespace SearchUtils {
+    // (Keep your existing score_mvv_lva exactly as it is)
     int score_mvv_lva(const Move& move, const Board& board) {
-
         if (!move.is_capture_) {
             return 0;
         }
@@ -377,9 +377,28 @@ namespace SearchUtils {
         return 100000 + (victim_value * 1000) - aggressor_value;
     }
 
-    void order_moves(MoveList &move_list, const Board &board) {
-        std::sort(move_list.begin(), move_list.end(), [&board](const Move &a, const Move &b) {
-            return score_mvv_lva(a, board) > score_mvv_lva(b, board);
+    // NEW: Master scoring function
+    int score_move(const Move& move, const Board& board, const Move& tt_move) {
+        // 1. Transposition Table Move gets absolute highest priority
+        // (Checking squares/promotion safely handles equality without requiring operator== overload)
+        if (move.starting_square_ == tt_move.starting_square_ &&
+            move.target_square_ == tt_move.target_square_ &&
+            move.promotion_piece_ == tt_move.promotion_piece_) {
+            return 2000000;
+        }
+
+        // 2. Captures use MVV-LVA
+        if (move.is_capture_) {
+            return score_mvv_lva(move, board);
+        }
+
+        // 3. Quiet moves get 0 (Will add Killer Moves or History Heuristic here later)
+        return 0;
+    }
+
+    void order_moves(MoveList &move_list, const Board &board, Move tt_move) {
+        std::sort(move_list.begin(), move_list.end(), [&board, &tt_move](const Move &a, const Move &b) {
+            return score_move(a, board, tt_move) > score_move(b, board, tt_move);
         });
     }
 }
@@ -766,4 +785,68 @@ namespace ZobristUtils {
 
         board.hash_ = hash;
     }
+}
+
+
+void TranspositionTable::allocate(int size_mb) {
+    // Calculate how many entries fit in the requested MB
+    size_t target_entries = (size_mb * 1024 * 1024) / sizeof(TTEntry);
+
+    // Find the nearest power of 2 (rounding down)
+    num_entries = 1;
+    while (num_entries <= target_entries) {
+        num_entries *= 2;
+    }
+    num_entries /= 2;
+
+    table.resize(num_entries);
+    clear();
+}
+
+void TranspositionTable::clear() {
+    for (auto& entry : table) {
+        entry.key = 0;
+        entry.depth = 0;
+        entry.flag = 0;
+        entry.score = 0;
+    }
+}
+
+// Add this inside the TranspositionTable class
+bool TranspositionTable::probe(uint64_t hash, int depth, int alpha, int beta, int& return_score, Move& return_move) {
+    // Fast bitwise indexing (only works if num_entries is a power of 2)
+    TTEntry entry = table[hash & (num_entries - 1)];
+
+    // Verify it's not a collision
+    if (entry.key == hash) {
+        return_move = entry.best_move; // Always useful for move ordering!
+
+        // Only use the score if the stored depth is greater or equal to the current search depth
+        if (entry.depth >= depth) {
+            if (entry.flag == TT_EXACT) {
+                return_score = entry.score;
+                return true;
+            }
+            if (entry.flag == TT_ALPHA && entry.score <= alpha) {
+                return_score = alpha;
+                return true;
+            }
+            if (entry.flag == TT_BETA && entry.score >= beta) {
+                return_score = beta;
+                return true;
+            }
+        }
+    }
+    return false; // Hash mismatch or depth too shallow
+}
+
+void TranspositionTable::store(uint64_t hash, int depth, int score, int flag, Move best_move) {
+    size_t index = hash & (num_entries - 1);
+
+    // Always Replace scheme
+    table[index].key = hash;
+    table[index].score = score;
+    table[index].best_move = best_move;
+    table[index].depth = depth;
+    table[index].flag = flag;
 }
