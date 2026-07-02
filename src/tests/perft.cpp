@@ -181,13 +181,20 @@ void run_search_benchmark(const std::string& test_name, const std::string& fen, 
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
 
     // 5. Output Results (Requested Format)
-    std::cout << "BestMove: " << searcher.get_best_move().get_move_notation() << std::endl;
-    std::cout << "Evaluation: " << searcher.get_best_evaluation() << std::endl;
-    std::cout << "Nodes Searched: " << searcher.get_nodes_searched() << std::endl;
+    Move best_move = searcher.get_best_move();
+    int eval = searcher.get_best_evaluation();
+    u64 nodes = searcher.get_nodes_searched();
+    u64 qs_nodes = searcher.get_qs_nodes_searched();
+    u64 total_nodes = nodes + qs_nodes;
+
+    std::cout << "BestMove: " << best_move.get_move_notation() << std::endl;
+    std::cout << "Evaluation: " << eval << std::endl;
+    std::cout << "Nodes Searched: " << nodes << std::endl;
+    std::cout << "Quiescence Nodes Searched: " << qs_nodes << std::endl;
 
     // 6. Output Time
     std::cout << "Time: " << duration_ms << " ms" << std::endl;
-    std::cout << "NPS: " << (u64) (searcher.get_nodes_searched() * 1000ULL) / (u64)(duration_ms + 1) << std::endl; // +1 to prevent div by zero
+    std::cout << "NPS: " << (u64) (total_nodes * 1000ULL) / (u64)(duration_ms + 1) << std::endl; // +1 to prevent div by zero
     std::cout << std::endl;
 }
 

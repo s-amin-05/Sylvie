@@ -11,6 +11,7 @@ Searcher::Searcher() {
     best_move_ = Move();
     best_evaluation_ = 0;
     nodes_searched_ = 0ULL;
+    quiescence_nodes_searched_ = 0ULL;
     table_.allocate(128);
 }
 
@@ -96,7 +97,7 @@ int Searcher::alpha_beta_pruning_tt(int depth, int alpha, int beta, Board &board
     if (stop_search_) return Evaluation::evaluate(board);
 
     if (depth == 0) {
-        return Evaluation::evaluate(board);
+        return quiescence_search(alpha, beta, board, ply);
     }
 
     // 1. TT PROBE
@@ -166,9 +167,58 @@ int Searcher::alpha_beta_pruning_tt(int depth, int alpha, int beta, Board &board
     return alpha;
 }
 
+int Searcher::quiescence_search(int alpha, int beta, Board &board, int ply) {
+    // count nodes (optional, usually tracked separately from main search)
+    quiescence_nodes_searched_++;
+
+    if (stop_search_) return Evaluation::evaluate(board);
+
+    // 1. The "Stand Pat" lower bound
+    int stand_pat = Evaluation::evaluate(board);
+
+    // 2. Beta cutoff Check
+    if (stand_pat >= beta) {
+        return beta;
+    }
+
+    // 3. Update Alpha
+    if (alpha < stand_pat) {
+        alpha = stand_pat;
+    }
+
+    MoveList list;
+    auto move_generator = MoveGenerator();
+
+    // 4. Generate ONLY captures
+    move_generator.generate_captures(board, list);
+
+    // 5. Order the captures
+    SearchUtils::order_moves(list, board, Move()); // 0 = no TT move for basic QS
+
+    // 6. The Search Loop
+    for (Move move : list) {
+
+        board.make_move(move, false);
+
+        int score = -quiescence_search(-beta, -alpha, board, ply + 1);
+
+        board.unmake_move();
+
+        if (score >= beta) {
+            return beta;
+        }
+        if (score > alpha) {
+            alpha = score;
+        }
+    }
+
+    return alpha;
+}
+
 void Searcher::search_best_move(const int depth, Board &board) {
 
     nodes_searched_ = 0;
+    quiescence_nodes_searched_ = 0;
 
     // Let the TT search handle everything, including the root!
     best_evaluation_ = alpha_beta_pruning_tt(depth, -chess::evaluation::INF, chess::evaluation::INF, board, 0);
@@ -191,6 +241,10 @@ int Searcher::get_best_evaluation() const {
 
 u64 Searcher::get_nodes_searched() const {
     return nodes_searched_;
+}
+
+u64 Searcher::get_qs_nodes_searched() const {
+    return quiescence_nodes_searched_;
 }
 
 void Searcher::resize_transposition_table(int size_mb) {

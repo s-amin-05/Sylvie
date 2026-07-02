@@ -46,6 +46,14 @@ class MoveGenerator {
     void generate_king_moves(const Board &board, int square, MoveList &list);
     void generate_knight_moves(const Board &board, MoveList &list, u64 check_mask, const u64 pin_mask[64]);
 
+    // Quiescence search
+    void generate_captures(Board &board, MoveList &list);
+    void generate_sliding_piece_captures(const Board &board, MoveList &list, u64 check_mask, const u64 pin_mask[64]);
+    void generate_knight_captures(const Board &board, MoveList &list, u64 check_mask, const u64 pin_mask[64]);
+    void generate_king_captures(const Board &board, int square, MoveList &list);
+    void generate_pawn_captures(const Board &board, MoveList &list, u64 check_mask, const u64 pin_mask[64]);
+
+
     bool is_in_check(const Board &board, int in_check_color);
 };
 
